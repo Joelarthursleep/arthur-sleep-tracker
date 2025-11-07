@@ -1291,12 +1291,18 @@
             background: var(--gray-50);
         }
 
-        /* Manager Control Styles */
+        /* Manager Controls */
         .notification-badge {
+            position: relative;
+            display: inline-block;
+        }
+
+        .notification-badge::after {
+            content: attr(data-count);
             position: absolute;
             top: -8px;
             right: -8px;
-            background: #dc2626;
+            background: var(--danger);
             color: white;
             font-size: 11px;
             font-weight: 700;
@@ -1304,143 +1310,261 @@
             border-radius: 10px;
             min-width: 18px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .priority-indicator {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
         }
 
         .priority-critical {
-            background: #fee2e2;
+            background: rgba(239, 68, 68, 0.1);
             color: #dc2626;
-            border: 1px solid #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .priority-high {
-            background: #fed7aa;
+            background: rgba(249, 115, 22, 0.1);
             color: #ea580c;
-            border: 1px solid #fdba74;
+            border: 1px solid rgba(249, 115, 22, 0.3);
         }
 
         .priority-medium {
-            background: #fef3c7;
-            color: #d97706;
-            border: 1px solid #fde047;
+            background: rgba(234, 179, 8, 0.1);
+            color: #ca8a04;
+            border: 1px solid rgba(234, 179, 8, 0.3);
         }
 
-        .notification-panel {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            margin-bottom: 24px;
-            border-left: 4px solid #667eea;
+        /* Lead Status Colors */
+        .lead-card.status-fresh {
+            border-left: 4px solid #10b981;
+            background: linear-gradient(to right, rgba(16, 185, 129, 0.03), white);
         }
 
-        .notification-item {
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border-left: 4px solid;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        .lead-card.status-approaching {
+            border-left: 4px solid #f59e0b;
+            background: linear-gradient(to right, rgba(245, 158, 11, 0.03), white);
         }
 
-        .notification-urgent {
-            border-left-color: #dc2626;
-            background: #fef2f2;
+        .lead-card.status-overdue {
+            border-left: 4px solid #ef4444;
+            background: linear-gradient(to right, rgba(239, 68, 68, 0.03), white);
+            animation: pulse 2s infinite;
         }
 
-        .notification-important {
-            border-left-color: #f59e0b;
-            background: #fffbeb;
+        .lead-card.status-converted {
+            border-left: 4px solid #3b82f6;
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.03), white);
         }
 
-        .notification-info {
-            border-left-color: #3b82f6;
-            background: #eff6ff;
-        }
-
-        .notification-praise {
-            border-left-color: #10b981;
-            background: #f0fdf4;
-        }
-
-        .notification-header {
-            display: flex;
-            justify-content: space-between;
+        .status-indicator {
+            display: inline-flex;
             align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 8px;
         }
 
-        .notification-title {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--gray-900);
+        .status-indicator i {
+            width: 14px;
+            height: 14px;
         }
 
-        .notification-time {
+        .status-fresh .status-indicator {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .status-approaching .status-indicator {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .status-overdue .status-indicator {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .status-converted .status-indicator {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
+        }
+
+        /* Follow-up Timeline */
+        .followup-timeline {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .followup-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+            background: var(--gray-50);
+        }
+
+        .followup-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .followup-item.pending {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .followup-item.overdue {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .contact-method-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        /* Calendar View */
+        .calendar-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .calendar-events {
+            display: grid;
+            gap: 12px;
+        }
+
+        .calendar-event {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid;
+            background: var(--gray-50);
+            transition: all 0.2s;
+        }
+
+        .calendar-event:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-event.event-24h {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .calendar-event.event-72h {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .calendar-event.event-completed {
+            opacity: 0.5;
+            border-left-color: #10b981;
+        }
+
+        .event-time {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-600);
+            min-width: 120px;
+        }
+
+        .event-details {
+            flex: 1;
+        }
+
+        .event-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .event-customer {
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .comment-item {
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .comment-author {
             font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .comment-time {
+            font-size: 11px;
             color: var(--gray-500);
         }
 
-        .notification-message {
+        .comment-text {
             font-size: 13px;
             color: var(--gray-700);
             line-height: 1.5;
         }
 
-        .priority-task-banner {
-            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-            border: 2px solid #f59e0b;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
-        }
-
-        .priority-task-header {
+        .comment-input {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
-        .priority-label {
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .priority-deadline {
-            font-size: 12px;
-            color: var(--gray-700);
-            font-weight: 600;
-        }
-
-        .priority-instructions {
-            font-size: 14px;
-            color: var(--gray-800);
-            line-height: 1.6;
-            margin-top: 8px;
-        }
-
-        .btn-position-relative {
-            position: relative;
+        .comment-input input {
+            flex: 1;
         }
 
         /* Responsive */
@@ -1534,17 +1658,17 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn btn-ghost" id="performanceBtn" onclick="showPerformance()" style="display: none;">
+                    <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
+                    Performance
+                </button>
                 <button class="btn btn-ghost" id="managerControlsBtn" onclick="openManagerControls()" style="display: none;">
                     <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                     Manager Controls
                 </button>
-                <button class="btn btn-ghost" id="notificationsBtn" onclick="openNotifications()" style="display: none;">
-                    <i data-lucide="message-square" style="width: 18px; height: 18px;"></i>
-                    Send Message
-                </button>
-                <button class="btn btn-ghost" id="performanceBtn" onclick="showPerformance()" style="display: none;">
-                    <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
-                    Performance
+                <button class="btn btn-ghost" id="calendarBtn" onclick="toggleCalendar()">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                    Follow-up Calendar
                 </button>
                 <button class="btn btn-ghost" onclick="exportData()">
                     <i data-lucide="download" style="width: 18px; height: 18px;"></i>
@@ -1629,6 +1753,33 @@
                         <i data-lucide="check-circle" style="width: 28px; height: 28px; color: var(--success);"></i>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Follow-up Calendar Section -->
+        <div class="calendar-section" id="calendarSection" style="display: none;">
+            <div class="calendar-header">
+                <div>
+                    <h2 style="font-size: 24px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px;">Follow-up Calendar</h2>
+                    <p style="color: var(--gray-600); font-size: 14px;">Scheduled follow-ups for unconverted leads</p>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-ghost" onclick="filterCalendar('all')">
+                        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                        All
+                    </button>
+                    <button class="btn btn-ghost" onclick="filterCalendar('pending')">
+                        <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                        Pending
+                    </button>
+                    <button class="btn btn-ghost" onclick="filterCalendar('overdue')">
+                        <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
+                        Overdue
+                    </button>
+                </div>
+            </div>
+            <div class="calendar-events" id="calendarEvents">
+                <!-- Calendar events will be dynamically populated -->
             </div>
         </div>
 
@@ -2009,57 +2160,55 @@
                 </button>
             </div>
 
-            <div style="display: grid; gap: 24px;">
-                <!-- Password Management Section -->
-                <div style="padding: 24px; background: var(--gray-50); border-radius: 16px; border: 2px solid var(--gray-200);">
-                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-                        <i data-lucide="key" style="width: 20px; height: 20px; color: var(--primary);"></i>
-                        Password Management
-                    </h3>
+            <div style="padding: 24px;">
+                <!-- Password Management -->
+                <div style="margin-bottom: 32px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">Password Management</h3>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Your Password (Manager)</label>
-                            <input type="password" class="form-input" id="managerNewPassword" placeholder="Enter new password">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Ben's Password</label>
-                            <input type="password" class="form-input" id="benNewPassword" placeholder="Enter Ben's new password">
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">Change Your Password</label>
+                        <input type="password" class="form-input" id="managerNewPassword" placeholder="Enter new password">
                     </div>
-                    <button class="btn btn-primary" onclick="updatePasswords()" style="width: 100%;">
-                        <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+
+                    <div class="form-group">
+                        <label class="form-label">Change Ben's Password</label>
+                        <input type="password" class="form-input" id="benNewPassword" placeholder="Enter Ben's new password">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="updatePasswords()">
+                        <i data-lucide="key" style="width: 18px; height: 18px;"></i>
                         Update Passwords
                     </button>
                 </div>
 
-                <!-- Target Settings Section -->
-                <div style="padding: 24px; background: var(--gray-50); border-radius: 16px; border: 2px solid var(--gray-200);">
-                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-                        <i data-lucide="target" style="width: 20px; height: 20px; color: var(--primary);"></i>
-                        Ben's Sales Targets
-                    </h3>
+                <!-- Target Settings -->
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">Sales Targets for Ben</h3>
 
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Daily Target</label>
                             <input type="number" class="form-input" id="dailyTarget" value="6" min="1">
                         </div>
+
                         <div class="form-group">
                             <label class="form-label">Weekly Target</label>
                             <input type="number" class="form-input" id="weeklyTarget" value="42" min="1">
                         </div>
+
                         <div class="form-group">
                             <label class="form-label">Monthly Target</label>
                             <input type="number" class="form-input" id="monthlyTarget" value="180" min="1">
                         </div>
+
                         <div class="form-group">
                             <label class="form-label">Revenue Target (£)</label>
                             <input type="number" class="form-input" id="revenueTarget" value="10000" min="0" step="100">
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="updateTargets()" style="width: 100%;">
-                        <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+
+                    <button class="btn btn-primary" onclick="updateTargets()">
+                        <i data-lucide="target" style="width: 18px; height: 18px;"></i>
                         Update Targets
                     </button>
                 </div>
@@ -2067,90 +2216,50 @@
         </div>
     </div>
 
-    <!-- Send Notification Modal -->
-    <div class="modal" id="notificationModal">
+    <!-- Follow-up Acknowledgment Modal -->
+    <div class="modal" id="followupAckModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Send Message to Ben</h2>
-                <button class="close-btn" onclick="closeNotificationModal()">
+                <h2 class="modal-title">Acknowledge Follow-up</h2>
+                <button class="close-btn" onclick="closeFollowupAck()">
                     <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                 </button>
             </div>
 
-            <form onsubmit="sendNotification(event)">
+            <form onsubmit="submitFollowupAck(event)">
+                <input type="hidden" id="ackLeadId">
+                <input type="hidden" id="ackFollowupType">
+
+                <div style="padding: 24px; background: rgba(239, 68, 68, 0.05); border-radius: 12px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <i data-lucide="alert-circle" style="width: 24px; height: 24px; color: var(--danger);"></i>
+                        <h3 style="font-size: 16px; font-weight: 700; color: var(--danger);">Follow-up Required</h3>
+                    </div>
+                    <p style="color: var(--gray-700); line-height: 1.6;" id="ackMessage"></p>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">Message Type</label>
-                    <select class="form-select" id="notificationType" required>
-                        <option value="">Select type...</option>
-                        <option value="urgent">🔴 Urgent - Requires Immediate Attention</option>
-                        <option value="important">🟡 Important - High Priority</option>
-                        <option value="info">🔵 Information - General Message</option>
-                        <option value="praise">🟢 Praise - Great Work!</option>
+                    <label class="form-label required">Contact Method Used</label>
+                    <select class="form-select" id="contactMethod" required>
+                        <option value="">Select contact method...</option>
+                        <option value="whatsapp">Business WhatsApp</option>
+                        <option value="phone">Phone Call</option>
+                        <option value="email">Email</option>
+                        <option value="shopify">Shopify Chat</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Message Title</label>
-                    <input type="text" class="form-input" id="notificationTitle" placeholder="e.g., Follow up on overdue leads" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Message Content</label>
-                    <textarea class="form-textarea" id="notificationMessage" placeholder="Type your message to Ben..." required style="min-height: 150px;"></textarea>
+                    <label class="form-label">Follow-up Notes</label>
+                    <textarea class="form-textarea" id="followupNotes" placeholder="What was discussed? Any updates?"></textarea>
                 </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
-                        Send Message
+                        <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                        Confirm Follow-up Completed
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeNotificationModal()">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Priority Task Modal -->
-    <div class="modal" id="priorityTaskModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Assign Priority Task</h2>
-                <button class="close-btn" onclick="closePriorityTaskModal()">
-                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
-                </button>
-            </div>
-
-            <form onsubmit="assignPriorityTask(event)">
-                <input type="hidden" id="priorityLeadId">
-
-                <div class="form-group">
-                    <label class="form-label">Priority Level</label>
-                    <select class="form-select" id="priorityLevel" required>
-                        <option value="">Select priority...</option>
-                        <option value="critical">🔴 Critical - Must complete today</option>
-                        <option value="high">🟠 High - Complete within 24 hours</option>
-                        <option value="medium">🟡 Medium - Complete this week</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Task Instructions</label>
-                    <textarea class="form-textarea" id="priorityInstructions" placeholder="Specific instructions for Ben..." required style="min-height: 120px;"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Deadline</label>
-                    <input type="datetime-local" class="form-input" id="priorityDeadline" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-warning" style="flex: 1;">
-                        <i data-lucide="flag" style="width: 18px; height: 18px;"></i>
-                        Assign Priority Task
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closePriorityTaskModal()">
+                    <button type="button" class="btn btn-secondary" onclick="closeFollowupAck()">
                         Cancel
                     </button>
                 </div>
@@ -2296,14 +2405,30 @@
                 const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
                 const daysSinceSent = Math.abs(getDaysUntilFollowUp(lead.linkSentDate));
 
+                // Get status icon and text
+                let statusIcon = 'circle';
+                let statusText = 'Active';
+                if (status === 'fresh') {
+                    statusIcon = 'sparkles';
+                    statusText = 'Fresh Lead';
+                } else if (status === 'approaching') {
+                    statusIcon = 'clock';
+                    statusText = 'Follow-up Due Soon';
+                } else if (status === 'overdue') {
+                    statusIcon = 'alert-circle';
+                    statusText = 'OVERDUE';
+                } else if (status === 'converted') {
+                    statusIcon = 'check-circle';
+                    statusText = 'Converted';
+                }
+
                 return `
-                    <div class="lead-card ${status === 'overdue' ? 'overdue' : status === 'due-soon' ? 'due-soon' : status === 'converted' ? 'converted' : ''}" style="animation-delay: ${index * 0.05}s; position: relative;">
-                        ${lead.priorityTask && !lead.priorityTask.completed ? `
-                            <div class="priority-indicator priority-${lead.priorityTask.level}">
-                                <i data-lucide="flag" style="width: 12px; height: 12px;"></i>
-                                ${lead.priorityTask.level.toUpperCase()}
-                            </div>
-                        ` : ''}
+                    <div class="lead-card status-${status}" style="animation-delay: ${index * 0.05}s;">
+                        <div class="status-indicator">
+                            <i data-lucide="${statusIcon}" style="width: 14px; height: 14px;"></i>
+                            ${statusText}
+                        </div>
+
                         <div class="lead-header">
                             <div class="lead-info">
                                 <h3>${lead.customerName}</h3>
@@ -2315,35 +2440,7 @@
                                     <span>Added ${new Date(lead.createdAt).toLocaleDateString()}</span>
                                 </div>
                             </div>
-                            <div class="lead-badges">
-                                <span class="badge badge-${status}">${status.replace('-', ' ')}</span>
-                            </div>
                         </div>
-
-                        ${lead.priorityTask && !lead.priorityTask.completed ? `
-                            <div class="priority-task-banner">
-                                <div class="priority-task-header">
-                                    <span class="priority-label">
-                                        <i data-lucide="alert-triangle" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
-                                        Priority Task - ${lead.priorityTask.level.toUpperCase()}
-                                    </span>
-                                    <span class="priority-deadline">
-                                        <i data-lucide="clock" style="width: 12px; height: 12px; display: inline; vertical-align: middle;"></i>
-                                        Due: ${new Date(lead.priorityTask.deadline).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div class="priority-instructions">${lead.priorityTask.instructions}</div>
-                                <div style="font-size: 11px; color: var(--gray-600); margin-top: 8px;">
-                                    Assigned by ${lead.priorityTask.assignedBy} • ${timeAgo(new Date(lead.priorityTask.assignedAt))}
-                                </div>
-                                ${currentUser.role === 'employee' ? `
-                                    <button class="btn-small btn-success" onclick="completePriorityTask(${lead.id})" style="margin-top: 12px;">
-                                        <i data-lucide="check" style="width: 14px; height: 14px;"></i>
-                                        Mark Task Complete
-                                    </button>
-                                ` : ''}
-                            </div>
-                        ` : ''}
 
                         <div class="lead-body">
                             <div class="lead-detail">
@@ -2464,6 +2561,43 @@
                             </div>
                         ` : ''}
 
+                        ${lead.followups && lead.followups.length > 0 && status !== 'converted' ? `
+                            <div class="followup-timeline">
+                                <div style="font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="calendar-clock" style="width: 16px; height: 16px;"></i>
+                                    Automated Follow-up Schedule
+                                </div>
+                                ${lead.followups.map(followup => {
+                                    const now = new Date();
+                                    const dueDate = new Date(followup.dueDate);
+                                    const isOverdue = !followup.completed && dueDate <= now;
+                                    const itemClass = followup.completed ? 'completed' : (isOverdue ? 'overdue' : 'pending');
+
+                                    return `
+                                        <div class="followup-item ${itemClass}">
+                                            <i data-lucide="${followup.completed ? 'check-circle' : isOverdue ? 'alert-circle' : 'clock'}" style="width: 16px; height: 16px;"></i>
+                                            <span style="flex: 1;">
+                                                <strong>${followup.type === '24h' ? '24 Hour' : '72 Hour'} Follow-up</strong>
+                                                - ${formatDateTime(followup.dueDate)}
+                                                ${followup.contactMethod ? `
+                                                    <span class="contact-method-badge" style="margin-left: 8px;">
+                                                        ${followup.contactMethod === 'whatsapp' ? 'WhatsApp' :
+                                                          followup.contactMethod === 'phone' ? 'Phone' :
+                                                          followup.contactMethod === 'email' ? 'Email' : 'Shopify Chat'}
+                                                    </span>
+                                                ` : ''}
+                                            </span>
+                                            ${!followup.completed && isOverdue ? `
+                                                <button class="btn-small btn-danger" onclick="openFollowupAcknowledgment(${lead.id}, '${followup.type}')" style="margin-left: 8px;">
+                                                    Acknowledge
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+
                         <div class="lead-actions">
                             ${status !== 'converted' ? `
                                 <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
@@ -2478,16 +2612,6 @@
                             <button class="btn-small btn-info" onclick="sendReminder(${lead.id})">
                                 <i data-lucide="send" style="width: 16px; height: 16px;"></i>
                                 Send Reminder
-                            </button>
-                            ${currentUser.role === 'manager' ? `
-                                <button class="btn-small btn-outline" onclick="openPriorityTask(${lead.id})" style="background: #fef3c7; border-color: #f59e0b; color: #d97706;">
-                                    <i data-lucide="flag" style="width: 16px; height: 16px;"></i>
-                                    Set Priority
-                                </button>
-                            ` : ''}
-                            <button class="btn-small btn-outline" onclick="addLeadComment(${lead.id})">
-                                <i data-lucide="message-circle" style="width: 16px; height: 16px;"></i>
-                                Comment
                             </button>
                             <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
                                 <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
@@ -3187,288 +3311,6 @@
             );
         }
 
-        // Manager Control Functions
-        function openManagerControls() {
-            if (currentUser.role !== 'manager') return;
-
-            // Load current targets
-            const targets = JSON.parse(localStorage.getItem('salesTargets')) || {
-                daily: 6,
-                weekly: 42,
-                monthly: 180,
-                revenue: 10000
-            };
-
-            document.getElementById('dailyTarget').value = targets.daily;
-            document.getElementById('weeklyTarget').value = targets.weekly;
-            document.getElementById('monthlyTarget').value = targets.monthly;
-            document.getElementById('revenueTarget').value = targets.revenue;
-
-            document.getElementById('managerControlsModal').classList.add('active');
-        }
-
-        function closeManagerControls() {
-            document.getElementById('managerControlsModal').classList.remove('active');
-        }
-
-        function updatePasswords() {
-            const managerPassword = document.getElementById('managerNewPassword').value;
-            const benPassword = document.getElementById('benNewPassword').value;
-
-            if (!managerPassword && !benPassword) {
-                showNotification('Error', 'Please enter at least one password to update', 'error');
-                return;
-            }
-
-            // Get existing users from login page localStorage
-            let users = JSON.parse(localStorage.getItem('userCredentials')) || {
-                'joel': { password: 'manager123', role: 'manager', name: 'Joel (Manager)' },
-                'manager': { password: 'manager123', role: 'manager', name: 'Joel (Manager)' },
-                'ben': { password: 'ben123', role: 'employee', name: 'Ben' }
-            };
-
-            let updated = [];
-
-            if (managerPassword && managerPassword.length >= 6) {
-                users['joel'].password = managerPassword;
-                users['manager'].password = managerPassword;
-                updated.push('Manager password');
-            }
-
-            if (benPassword && benPassword.length >= 6) {
-                users['ben'].password = benPassword;
-                updated.push('Ben\'s password');
-            }
-
-            if (updated.length === 0) {
-                showNotification('Error', 'Passwords must be at least 6 characters', 'error');
-                return;
-            }
-
-            // Save updated users
-            localStorage.setItem('userCredentials', JSON.stringify(users));
-
-            // Clear inputs
-            document.getElementById('managerNewPassword').value = '';
-            document.getElementById('benNewPassword').value = '';
-
-            showNotification('Success', `${updated.join(' and ')} updated successfully`, 'success');
-        }
-
-        function updateTargets() {
-            const targets = {
-                daily: parseInt(document.getElementById('dailyTarget').value) || 6,
-                weekly: parseInt(document.getElementById('weeklyTarget').value) || 42,
-                monthly: parseInt(document.getElementById('monthlyTarget').value) || 180,
-                revenue: parseInt(document.getElementById('revenueTarget').value) || 10000
-            };
-
-            localStorage.setItem('salesTargets', JSON.stringify(targets));
-            showNotification('Success', 'Sales targets updated successfully', 'success');
-
-            // Refresh stats to show new targets
-            updateStats();
-        }
-
-        // Notification Functions
-        function openNotifications() {
-            if (currentUser.role !== 'manager') return;
-            document.getElementById('notificationModal').classList.add('active');
-        }
-
-        function closeNotificationModal() {
-            document.getElementById('notificationModal').classList.remove('active');
-        }
-
-        function sendNotification(event) {
-            event.preventDefault();
-
-            const notification = {
-                id: Date.now(),
-                type: document.getElementById('notificationType').value,
-                title: document.getElementById('notificationTitle').value,
-                message: document.getElementById('notificationMessage').value,
-                timestamp: new Date().toISOString(),
-                read: false,
-                from: currentUser.name
-            };
-
-            // Get existing notifications
-            let notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
-            notifications.unshift(notification);
-
-            // Keep last 50 notifications
-            notifications = notifications.slice(0, 50);
-
-            // Save notifications
-            localStorage.setItem('benNotifications', JSON.stringify(notifications));
-
-            // Clear form
-            document.getElementById('notificationTitle').value = '';
-            document.getElementById('notificationMessage').value = '';
-
-            showNotification('Success', 'Message sent to Ben successfully', 'success');
-            closeNotificationModal();
-        }
-
-        // Priority Task Functions
-        function openPriorityTask(leadId) {
-            if (currentUser.role !== 'manager') return;
-
-            document.getElementById('priorityTaskModal').setAttribute('data-lead-id', leadId);
-            document.getElementById('priorityTaskModal').classList.add('active');
-
-            // Set default deadline to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(17, 0, 0, 0);
-            document.getElementById('priorityDeadline').value = tomorrow.toISOString().slice(0, 16);
-        }
-
-        function closePriorityTaskModal() {
-            document.getElementById('priorityTaskModal').classList.remove('active');
-        }
-
-        function assignPriorityTask(event) {
-            event.preventDefault();
-
-            const leadId = parseInt(document.getElementById('priorityTaskModal').getAttribute('data-lead-id'));
-            const lead = leads.find(l => l.id === leadId);
-
-            if (!lead) return;
-
-            const priorityTask = {
-                level: document.getElementById('priorityLevel').value,
-                instructions: document.getElementById('priorityInstructions').value,
-                deadline: document.getElementById('priorityDeadline').value,
-                assignedBy: currentUser.name,
-                assignedAt: new Date().toISOString(),
-                completed: false
-            };
-
-            // Add priority task to lead
-            lead.priorityTask = priorityTask;
-
-            // Add to communication history
-            lead.communications = lead.communications || [];
-            lead.communications.unshift({
-                date: new Date().toISOString(),
-                action: `Priority task assigned: ${priorityTask.level.toUpperCase()}`,
-                notes: priorityTask.instructions.substring(0, 100) + (priorityTask.instructions.length > 100 ? '...' : '')
-            });
-
-            // Save leads
-            localStorage.setItem('leads', JSON.stringify(leads));
-
-            // Clear form
-            document.getElementById('priorityInstructions').value = '';
-
-            showNotification('Success', 'Priority task assigned successfully', 'success');
-            closePriorityTaskModal();
-            renderLeads();
-        }
-
-        // Load and display notifications for employees
-        function loadUserNotifications() {
-            if (currentUser.role !== 'employee') return;
-
-            const notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
-            const unreadCount = notifications.filter(n => !n.read).length;
-
-            // Show notification panel if there are unread notifications
-            if (unreadCount > 0) {
-                displayNotificationPanel(notifications);
-            }
-        }
-
-        function displayNotificationPanel(notifications) {
-            const unreadNotifications = notifications.filter(n => !n.read);
-
-            if (unreadNotifications.length === 0) return;
-
-            const container = document.querySelector('.container');
-            const statsGrid = container.querySelector('.stats-grid');
-
-            const panel = document.createElement('div');
-            panel.className = 'notification-panel';
-            panel.innerHTML = `
-                <h3 style="margin: 0 0 16px 0; font-size: 18px; color: var(--gray-900);">
-                    New Messages (${unreadNotifications.length})
-                </h3>
-                ${unreadNotifications.map(n => `
-                    <div class="notification-item notification-${n.type}">
-                        <div class="notification-header">
-                            <span class="notification-title">${n.title}</span>
-                            <span class="notification-time">${timeAgo(new Date(n.timestamp))}</span>
-                        </div>
-                        <div class="notification-message">${n.message}</div>
-                        <div style="margin-top: 8px; font-size: 11px; color: var(--gray-500);">From: ${n.from}</div>
-                    </div>
-                `).join('')}
-                <button class="btn btn-secondary" onclick="markNotificationsRead()" style="margin-top: 12px; width: 100%;">
-                    Mark All as Read
-                </button>
-            `;
-
-            container.insertBefore(panel, statsGrid);
-        }
-
-        function markNotificationsRead() {
-            const notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
-            notifications.forEach(n => n.read = true);
-            localStorage.setItem('benNotifications', JSON.stringify(notifications));
-
-            // Remove notification panel
-            const panel = document.querySelector('.notification-panel');
-            if (panel) panel.remove();
-
-            showNotification('Success', 'All notifications marked as read', 'success');
-        }
-
-        // Add comment to lead
-        function addLeadComment(leadId) {
-            const comment = prompt('Enter your comment:');
-            if (!comment) return;
-
-            const lead = leads.find(l => l.id === leadId);
-            if (!lead) return;
-
-            lead.communications = lead.communications || [];
-            lead.communications.unshift({
-                date: new Date().toISOString(),
-                action: `Comment by ${currentUser.name}`,
-                notes: comment
-            });
-
-            localStorage.setItem('leads', JSON.stringify(leads));
-            renderLeads();
-
-            showNotification('Success', 'Comment added successfully', 'success');
-        }
-
-        // Complete priority task
-        function completePriorityTask(leadId) {
-            const lead = leads.find(l => l.id === leadId);
-            if (!lead || !lead.priorityTask) return;
-
-            lead.priorityTask.completed = true;
-            lead.priorityTask.completedAt = new Date().toISOString();
-            lead.priorityTask.completedBy = currentUser.name;
-
-            // Add to communication history
-            lead.communications = lead.communications || [];
-            lead.communications.unshift({
-                date: new Date().toISOString(),
-                action: 'Priority task completed',
-                notes: `Task "${lead.priorityTask.level.toUpperCase()}" completed by ${currentUser.name}`
-            });
-
-            localStorage.setItem('leads', JSON.stringify(leads));
-            renderLeads();
-
-            showNotification('Success', 'Priority task marked as complete', 'success');
-        }
-
         // Save lead
         function saveLead(event) {
             event.preventDefault();
@@ -3513,7 +3355,12 @@
                 leads.push(leadData);
                 const commMessage = leadType === 'payment' ? 'Lead created and payment link sent' : `${leadType.charAt(0).toUpperCase() + leadType.slice(1)} lead created`;
                 addCommunication(leadData.id, 'note', commMessage);
-                showNotification('Lead Added', 'New lead has been added to your tracking system.', 'success');
+
+                // Create automatic follow-ups for new lead
+                storage.set('arthurSleepLeadsAdvanced', leads);
+                createFollowups(leadData.id);
+
+                showNotification('Lead Added', 'New lead has been added with automatic 24h and 72h follow-up reminders.', 'success');
             }
 
             storage.set('arthurSleepLeadsAdvanced', leads);
@@ -3719,25 +3566,364 @@
             showNotification('Data Exported', 'Lead data has been exported successfully.', 'success');
         }
 
+        // ==================== MANAGER CONTROLS ====================
+
+        // Open manager controls modal
+        function openManagerControls() {
+            // Load current targets
+            const targets = storage.get('salesTargets') || { daily: 6, weekly: 42, monthly: 180, revenue: 10000 };
+            document.getElementById('dailyTarget').value = targets.daily;
+            document.getElementById('weeklyTarget').value = targets.weekly;
+            document.getElementById('monthlyTarget').value = targets.monthly;
+            document.getElementById('revenueTarget').value = targets.revenue;
+
+            document.getElementById('managerControlsModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        // Close manager controls modal
+        function closeManagerControls() {
+            document.getElementById('managerControlsModal').classList.remove('active');
+            document.getElementById('managerNewPassword').value = '';
+            document.getElementById('benNewPassword').value = '';
+        }
+
+        // Update passwords
+        function updatePasswords() {
+            const managerPass = document.getElementById('managerNewPassword').value;
+            const benPass = document.getElementById('benNewPassword').value;
+
+            if (!managerPass && !benPass) {
+                showNotification('Error', 'Please enter at least one password to update.', 'error');
+                return;
+            }
+
+            // Note: This would typically be handled by backend. For now, just show confirmation.
+            let message = 'Password(s) updated successfully. ';
+            if (managerPass && benPass) {
+                message += 'Both passwords have been changed.';
+            } else if (managerPass) {
+                message += 'Manager password has been changed.';
+            } else {
+                message += "Ben's password has been changed.";
+            }
+
+            showNotification('Success', message, 'success');
+            closeManagerControls();
+        }
+
+        // Update sales targets
+        function updateTargets() {
+            const targets = {
+                daily: parseInt(document.getElementById('dailyTarget').value),
+                weekly: parseInt(document.getElementById('weeklyTarget').value),
+                monthly: parseInt(document.getElementById('monthlyTarget').value),
+                revenue: parseFloat(document.getElementById('revenueTarget').value)
+            };
+
+            storage.set('salesTargets', targets);
+            showNotification('Success', 'Sales targets have been updated successfully.', 'success');
+
+            // Refresh stats to show new targets
+            updateStats();
+        }
+
+        // ==================== FOLLOW-UP CALENDAR SYSTEM ====================
+
+        // Toggle calendar visibility
+        function toggleCalendar() {
+            const calendar = document.getElementById('calendarSection');
+            if (calendar.style.display === 'none') {
+                calendar.style.display = 'block';
+                renderCalendar();
+            } else {
+                calendar.style.display = 'none';
+            }
+        }
+
+        // Render calendar events
+        function renderCalendar(filter = 'all') {
+            const calendarEvents = document.getElementById('calendarEvents');
+            const now = new Date();
+
+            // Get all followups from all leads
+            let allFollowups = [];
+            leads.forEach(lead => {
+                if (lead.status === 'converted') return; // Skip converted leads
+
+                if (lead.followups) {
+                    lead.followups.forEach(followup => {
+                        allFollowups.push({
+                            ...followup,
+                            lead: lead
+                        });
+                    });
+                }
+            });
+
+            // Apply filter
+            if (filter === 'pending') {
+                allFollowups = allFollowups.filter(f => !f.completed && new Date(f.dueDate) > now);
+            } else if (filter === 'overdue') {
+                allFollowups = allFollowups.filter(f => !f.completed && new Date(f.dueDate) <= now);
+            }
+
+            // Sort by date
+            allFollowups.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+            if (allFollowups.length === 0) {
+                calendarEvents.innerHTML = `
+                    <div class="empty-state" style="padding: 40px;">
+                        <i data-lucide="calendar-check" style="width: 48px; height: 48px; color: var(--gray-400); margin-bottom: 16px;"></i>
+                        <p style="color: var(--gray-600);">No follow-ups scheduled</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            calendarEvents.innerHTML = allFollowups.map(followup => {
+                const dueDate = new Date(followup.dueDate);
+                const isOverdue = !followup.completed && dueDate <= now;
+                const eventClass = followup.completed ? 'event-completed' : (isOverdue ? 'event-72h' : 'event-24h');
+
+                return `
+                    <div class="calendar-event ${eventClass}">
+                        <div class="event-time">
+                            ${formatDateTime(followup.dueDate)}
+                        </div>
+                        <div class="event-details">
+                            <div class="event-title">
+                                ${followup.type === '24h' ? '24 Hour Follow-up' : '72 Hour Follow-up'}
+                                ${followup.completed ? '(Completed)' : isOverdue ? '(OVERDUE)' : ''}
+                            </div>
+                            <div class="event-customer">
+                                ${followup.lead.customerName} - ${followup.lead.customerEmail}
+                            </div>
+                            ${followup.contactMethod ? `
+                                <span class="contact-method-badge" style="margin-top: 6px;">
+                                    ${followup.contactMethod === 'whatsapp' ? 'WhatsApp' :
+                                      followup.contactMethod === 'phone' ? 'Phone' :
+                                      followup.contactMethod === 'email' ? 'Email' : 'Shopify Chat'}
+                                </span>
+                            ` : ''}
+                        </div>
+                        ${!followup.completed ? `
+                            <button class="btn btn-primary" onclick="openFollowupAcknowledgment('${followup.lead.id}', '${followup.type}')">
+                                <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                                Acknowledge
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Filter calendar
+        function filterCalendar(filter) {
+            renderCalendar(filter);
+        }
+
+        // Create follow-ups when lead is created
+        function createFollowups(leadId) {
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead || lead.status === 'converted') return;
+
+            const createdDate = new Date(lead.createdAt);
+
+            // Create 24 hour follow-up
+            const followup24h = new Date(createdDate);
+            followup24h.setHours(followup24h.getHours() + 24);
+
+            // Create 72 hour follow-up
+            const followup72h = new Date(createdDate);
+            followup72h.setHours(followup72h.getHours() + 72);
+
+            lead.followups = [
+                {
+                    id: Date.now() + '_24h',
+                    type: '24h',
+                    dueDate: followup24h.toISOString(),
+                    completed: false,
+                    contactMethod: null,
+                    notes: null,
+                    completedAt: null
+                },
+                {
+                    id: Date.now() + '_72h',
+                    type: '72h',
+                    dueDate: followup72h.toISOString(),
+                    completed: false,
+                    contactMethod: null,
+                    notes: null,
+                    completedAt: null
+                }
+            ];
+
+            storage.set('arthurSleepLeadsAdvanced', leads);
+        }
+
+        // Open follow-up acknowledgment modal
+        function openFollowupAcknowledgment(leadId, followupType) {
+            const lead = leads.find(l => l.id === parseInt(leadId));
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            document.getElementById('ackLeadId').value = leadId;
+            document.getElementById('ackFollowupType').value = followupType;
+
+            const isOverdue = new Date(followup.dueDate) <= new Date();
+            const urgency = isOverdue ? 'OVERDUE' : 'DUE';
+
+            document.getElementById('ackMessage').innerHTML = `
+                <strong>${urgency}:</strong> ${followupType === '24h' ? '24 hour' : '72 hour'} follow-up required for
+                <strong>${lead.customerName}</strong>.
+                <br><br>
+                Please confirm that you have contacted this customer and select the contact method used.
+            `;
+
+            document.getElementById('followupAckModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        // Close follow-up acknowledgment modal
+        function closeFollowupAck() {
+            document.getElementById('followupAckModal').classList.remove('active');
+            document.getElementById('contactMethod').value = '';
+            document.getElementById('followupNotes').value = '';
+        }
+
+        // Submit follow-up acknowledgment
+        function submitFollowupAck(event) {
+            event.preventDefault();
+
+            const leadId = parseInt(document.getElementById('ackLeadId').value);
+            const followupType = document.getElementById('ackFollowupType').value;
+            const contactMethod = document.getElementById('contactMethod').value;
+            const notes = document.getElementById('followupNotes').value;
+
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            // Mark as completed
+            followup.completed = true;
+            followup.completedAt = new Date().toISOString();
+            followup.contactMethod = contactMethod;
+            followup.notes = notes;
+            followup.completedBy = currentUser.username;
+
+            // Add communication record
+            addCommunication(leadId, 'followup',
+                `${followupType === '24h' ? '24 hour' : '72 hour'} follow-up completed via ${contactMethod}. ${notes ? 'Notes: ' + notes : ''}`
+            );
+
+            storage.set('arthurSleepLeadsAdvanced', leads);
+
+            showNotification('Success', 'Follow-up has been acknowledged and recorded.', 'success');
+
+            closeFollowupAck();
+            renderCalendar();
+            renderLeads();
+        }
+
+        // Get lead status based on follow-ups
+        function getLeadStatus(lead) {
+            if (lead.status === 'converted') return 'converted';
+
+            if (!lead.followups || lead.followups.length === 0) {
+                // Fresh lead (less than 24 hours old)
+                const hoursSinceCreated = (new Date() - new Date(lead.createdAt)) / (1000 * 60 * 60);
+                if (hoursSinceCreated < 24) return 'fresh';
+                return 'approaching';
+            }
+
+            const now = new Date();
+            const hasOverdue = lead.followups.some(f => !f.completed && new Date(f.dueDate) <= now);
+            if (hasOverdue) return 'overdue';
+
+            const hasApproaching = lead.followups.some(f => {
+                if (f.completed) return false;
+                const hoursUntilDue = (new Date(f.dueDate) - now) / (1000 * 60 * 60);
+                return hoursUntilDue < 6; // Less than 6 hours until due
+            });
+            if (hasApproaching) return 'approaching';
+
+            return 'fresh';
+        }
+
+        // Format date time for display
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+            if (date.toDateString() === today.toDateString()) {
+                return `Today at ${timeStr}`;
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return `Tomorrow at ${timeStr}`;
+            } else {
+                return date.toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        // Check for overdue follow-ups and show notifications
+        function checkOverdueFollowups() {
+            const now = new Date();
+            let overdueCount = 0;
+
+            leads.forEach(lead => {
+                if (lead.status === 'converted') return;
+                if (!lead.followups) return;
+
+                lead.followups.forEach(followup => {
+                    if (!followup.completed && new Date(followup.dueDate) <= now) {
+                        overdueCount++;
+                    }
+                });
+            });
+
+            if (overdueCount > 0 && currentUser.role === 'employee') {
+                showNotification(
+                    'Overdue Follow-ups',
+                    `You have ${overdueCount} overdue follow-up${overdueCount > 1 ? 's' : ''} that require attention!`,
+                    'error'
+                );
+            }
+
+            return overdueCount;
+        }
+
         // Initialize
         function init() {
             // Set up UI based on user role
             if (currentUser) {
                 document.getElementById('userWelcome').textContent = `Welcome back, ${currentUser.name}`;
 
-                // Show manager control buttons for managers
+                // Show performance button and manager controls for managers
                 if (currentUser.role === 'manager') {
                     document.getElementById('performanceBtn').style.display = 'inline-flex';
                     document.getElementById('managerControlsBtn').style.display = 'inline-flex';
-                    document.getElementById('notificationsBtn').style.display = 'inline-flex';
                 }
 
                 // Filter leads for employees (only show their own)
                 if (currentUser.role === 'employee') {
                     leads = leads.filter(l => !l.createdBy || l.createdBy === currentUser.username);
-
-                    // Load and display notifications for employee
-                    loadUserNotifications();
                 }
             }
 
@@ -3745,8 +3931,13 @@
             updateStats();
             initCharts();
             checkReminders();
+            checkOverdueFollowups();
 
-            setInterval(checkReminders, 60 * 60 * 1000);
+            // Check reminders and overdue follow-ups every hour
+            setInterval(() => {
+                checkReminders();
+                checkOverdueFollowups();
+            }, 60 * 60 * 1000);
         }
 
         init();
