@@ -1788,6 +1788,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                <!-- Manager Only Buttons -->
                 <button class="btn btn-ghost" id="performanceBtn" onclick="showPerformance()" style="display: none;">
                     <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
                     Performance
@@ -1800,23 +1801,29 @@
                     <i data-lucide="trello" style="width: 18px; height: 18px;"></i>
                     Kanban View
                 </button>
-                <button class="btn btn-ghost" id="calendarBtn" onclick="toggleCalendar()">
-                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
-                    Follow-up Calendar
-                </button>
-                <button class="btn btn-ghost" onclick="exportData()">
+                <button class="btn btn-ghost" id="exportBtn" onclick="exportData()">
                     <i data-lucide="download" style="width: 18px; height: 18px;"></i>
                     Export Data
                 </button>
-                <button class="btn btn-secondary" onclick="checkReminders()">
+
+                <!-- Both Roles -->
+                <button class="btn btn-ghost" id="calendarBtn" onclick="toggleCalendar()">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                    Calendar
+                </button>
+
+                <!-- Employee Only Buttons -->
+                <button class="btn btn-secondary" id="checkFollowupsBtn" onclick="checkReminders()">
                     <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
                     Check Follow-ups
                 </button>
-                <button class="btn btn-primary" onclick="openAddLeadModal()">
+                <button class="btn btn-primary" id="addLeadBtn" onclick="openAddLeadModal()">
                     <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
                     Add New Lead
                 </button>
-                <button class="btn btn-secondary" onclick="logout()">
+
+                <!-- Both Roles -->
+                <button class="btn btn-secondary" id="logoutBtn" onclick="logout()">
                     <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
                     Logout
                 </button>
@@ -1829,7 +1836,7 @@
                 <div class="stat-header">
                     <div>
                         <div class="stat-value" id="totalLeadsCount">0</div>
-                        <div class="stat-label">Total Active Leads</div>
+                        <div class="stat-label" id="totalLeadsLabel">Total Active Leads</div>
                         <div class="stat-change positive">
                             <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
                             <span id="leadsTrend">+0%</span>
@@ -2015,6 +2022,19 @@
                     </select>
                 </div>
                 <canvas id="leadGenerationChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+
+        <!-- Employee Performance (Manager Only) -->
+        <div class="analytics-section" id="employeePerformanceSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: none;">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Employee Performance Overview</h3>
+                    <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Track team productivity</span>
+                </div>
+                <div id="employeePerformanceGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px;">
+                    <!-- Employee performance cards will be inserted here -->
+                </div>
             </div>
         </div>
 
@@ -2592,18 +2612,32 @@
             const container = document.getElementById('leadsContainer');
             const tableBody = document.getElementById('tableBody');
 
+            // Filter leads based on user role
+            if (currentUser.role === 'employee') {
+                leadsToRender = leadsToRender.filter(l => l.createdBy === currentUser.username);
+            }
+            // Managers see all leads (no filter needed)
+
             if (leadsToRender.length === 0) {
+                const emptyMessage = currentUser.role === 'manager'
+                    ? 'No leads have been created by employees yet.'
+                    : 'Start tracking your leads by adding your first payment link follow-up.';
+
+                const addButton = currentUser.role === 'employee'
+                    ? `<button class="btn btn-primary" onclick="openAddLeadModal()">
+                            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                            Add Your First Lead
+                        </button>`
+                    : '';
+
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">
                             <i data-lucide="inbox" style="width: 60px; height: 60px;"></i>
                         </div>
                         <h3 class="empty-state-title">No leads found</h3>
-                        <p class="empty-state-description">Start tracking your leads by adding your first payment link follow-up. Click the button below to get started.</p>
-                        <button class="btn btn-primary" onclick="openAddLeadModal()">
-                            <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
-                            Add Your First Lead
-                        </button>
+                        <p class="empty-state-description">${emptyMessage}</p>
+                        ${addButton}
                     </div>
                 `;
                 tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--gray-500);">No leads found</td></tr>';
@@ -2836,24 +2870,32 @@
                         </div>
 
                         <div class="lead-actions">
-                            ${status !== 'converted' ? `
-                                <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
-                                    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-                                    Mark as Paid
+                            ${currentUser.role === 'employee' ? `
+                                ${status !== 'converted' ? `
+                                    <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
+                                        <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+                                        Mark as Paid
+                                    </button>
+                                    <button class="btn-small btn-warning" onclick="updateFollowUpDate(${lead.id})">
+                                        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                                        Reschedule
+                                    </button>
+                                ` : ''}
+                                <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
+                                    <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                                    Edit
                                 </button>
-                                <button class="btn-small btn-warning" onclick="updateFollowUpDate(${lead.id})">
-                                    <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
-                                    Reschedule
+                                <button class="btn-small btn-danger" onclick="deleteLead(${lead.id})">
+                                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                    Delete
                                 </button>
                             ` : ''}
-                            <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
-                                <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
-                                Edit
-                            </button>
-                            <button class="btn-small btn-danger" onclick="deleteLead(${lead.id})">
-                                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                                Delete
-                            </button>
+                            ${currentUser.role === 'manager' ? `
+                                <button class="btn-small btn-outline" onclick="viewLead(${lead.id})">
+                                    <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                                    View Details
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -2882,14 +2924,21 @@
                         </td>
                         <td>
                             <div style="display: flex; gap: 8px;">
-                                ${status !== 'converted' ? `
-                                    <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
-                                        <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                ${currentUser.role === 'employee' ? `
+                                    ${status !== 'converted' ? `
+                                        <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
+                                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                    ` : ''}
+                                    <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
+                                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
                                     </button>
                                 ` : ''}
-                                <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
-                                    <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
-                                </button>
+                                ${currentUser.role === 'manager' ? `
+                                    <button class="btn-small btn-outline" onclick="viewLead(${lead.id})">
+                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                ` : ''}
                             </div>
                         </td>
                     </tr>
@@ -2952,9 +3001,16 @@
 
         // Update statistics
         function updateStats() {
-            const totalActive = leads.filter(l => l.status !== 'converted').length;
-            const pending = leads.filter(l => l.status !== 'converted' && l.paymentLink).length;
-            const overdue = leads.filter(l => getLeadStatus(l) === 'overdue').length;
+            // Filter leads based on user role
+            let filteredLeads = leads;
+            if (currentUser.role === 'employee') {
+                filteredLeads = leads.filter(l => l.createdBy === currentUser.username);
+            }
+            // Managers see all leads (no filter needed)
+
+            const totalActive = filteredLeads.filter(l => l.status !== 'converted').length;
+            const pending = filteredLeads.filter(l => l.status !== 'converted' && l.paymentLink).length;
+            const overdue = filteredLeads.filter(l => getLeadStatus(l) === 'overdue').length;
 
             const now = new Date();
             const today = new Date(now);
@@ -2966,17 +3022,17 @@
             firstDayOfWeek.setHours(0, 0, 0, 0);
 
             // Count conversions
-            const convertedMonth = leads.filter(l =>
+            const convertedMonth = filteredLeads.filter(l =>
                 l.status === 'converted' &&
                 new Date(l.convertedDate) >= firstDayOfMonth
             ).length;
 
-            const convertedWeek = leads.filter(l =>
+            const convertedWeek = filteredLeads.filter(l =>
                 l.status === 'converted' &&
                 new Date(l.convertedDate) >= firstDayOfWeek
             ).length;
 
-            const convertedToday = leads.filter(l => {
+            const convertedToday = filteredLeads.filter(l => {
                 if (l.status !== 'converted') return false;
                 const convertDate = new Date(l.convertedDate);
                 convertDate.setHours(0, 0, 0, 0);
@@ -2986,26 +3042,26 @@
             // Calculate conversion rate (last 7 days)
             const sevenDaysAgo = new Date(now);
             sevenDaysAgo.setDate(now.getDate() - 7);
-            const recentLeads = leads.filter(l => new Date(l.createdAt) >= sevenDaysAgo).length;
-            const recentConverted = leads.filter(l =>
+            const recentLeads = filteredLeads.filter(l => new Date(l.createdAt) >= sevenDaysAgo).length;
+            const recentConverted = filteredLeads.filter(l =>
                 l.status === 'converted' &&
                 new Date(l.convertedDate) >= sevenDaysAgo
             ).length;
             const conversionRate7Days = recentLeads > 0 ? Math.round((recentConverted / recentLeads) * 100) : 0;
 
             // Calculate pending amount (only for payment leads)
-            const pendingAmount = leads
+            const pendingAmount = filteredLeads
                 .filter(l => l.status !== 'converted' && l.paymentAmount)
                 .reduce((sum, l) => sum + parseFloat(l.paymentAmount || 0), 0);
 
             // Calculate average daily revenue this month
             const daysInMonth = Math.ceil((now - firstDayOfMonth) / (1000 * 60 * 60 * 24)) || 1;
-            const monthRevenue = leads
+            const monthRevenue = filteredLeads
                 .filter(l => l.status === 'converted' && new Date(l.convertedDate) >= firstDayOfMonth && l.paymentAmount)
                 .reduce((sum, l) => sum + parseFloat(l.paymentAmount || 0), 0);
             const avgDailyRevenue = monthRevenue / daysInMonth;
 
-            const conversionRate = leads.length > 0 ? Math.round((convertedMonth / leads.length) * 100) : 0;
+            const conversionRate = filteredLeads.length > 0 ? Math.round((convertedMonth / filteredLeads.length) * 100) : 0;
 
             // Update main stats
             document.getElementById('totalLeadsCount').textContent = totalActive;
@@ -3172,6 +3228,13 @@
 
         // Initialize charts
         function initCharts() {
+            // Filter leads based on user role
+            let filteredLeads = leads;
+            if (currentUser.role === 'employee') {
+                filteredLeads = leads.filter(l => l.createdBy === currentUser.username);
+            }
+            // Managers see all leads (no filter needed)
+
             // Conversion trend chart
             const conversionCtx = document.getElementById('conversionChart');
             if (conversionCtx) {
@@ -3186,7 +3249,7 @@
                     date.setDate(date.getDate() - i);
                     labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
 
-                    const converted = leads.filter(l =>
+                    const converted = filteredLeads.filter(l =>
                         l.status === 'converted' &&
                         new Date(l.convertedDate).toDateString() === date.toDateString()
                     ).length;
@@ -3239,9 +3302,9 @@
             const leadTypeCtx = document.getElementById('leadTypeChart');
             if (leadTypeCtx) {
                 const typeCounts = {
-                    payment: leads.filter(l => (l.leadType || 'payment') === 'payment').length,
-                    inquiry: leads.filter(l => l.leadType === 'inquiry').length,
-                    consultation: leads.filter(l => l.leadType === 'consultation').length
+                    payment: filteredLeads.filter(l => (l.leadType || 'payment') === 'payment').length,
+                    inquiry: filteredLeads.filter(l => l.leadType === 'inquiry').length,
+                    consultation: filteredLeads.filter(l => l.leadType === 'consultation').length
                 };
 
                 new Chart(leadTypeCtx, {
@@ -3273,10 +3336,10 @@
             const statusCtx = document.getElementById('statusChart');
             if (statusCtx) {
                 const statusCounts = {
-                    fresh: leads.filter(l => getLeadStatus(l) === 'fresh').length,
-                    approaching: leads.filter(l => getLeadStatus(l) === 'approaching').length,
-                    overdue: leads.filter(l => getLeadStatus(l) === 'overdue').length,
-                    converted: leads.filter(l => l.status === 'converted').length
+                    fresh: filteredLeads.filter(l => getLeadStatus(l) === 'fresh').length,
+                    approaching: filteredLeads.filter(l => getLeadStatus(l) === 'approaching').length,
+                    overdue: filteredLeads.filter(l => getLeadStatus(l) === 'overdue').length,
+                    converted: filteredLeads.filter(l => l.status === 'converted').length
                 };
 
                 statusChart = new Chart(statusCtx, {
@@ -3390,6 +3453,93 @@
                 leadGenerationChart.destroy();
             }
             initLeadGenerationChart();
+        }
+
+        // Render Employee Performance (Manager Only)
+        function renderEmployeePerformance() {
+            const grid = document.getElementById('employeePerformanceGrid');
+            if (!grid || currentUser.role !== 'manager') return;
+
+            // Group leads by employee
+            const employeeStats = {};
+
+            leads.forEach(lead => {
+                const employee = lead.createdBy || 'Unassigned';
+                if (!employeeStats[employee]) {
+                    employeeStats[employee] = {
+                        username: employee,
+                        totalLeads: 0,
+                        convertedLeads: 0,
+                        overdueLeads: 0,
+                        pendingAmount: 0,
+                        convertedAmount: 0,
+                        missedDeadlines: 0
+                    };
+                }
+
+                employeeStats[employee].totalLeads++;
+
+                if (lead.status === 'converted') {
+                    employeeStats[employee].convertedLeads++;
+                    if (lead.paymentAmount) {
+                        employeeStats[employee].convertedAmount += parseFloat(lead.paymentAmount);
+                    }
+                } else {
+                    if (lead.paymentAmount) {
+                        employeeStats[employee].pendingAmount += parseFloat(lead.paymentAmount);
+                    }
+                }
+
+                if (getLeadStatus(lead) === 'overdue') {
+                    employeeStats[employee].overdueLeads++;
+                    employeeStats[employee].missedDeadlines++;
+                }
+            });
+
+            // Render employee cards
+            grid.innerHTML = Object.values(employeeStats).map(stats => {
+                const conversionRate = stats.totalLeads > 0 ? Math.round((stats.convertedLeads / stats.totalLeads) * 100) : 0;
+                const overduePercentage = stats.totalLeads > 0 ? Math.round((stats.overdueLeads / stats.totalLeads) * 100) : 0;
+
+                return `
+                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-ultra-light); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); font-size: 18px;">
+                                ${stats.username.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                                <h4 style="font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px;">${stats.username}</h4>
+                                <p style="font-size: 13px; color: var(--gray-500);">${stats.totalLeads} Total Leads</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div style="background: var(--success-light); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 11px; font-weight: 600; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Converted</div>
+                                <div style="font-size: 20px; font-weight: 800; color: var(--success);">${stats.convertedLeads}</div>
+                                <div style="font-size: 12px; color: var(--success); font-weight: 600;">${conversionRate}% rate</div>
+                            </div>
+
+                            <div style="background: ${stats.overdueLeads > 0 ? 'var(--danger-light)' : 'var(--gray-100)'}; padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 11px; font-weight: 600; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'}; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Overdue</div>
+                                <div style="font-size: 20px; font-weight: 800; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'};">${stats.overdueLeads}</div>
+                                <div style="font-size: 12px; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'}; font-weight: 600;">${overduePercentage}% of total</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--gray-200);">
+                            <div>
+                                <div style="font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Pending Value</div>
+                                <div style="font-size: 14px; font-weight: 700; color: var(--gray-900);">${formatCurrency(stats.pendingAmount)}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Converted Value</div>
+                                <div style="font-size: 14px; font-weight: 700; color: var(--success);">${formatCurrency(stats.convertedAmount)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function updateCharts() {
@@ -3750,6 +3900,123 @@
 
             document.getElementById('leadModal').classList.add('active');
             lucide.createIcons();
+        }
+
+        // View lead (Read-only for managers)
+        function viewLead(id) {
+            const lead = leads.find(l => l.id === id);
+            if (!lead) return;
+
+            const status = getLeadStatus(lead);
+            const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
+
+            const modalContent = `
+                <div style="background: white; border-radius: 16px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-2xl);">
+                    <div style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 24px; border-radius: 16px 16px 0 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">${lead.customerName}</h2>
+                                <p style="opacity: 0.9; font-size: 14px;">Lead #${lead.id} - ${lead.leadType ? lead.leadType.charAt(0).toUpperCase() + lead.leadType.slice(1) : 'Payment'}</p>
+                            </div>
+                            <button onclick="closeViewModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="padding: 24px;">
+                        <div style="background: var(--${status === 'overdue' ? 'danger' : status === 'approaching' ? 'warning' : status === 'converted' ? 'success' : 'info'}-light); padding: 16px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid var(--${status === 'overdue' ? 'danger' : status === 'approaching' ? 'warning' : status === 'converted' ? 'success' : 'info'});">
+                            <div style="font-weight: 700; font-size: 16px; margin-bottom: 4px; color: var(--gray-900);">
+                                Status: ${status === 'overdue' ? 'OVERDUE' : status === 'approaching' ? 'Follow-up Due Soon' : status === 'converted' ? 'Converted' : 'Fresh Lead'}
+                            </div>
+                            <div style="font-size: 14px; color: var(--gray-700);">
+                                ${lead.status === 'converted' ? `Converted on ${new Date(lead.convertedDate).toLocaleDateString()}` : `Next follow-up: ${new Date(lead.followUpDate).toLocaleDateString()} ${daysUntil < 0 ? `(${Math.abs(daysUntil)} days overdue)` : daysUntil === 0 ? '(Today)' : `(in ${daysUntil} days)`}`}
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                            <div style="background: var(--gray-50); padding: 16px; border-radius: 12px;">
+                                <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Contact Information</div>
+                                <div style="font-size: 14px; color: var(--gray-900); margin-bottom: 8px;"><strong>Email:</strong> ${lead.customerEmail}</div>
+                                ${lead.customerPhone ? `<div style="font-size: 14px; color: var(--gray-900);"><strong>Phone:</strong> ${lead.customerPhone}</div>` : ''}
+                            </div>
+
+                            ${lead.paymentAmount || lead.productService ? `
+                            <div style="background: var(--gray-50); padding: 16px; border-radius: 12px;">
+                                <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Payment Details</div>
+                                ${lead.paymentAmount ? `<div style="font-size: 14px; color: var(--gray-900); margin-bottom: 8px;"><strong>Amount:</strong> ${formatCurrency(lead.paymentAmount)}</div>` : ''}
+                                ${lead.productService ? `<div style="font-size: 14px; color: var(--gray-900);"><strong>Product/Service:</strong> ${lead.productService}</div>` : ''}
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        ${lead.paymentLink ? `
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                            <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Payment Link</div>
+                            <div style="font-size: 14px; color: var(--primary); word-break: break-all;">${lead.paymentLink}</div>
+                            ${lead.linkSentDate ? `<div style="font-size: 12px; color: var(--gray-500); margin-top: 8px;">Sent on: ${new Date(lead.linkSentDate).toLocaleDateString()}</div>` : ''}
+                        </div>
+                        ` : ''}
+
+                        ${lead.interests && lead.interests.length > 0 ? `
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                            <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Customer Interests</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${lead.interests.map(interest => `<span style="background: white; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--gray-700); border: 1px solid var(--gray-300);">${interest}</span>`).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        ${lead.notes ? `
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px; border-left: 3px solid var(--primary);">
+                            <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Internal Notes</div>
+                            <div style="font-size: 14px; color: var(--gray-700); line-height: 1.6;">${lead.notes}</div>
+                        </div>
+                        ` : ''}
+
+                        ${lead.communications && lead.communications.length > 0 ? `
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                            <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Communication History</div>
+                            ${lead.communications.slice(0, 5).map(comm => `
+                                <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--info);">
+                                    <div style="font-size: 13px; color: var(--gray-700); margin-bottom: 4px;">${comm.message}</div>
+                                    <div style="font-size: 11px; color: var(--gray-500);">${new Date(comm.timestamp).toLocaleString()}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ` : ''}
+
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                            <div style="font-size: 12px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Lead Information</div>
+                            <div style="font-size: 14px; color: var(--gray-700);">
+                                <div style="margin-bottom: 8px;"><strong>Created by:</strong> ${lead.createdBy || 'Unknown'}</div>
+                                <div style="margin-bottom: 8px;"><strong>Created on:</strong> ${new Date(lead.createdAt).toLocaleString()}</div>
+                                <div><strong>Pipeline Stage:</strong> ${lead.pipelineStage ? lead.pipelineStage.charAt(0).toUpperCase() + lead.pipelineStage.slice(1) : 'New'}</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                            <button onclick="closeViewModal()" class="btn btn-secondary">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Create and show modal
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'viewLeadModal';
+            modalOverlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;';
+            modalOverlay.innerHTML = modalContent;
+            document.body.appendChild(modalOverlay);
+
+            lucide.createIcons();
+        }
+
+        function closeViewModal() {
+            const modal = document.getElementById('viewLeadModal');
+            if (modal) {
+                modal.remove();
+            }
         }
 
         // Mark as converted
@@ -4587,17 +4854,46 @@
             if (currentUser) {
                 document.getElementById('userWelcome').textContent = `Welcome back, ${currentUser.name}`;
 
-                // Show performance button, manager controls, kanban, and lead gen chart for managers
+                // Update stat labels based on role
+                if (currentUser.role === 'employee') {
+                    document.getElementById('totalLeadsLabel').textContent = 'My Active Leads';
+                } else {
+                    document.getElementById('totalLeadsLabel').textContent = 'Total Active Leads';
+                }
+
+                // Manager-specific UI
                 if (currentUser.role === 'manager') {
+                    // Show manager-only buttons and sections
                     document.getElementById('performanceBtn').style.display = 'inline-flex';
                     document.getElementById('managerControlsBtn').style.display = 'inline-flex';
                     document.getElementById('kanbanBtn').style.display = 'inline-flex';
+                    document.getElementById('exportBtn').style.display = 'inline-flex';
                     document.getElementById('leadGenerationSection').style.display = 'block';
+                    document.getElementById('employeePerformanceSection').style.display = 'block';
+
+                    // Hide employee action buttons
+                    document.getElementById('addLeadBtn').style.display = 'none';
+                    document.getElementById('checkFollowupsBtn').style.display = 'none';
+
+                    // Render employee performance
+                    renderEmployeePerformance();
                 }
 
-                // Filter leads for employees (only show their own)
+                // Employee-specific UI
                 if (currentUser.role === 'employee') {
-                    leads = leads.filter(l => !l.createdBy || l.createdBy === currentUser.username);
+                    // Hide manager-only buttons and sections
+                    document.getElementById('performanceBtn').style.display = 'none';
+                    document.getElementById('managerControlsBtn').style.display = 'none';
+                    document.getElementById('kanbanBtn').style.display = 'none';
+                    document.getElementById('exportBtn').style.display = 'none';
+                    document.getElementById('leadGenerationSection').style.display = 'none';
+                    document.getElementById('employeePerformanceSection').style.display = 'none';
+
+                    // Show employee action buttons (they are shown by default)
+                    document.getElementById('addLeadBtn').style.display = 'inline-flex';
+                    document.getElementById('checkFollowupsBtn').style.display = 'inline-flex';
+
+                    // Filter leads (only show their own) - this will be done in renderLeads()
                 }
             }
 
