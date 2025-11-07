@@ -143,7 +143,7 @@
         .header {
             background: white;
             border-radius: 16px;
-            padding: 24px 32px;
+            padding: 16px 32px;
             margin-bottom: 24px;
             border-bottom: 1px solid var(--gray-200);
             box-shadow: var(--shadow-sm);
@@ -151,6 +151,7 @@
             justify-content: space-between;
             align-items: center;
             animation: fadeInDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 72px;
         }
 
         .header-title {
@@ -160,16 +161,16 @@
         }
 
         .logo-icon {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             background: var(--primary);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 800;
-            font-size: 20px;
+            font-size: 18px;
             box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
             position: relative;
             overflow: hidden;
@@ -187,17 +188,18 @@
         }
 
         .title-group h1 {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--gray-900);
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+            margin-bottom: 0;
         }
 
         .title-group p {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--gray-500);
             font-weight: 500;
+            opacity: 0.9;
         }
 
         .header-actions {
@@ -1693,8 +1695,162 @@
             margin-top: 6px;
         }
 
+        /* Dashboard Layout - Two Column Structure */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .main-column {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Sidebar Cards */
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-card-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .sidebar-card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Quick Stats */
+        .quick-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .quick-stat-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .quick-stat-item:first-child {
+            padding-top: 0;
+        }
+
+        .quick-stat-label {
+            font-size: 13px;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .quick-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        /* Upcoming Follow-ups */
+        .upcoming-followup-item {
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            border-left: 3px solid var(--primary);
+            transition: all 0.2s;
+        }
+
+        .upcoming-followup-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .upcoming-followup-item:hover {
+            background: var(--gray-100);
+            transform: translateX(2px);
+        }
+
+        .upcoming-followup-item.overdue {
+            border-left-color: var(--danger);
+            background: var(--danger-light);
+        }
+
+        .upcoming-followup-item.today {
+            border-left-color: var(--warning);
+            background: var(--warning-light);
+        }
+
+        .followup-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .followup-date {
+            font-size: 12px;
+            color: var(--gray-600);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: var(--gray-500);
+            font-size: 13px;
+        }
+
+        .empty-state-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            opacity: 0.3;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-column {
+                order: 2;
+            }
             .analytics-section {
                 grid-template-columns: 1fr;
             }
@@ -1924,8 +2080,12 @@
             </div>
         </div>
 
-        <!-- Daily Target Section -->
-        <div class="analytics-section" style="grid-template-columns: 1fr;">
+        <!-- Dashboard Layout: Two Column Structure -->
+        <div class="dashboard-layout">
+            <!-- Main Column -->
+            <div class="main-column">
+                <!-- Daily Target Section -->
+                <div class="analytics-section" style="grid-template-columns: 1fr; margin-bottom: 0;">
             <div class="chart-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
                 <div class="chart-header" style="border-bottom-color: rgba(255,255,255,0.2);">
                     <div>
@@ -1980,6 +2140,86 @@
                 </div>
             </div>
         </div>
+                <!-- End Daily Target Section -->
+
+                <div id="mainContentPlaceholder"></div>
+
+            </div>
+            <!-- End Main Column -->
+
+            <!-- Sidebar Column -->
+            <div class="sidebar-column">
+                <!-- Quick Stats Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <div class="sidebar-card-title">
+                            <i data-lucide="bar-chart-2" style="width: 16px; height: 16px;"></i>
+                            <span>Quick Stats</span>
+                        </div>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="quick-stat-label">This Week</span>
+                        <strong class="quick-stat-value" id="weekLeadsCount">0 leads</strong>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="quick-stat-label">This Month</span>
+                        <strong class="quick-stat-value" id="monthLeadsCount">0 leads</strong>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="quick-stat-label">Avg. Response Time</span>
+                        <strong class="quick-stat-value" id="avgResponseTime">-</strong>
+                    </div>
+                </div>
+
+                <!-- Upcoming Follow-ups Card -->
+                <div class="sidebar-card">
+                    <div class="sidebar-card-header">
+                        <div class="sidebar-card-title">
+                            <i data-lucide="calendar-clock" style="width: 16px; height: 16px;"></i>
+                            <span>Upcoming Follow-ups</span>
+                        </div>
+                        <button class="btn-small btn-ghost" onclick="toggleCalendar()">
+                            <i data-lucide="maximize-2" style="width: 12px; height: 12px;"></i>
+                        </button>
+                    </div>
+                    <div id="upcomingFollowupsPreview">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <i data-lucide="calendar-check" class="empty-state-icon"></i>
+                            <div>No upcoming follow-ups</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Card (Manager Only) -->
+                <div class="sidebar-card" id="sidebarActivityCard" style="display: none;">
+                    <div class="sidebar-card-header">
+                        <div class="sidebar-card-title">
+                            <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                            <span>Recent Activity</span>
+                        </div>
+                    </div>
+                    <div id="sidebarActivityTimeline">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Top Interests Card (Manager Only) -->
+                <div class="sidebar-card" id="sidebarInterestsCard" style="display: none;">
+                    <div class="sidebar-card-header">
+                        <div class="sidebar-card-title">
+                            <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+                            <span>Top Interests</span>
+                        </div>
+                    </div>
+                    <div id="sidebarTopInterests">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <!-- End Sidebar Column -->
+        </div>
+        <!-- End Dashboard Layout -->
 
         <!-- Analytics Section -->
         <div class="analytics-section" style="grid-template-columns: 2fr 1fr 1fr;">
@@ -2062,7 +2302,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content" id="mainLeadsContent">
             <div class="content-header">
                 <div class="content-title-section">
                     <h2 class="content-title">Leads Dashboard</h2>
@@ -3111,6 +3351,10 @@
             updateCharts();
             updateActivityTimeline();
             updateTopInterests();
+
+            // Update sidebar components
+            renderQuickStats();
+            renderUpcomingFollowups();
         }
 
         // Update activity timeline
@@ -4837,7 +5081,243 @@
         }
 
         // Initialize
+        // Move Main Content into dashboard layout
+        function initDashboardLayout() {
+            const mainContent = document.getElementById('mainLeadsContent');
+            const placeholder = document.getElementById('mainContentPlaceholder');
+            if (mainContent && placeholder) {
+                placeholder.parentNode.replaceChild(mainContent, placeholder);
+            }
+        }
+
+        // Render Quick Stats in Sidebar
+        function renderQuickStats() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Calculate week start (Monday)
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+
+            // Calculate month start
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            // Filter leads for current user if employee
+            let userLeads = leads;
+            if (currentUser && currentUser.role === 'employee') {
+                userLeads = leads.filter(lead => lead.assignedTo === currentUser.username);
+            }
+
+            // Count leads this week
+            const weekLeads = userLeads.filter(lead => {
+                const createdDate = new Date(lead.createdAt || lead.date);
+                return createdDate >= weekStart;
+            }).length;
+
+            // Count leads this month
+            const monthLeads = userLeads.filter(lead => {
+                const createdDate = new Date(lead.createdAt || lead.date);
+                return createdDate >= monthStart;
+            }).length;
+
+            // Calculate average response time (simplified)
+            const convertedLeads = userLeads.filter(l => l.status === 'converted');
+            let avgResponseTime = '-';
+            if (convertedLeads.length > 0) {
+                const totalDays = convertedLeads.reduce((sum, lead) => {
+                    const created = new Date(lead.createdAt || lead.date);
+                    const converted = new Date(lead.convertedDate || lead.date);
+                    const days = Math.ceil((converted - created) / (1000 * 60 * 60 * 24));
+                    return sum + days;
+                }, 0);
+                const avgDays = Math.round(totalDays / convertedLeads.length);
+                avgResponseTime = `${avgDays} days`;
+            }
+
+            // Update UI
+            document.getElementById('weekLeadsCount').textContent = `${weekLeads} leads`;
+            document.getElementById('monthLeadsCount').textContent = `${monthLeads} leads`;
+            document.getElementById('avgResponseTime').textContent = avgResponseTime;
+        }
+
+        // Render Upcoming Follow-ups in Sidebar
+        function renderUpcomingFollowups() {
+            const container = document.getElementById('upcomingFollowupsPreview');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Filter leads for current user if employee
+            let userLeads = leads;
+            if (currentUser && currentUser.role === 'employee') {
+                userLeads = leads.filter(lead => lead.assignedTo === currentUser.username);
+            }
+
+            // Get unconverted leads with follow-up dates
+            const upcomingLeads = userLeads
+                .filter(lead => lead.status !== 'converted' && lead.followUpDate)
+                .map(lead => {
+                    const followUpDate = new Date(lead.followUpDate);
+                    followUpDate.setHours(0, 0, 0, 0);
+                    return {
+                        ...lead,
+                        daysUntil: Math.ceil((followUpDate - today) / (1000 * 60 * 60 * 24)),
+                        followUpDate: followUpDate
+                    };
+                })
+                .sort((a, b) => a.followUpDate - b.followUpDate)
+                .slice(0, 5);
+
+            if (upcomingLeads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="calendar-check" class="empty-state-icon"></i>
+                        <div>No upcoming follow-ups</div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = upcomingLeads.map(lead => {
+                let className = 'upcoming-followup-item';
+                let dateText = '';
+
+                if (lead.daysUntil < 0) {
+                    className += ' overdue';
+                    dateText = `${Math.abs(lead.daysUntil)} days overdue`;
+                } else if (lead.daysUntil === 0) {
+                    className += ' today';
+                    dateText = 'Today';
+                } else if (lead.daysUntil === 1) {
+                    dateText = 'Tomorrow';
+                } else if (lead.daysUntil <= 7) {
+                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    dateText = days[lead.followUpDate.getDay()];
+                } else {
+                    dateText = `in ${lead.daysUntil} days`;
+                }
+
+                return `
+                    <div class="${className}">
+                        <div class="followup-name">${lead.customer.name}</div>
+                        <div class="followup-date">
+                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                            ${dateText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Get recent activities helper
+        function getRecentActivities() {
+            const activities = [];
+
+            // Collect all activities from communications
+            leads.forEach(lead => {
+                if (lead.communications) {
+                    lead.communications.forEach(comm => {
+                        const timestamp = new Date(comm.timestamp);
+                        const now = new Date();
+                        const diffMs = now - timestamp;
+                        const diffMins = Math.floor(diffMs / 60000);
+                        const diffHours = Math.floor(diffMs / 3600000);
+                        const diffDays = Math.floor(diffMs / 86400000);
+
+                        let timeAgo = '';
+                        if (diffMins < 1) timeAgo = 'Just now';
+                        else if (diffMins < 60) timeAgo = `${diffMins}m ago`;
+                        else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
+                        else timeAgo = `${diffDays}d ago`;
+
+                        activities.push({
+                            leadName: lead.customer ? lead.customer.name : 'Unknown',
+                            type: comm.type,
+                            message: comm.message,
+                            timestamp: timestamp,
+                            text: `${lead.customer ? lead.customer.name : 'Unknown'} - ${comm.message}`,
+                            time: timeAgo
+                        });
+                    });
+                }
+            });
+
+            // Sort by most recent
+            activities.sort((a, b) => b.timestamp - a.timestamp);
+            return activities;
+        }
+
+        // Get top interests helper
+        function getTopInterests() {
+            const interestMap = new Map();
+
+            leads.forEach(lead => {
+                if (lead.interestedIn && lead.interestedIn.length > 0) {
+                    lead.interestedIn.forEach(interest => {
+                        interestMap.set(interest, (interestMap.get(interest) || 0) + 1);
+                    });
+                }
+            });
+
+            const interests = Array.from(interestMap.entries())
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+
+            return interests;
+        }
+
+        // Render sidebar activity and interests for managers
+        function renderSidebarContent() {
+            if (currentUser && currentUser.role === 'manager') {
+                document.getElementById('sidebarActivityCard').style.display = 'block';
+                document.getElementById('sidebarInterestsCard').style.display = 'block';
+
+                // Render activity timeline (compact version)
+                const activityContainer = document.getElementById('sidebarActivityTimeline');
+                const activities = getRecentActivities().slice(0, 5);
+
+                if (activities.length === 0) {
+                    activityContainer.innerHTML = `
+                        <div class="empty-state" style="padding: 16px;">
+                            <div>No recent activity</div>
+                        </div>
+                    `;
+                } else {
+                    activityContainer.innerHTML = activities.map(activity => `
+                        <div class="quick-stat-item">
+                            <span class="quick-stat-label">${activity.text}</span>
+                            <span style="font-size: 11px; color: var(--gray-500);">${activity.time}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Render top interests (compact version)
+                const interestsContainer = document.getElementById('sidebarTopInterests');
+                const interests = getTopInterests().slice(0, 4);
+
+                if (interests.length === 0) {
+                    interestsContainer.innerHTML = `
+                        <div class="empty-state" style="padding: 16px;">
+                            <div>No interests tracked</div>
+                        </div>
+                    `;
+                } else {
+                    interestsContainer.innerHTML = interests.map(interest => `
+                        <div class="quick-stat-item">
+                            <span class="quick-stat-label">${interest.name}</span>
+                            <strong class="quick-stat-value">${interest.count}</strong>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
         function init() {
+            // Initialize dashboard layout
+            initDashboardLayout();
+
             // Initialize comments array for existing leads if not present
             leads = leads.map(lead => {
                 if (!lead.comments) {
@@ -4907,6 +5387,11 @@
             initCharts();
             checkReminders();
             checkOverdueFollowups();
+
+            // Render sidebar components
+            renderQuickStats();
+            renderUpcomingFollowups();
+            renderSidebarContent();
 
             // Check reminders and overdue follow-ups every hour
             setInterval(() => {
