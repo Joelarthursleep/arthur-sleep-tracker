@@ -1676,7 +1676,7 @@
                 </button>
                 <button class="btn btn-secondary" onclick="checkReminders()">
                     <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
-                    Check Reminders
+                    Check Follow-ups
                 </button>
                 <button class="btn btn-primary" onclick="openAddLeadModal()">
                     <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
@@ -1789,11 +1789,11 @@
                 <div class="chart-header" style="border-bottom-color: rgba(255,255,255,0.2);">
                     <div>
                         <h3 class="chart-title" style="color: white; font-size: 24px;">Daily Payment Target</h3>
-                        <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px;">Track your daily goal of 6 paid conversions</p>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px;" id="dailyTargetDesc">Track your daily conversion goal</p>
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 48px; font-weight: 900; line-height: 1;" id="todayConverted">0</div>
-                        <div style="font-size: 14px; opacity: 0.9; margin-top: 4px;">of 6 today</div>
+                        <div style="font-size: 14px; opacity: 0.9; margin-top: 4px;" id="dailyTargetText">of 6 today</div>
                     </div>
                 </div>
 
@@ -1809,8 +1809,8 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; opacity: 0.8;">
                         <span>0</span>
-                        <span>3</span>
-                        <span>6 Target</span>
+                        <span id="progressBarMidpoint">3</span>
+                        <span id="progressBarTarget">6 Target</span>
                     </div>
                 </div>
 
@@ -1982,10 +1982,6 @@
                 <span class="bulk-actions-text">
                     <span id="selectedCount">0</span> leads selected
                 </span>
-                <button class="btn btn-small btn-info" onclick="bulkSendReminders()">
-                    <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-                    Send Reminders
-                </button>
                 <button class="btn btn-small btn-success" onclick="bulkMarkConverted()">
                     <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
                     Mark as Paid
@@ -2161,23 +2157,70 @@
             </div>
 
             <div style="padding: 24px;">
+                <!-- User Management -->
+                <div style="margin-bottom: 32px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">User Management</h3>
+
+                    <div id="usersList" style="margin-bottom: 16px;">
+                        <!-- Users will be listed here -->
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="showAddUserForm()">
+                        <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                        Add New User
+                    </button>
+
+                    <div id="addUserForm" style="display: none; margin-top: 16px; padding: 16px; background: var(--gray-50); border-radius: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="newUsername" placeholder="Enter username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="newUserFullName" placeholder="Enter full name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="newUserPassword" placeholder="Enter password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" id="newUserRole">
+                                <option value="employee">Sales Employee</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary" onclick="addNewUser()">
+                                <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                                Create User
+                            </button>
+                            <button class="btn btn-secondary" onclick="hideAddUserForm()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Password Management -->
                 <div style="margin-bottom: 32px;">
-                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">Password Management</h3>
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px;">Change Password</h3>
 
                     <div class="form-group">
-                        <label class="form-label">Change Your Password</label>
-                        <input type="password" class="form-input" id="managerNewPassword" placeholder="Enter new password">
+                        <label class="form-label">Select User</label>
+                        <select class="form-select" id="passwordChangeUser">
+                            <!-- Users will be populated here -->
+                        </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Change Ben's Password</label>
-                        <input type="password" class="form-input" id="benNewPassword" placeholder="Enter Ben's new password">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-input" id="userNewPassword" placeholder="Enter new password">
                     </div>
 
-                    <button class="btn btn-primary" onclick="updatePasswords()">
+                    <button class="btn btn-primary" onclick="updateUserPassword()">
                         <i data-lucide="key" style="width: 18px; height: 18px;"></i>
-                        Update Passwords
+                        Update Password
                     </button>
                 </div>
 
@@ -2609,10 +2652,6 @@
                                     Reschedule
                                 </button>
                             ` : ''}
-                            <button class="btn-small btn-info" onclick="sendReminder(${lead.id})">
-                                <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-                                Send Reminder
-                            </button>
                             <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
                                 <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
                                 Edit
@@ -2782,6 +2821,15 @@
             document.getElementById('pendingAmount').textContent = formatCurrency(pendingAmount);
             document.getElementById('conversionRate').textContent = conversionRate + '%';
 
+            // Get custom targets from storage or use defaults
+            const targets = storage.get('salesTargets') || { daily: 6, weekly: 42, monthly: 180, revenue: 10000 };
+
+            // Update target text displays
+            document.getElementById('dailyTargetDesc').textContent = `Track your daily goal of ${targets.daily} paid conversions`;
+            document.getElementById('dailyTargetText').textContent = `of ${targets.daily} today`;
+            document.getElementById('progressBarMidpoint').textContent = Math.floor(targets.daily / 2);
+            document.getElementById('progressBarTarget').textContent = `${targets.daily} Target`;
+
             // Update daily target stats
             document.getElementById('todayConverted').textContent = convertedToday;
             document.getElementById('weekConverted').textContent = convertedWeek;
@@ -2789,22 +2837,22 @@
             document.getElementById('avgDailyRevenue').textContent = formatCurrency(avgDailyRevenue);
             document.getElementById('conversionRateDaily').textContent = conversionRate7Days + '%';
 
-            // Update progress bar
-            const targetProgress = Math.min((convertedToday / 6) * 100, 100);
+            // Update progress bar using custom daily target
+            const targetProgress = Math.min((convertedToday / targets.daily) * 100, 100);
             document.getElementById('targetPercentage').textContent = Math.round(targetProgress) + '%';
             document.getElementById('progressBar').style.width = targetProgress + '%';
 
             if (targetProgress >= 100) {
-                document.getElementById('progressBar').innerHTML = '<span style="margin-right: 8px;">🎯 Target Met!</span>';
+                document.getElementById('progressBar').innerHTML = '<span style="margin-right: 8px;">Target Met!</span>';
             } else {
                 document.getElementById('progressBar').innerHTML = '';
             }
 
-            // Update targets display
+            // Update targets display using custom targets
             const daysInWeek = 7;
-            const weekTarget = 6 * daysInWeek;
+            const weekTarget = targets.weekly || (targets.daily * daysInWeek);
             const daysRemainingInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-            const monthTarget = 6 * daysRemainingInMonth;
+            const monthTarget = targets.monthly || (targets.daily * daysRemainingInMonth);
 
             document.getElementById('weekTarget').textContent = `Target: ${weekTarget} (${Math.round((convertedWeek/weekTarget)*100)}%)`;
             document.getElementById('monthTarget').textContent = `Target: ${monthTarget} (${Math.round((convertedMonth/monthTarget)*100)}%)`;
@@ -3031,8 +3079,8 @@
             const statusCtx = document.getElementById('statusChart');
             if (statusCtx) {
                 const statusCounts = {
-                    pending: leads.filter(l => getLeadStatus(l) === 'pending').length,
-                    'due-soon': leads.filter(l => getLeadStatus(l) === 'due-soon').length,
+                    fresh: leads.filter(l => getLeadStatus(l) === 'fresh').length,
+                    approaching: leads.filter(l => getLeadStatus(l) === 'approaching').length,
                     overdue: leads.filter(l => getLeadStatus(l) === 'overdue').length,
                     converted: leads.filter(l => l.status === 'converted').length
                 };
@@ -3040,10 +3088,10 @@
                 statusChart = new Chart(statusCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Pending', 'Due Soon', 'Overdue', 'Converted'],
+                        labels: ['Fresh Leads', 'Follow-up Soon', 'Overdue', 'Converted'],
                         datasets: [{
                             data: Object.values(statusCounts),
-                            backgroundColor: ['#06b6d4', '#f59e0b', '#ef4444', '#10b981']
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#3b82f6']
                         }]
                     },
                     options: {
@@ -3451,21 +3499,6 @@
             });
         }
 
-        // Send reminder
-        function sendReminder(id) {
-            const lead = leads.find(l => l.id === id);
-            if (!lead) return;
-
-            addCommunication(id, 'email', `Payment reminder sent to ${lead.customerEmail}`);
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            showNotification(
-                'Reminder Sent',
-                `Payment reminder email sent to ${lead.customerName}`,
-                'success'
-            );
-            renderLeads();
-        }
-
         // Delete lead
         function deleteLead(id) {
             const lead = leads.find(l => l.id === id);
@@ -3512,15 +3545,6 @@
             } else {
                 bulkActions.classList.remove('active');
             }
-        }
-
-        function bulkSendReminders() {
-            if (selectedLeads.size === 0) return;
-            if (!confirm(`Send payment reminders to ${selectedLeads.size} selected leads?`)) return;
-
-            selectedLeads.forEach(id => sendReminder(id));
-            showNotification('Reminders Sent', `Payment reminders sent to ${selectedLeads.size} leads.`, 'success');
-            deselectAll();
         }
 
         function bulkMarkConverted() {
@@ -3577,6 +3601,10 @@
             document.getElementById('monthlyTarget').value = targets.monthly;
             document.getElementById('revenueTarget').value = targets.revenue;
 
+            // Load users list
+            loadUsersList();
+            populatePasswordChangeDropdown();
+
             document.getElementById('managerControlsModal').classList.add('active');
             lucide.createIcons();
         }
@@ -3584,32 +3612,156 @@
         // Close manager controls modal
         function closeManagerControls() {
             document.getElementById('managerControlsModal').classList.remove('active');
-            document.getElementById('managerNewPassword').value = '';
-            document.getElementById('benNewPassword').value = '';
+            hideAddUserForm();
         }
 
-        // Update passwords
-        function updatePasswords() {
-            const managerPass = document.getElementById('managerNewPassword').value;
-            const benPass = document.getElementById('benNewPassword').value;
+        // Load users list
+        function loadUsersList() {
+            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+            const usersList = document.getElementById('usersList');
 
-            if (!managerPass && !benPass) {
-                showNotification('Error', 'Please enter at least one password to update.', 'error');
+            usersList.innerHTML = Object.entries(users).map(([username, user]) => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--gray-200);">
+                    <div>
+                        <div style="font-weight: 600; color: var(--gray-900);">${user.name}</div>
+                        <div style="font-size: 13px; color: var(--gray-600);">@${username} - ${user.role === 'manager' ? 'Manager' : 'Sales Employee'}</div>
+                    </div>
+                    ${username !== 'joel' ? `
+                        <button class="btn-small btn-danger" onclick="deleteUser('${username}')">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                            Delete
+                        </button>
+                    ` : '<span style="font-size: 12px; color: var(--gray-500);">Admin</span>'}
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Populate password change dropdown
+        function populatePasswordChangeDropdown() {
+            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+            const select = document.getElementById('passwordChangeUser');
+
+            select.innerHTML = Object.entries(users).map(([username, user]) => `
+                <option value="${username}">${user.name} (@${username})</option>
+            `).join('');
+        }
+
+        // Get default users
+        function getDefaultUsers() {
+            return {
+                'joel': {
+                    password: 'manager123',
+                    role: 'manager',
+                    name: 'Joel (Manager)'
+                },
+                'ben': {
+                    password: 'ben123',
+                    role: 'employee',
+                    name: 'Ben'
+                }
+            };
+        }
+
+        // Show add user form
+        function showAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'block';
+            lucide.createIcons();
+        }
+
+        // Hide add user form
+        function hideAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'none';
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newUserFullName').value = '';
+            document.getElementById('newUserPassword').value = '';
+            document.getElementById('newUserRole').value = 'employee';
+        }
+
+        // Add new user
+        function addNewUser() {
+            const username = document.getElementById('newUsername').value.trim().toLowerCase();
+            const fullName = document.getElementById('newUserFullName').value.trim();
+            const password = document.getElementById('newUserPassword').value;
+            const role = document.getElementById('newUserRole').value;
+
+            if (!username || !fullName || !password) {
+                showNotification('Error', 'Please fill in all fields.', 'error');
                 return;
             }
 
-            // Note: This would typically be handled by backend. For now, just show confirmation.
-            let message = 'Password(s) updated successfully. ';
-            if (managerPass && benPass) {
-                message += 'Both passwords have been changed.';
-            } else if (managerPass) {
-                message += 'Manager password has been changed.';
-            } else {
-                message += "Ben's password has been changed.";
+            if (username.length < 3) {
+                showNotification('Error', 'Username must be at least 3 characters.', 'error');
+                return;
             }
 
-            showNotification('Success', message, 'success');
-            closeManagerControls();
+            if (password.length < 6) {
+                showNotification('Error', 'Password must be at least 6 characters.', 'error');
+                return;
+            }
+
+            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+
+            if (users[username]) {
+                showNotification('Error', `Username "${username}" already exists.', 'error');
+                return;
+            }
+
+            users[username] = {
+                password: password,
+                role: role,
+                name: fullName
+            };
+
+            storage.set('arthurSleepUsers', users);
+            showNotification('Success', `User ${fullName} has been created successfully.`, 'success');
+
+            hideAddUserForm();
+            loadUsersList();
+            populatePasswordChangeDropdown();
+        }
+
+        // Delete user
+        function deleteUser(username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
+
+            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+            delete users[username];
+            storage.set('arthurSleepUsers', users);
+
+            showNotification('Success', 'User has been deleted.', 'success');
+            loadUsersList();
+            populatePasswordChangeDropdown();
+        }
+
+        // Update user password
+        function updateUserPassword() {
+            const username = document.getElementById('passwordChangeUser').value;
+            const newPassword = document.getElementById('userNewPassword').value;
+
+            if (!newPassword) {
+                showNotification('Error', 'Please enter a new password.', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showNotification('Error', 'Password must be at least 6 characters.', 'error');
+                return;
+            }
+
+            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+
+            if (!users[username]) {
+                showNotification('Error', 'User not found.', 'error');
+                return;
+            }
+
+            users[username].password = newPassword;
+            storage.set('arthurSleepUsers', users);
+
+            document.getElementById('userNewPassword').value = '';
+            showNotification('Success', `Password updated for ${users[username].name}.`, 'success');
         }
 
         // Update sales targets

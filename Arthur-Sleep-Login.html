@@ -265,24 +265,24 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // User credentials - check localStorage for updates, otherwise use defaults
-        function getUsers() {
-            const storedUsers = localStorage.getItem('userCredentials');
-            if (storedUsers) {
-                return JSON.parse(storedUsers);
+        // Storage helper
+        const storage = {
+            get: (key) => {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : null;
+            },
+            set: (key, value) => {
+                localStorage.setItem(key, JSON.stringify(value));
             }
+        };
 
-            // Default credentials
-            const defaultUsers = {
+        // Get default users
+        function getDefaultUsers() {
+            return {
                 'joel': {
                     password: 'manager123',
                     role: 'manager',
                     name: 'Joel (Manager)'
-                },
-                'manager': {
-                    password: 'manager',
-                    role: 'manager',
-                    name: 'Manager'
                 },
                 'ben': {
                     password: 'ben123',
@@ -290,21 +290,27 @@
                     name: 'Ben'
                 }
             };
+        }
 
-            // Save defaults to localStorage
-            localStorage.setItem('userCredentials', JSON.stringify(defaultUsers));
-            return defaultUsers;
+        // Initialize users in localStorage if not exists
+        function initializeUsers() {
+            let users = storage.get('arthurSleepUsers');
+            if (!users) {
+                users = getDefaultUsers();
+                storage.set('arthurSleepUsers', users);
+            }
+            return users;
         }
 
         function handleLogin(event) {
             event.preventDefault();
 
-            const username = document.getElementById('username').value.toLowerCase();
+            const username = document.getElementById('username').value.toLowerCase().trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
 
-            // Get current user credentials (may have been updated by manager)
-            const users = getUsers();
+            // Get users from localStorage
+            const users = initializeUsers();
 
             // Check credentials
             if (users[username] && users[username].password === password) {
@@ -321,6 +327,7 @@
             } else {
                 // Show error
                 errorMessage.classList.add('show');
+                document.getElementById('password').value = '';
                 setTimeout(() => {
                     errorMessage.classList.remove('show');
                 }, 3000);
