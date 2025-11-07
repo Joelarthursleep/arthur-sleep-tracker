@@ -3704,7 +3704,7 @@
             const users = storage.get('arthurSleepUsers') || getDefaultUsers();
 
             if (users[username]) {
-                showNotification('Error', `Username "${username}" already exists.`, 'error');
+                showNotification('Error', `Username "${username}" already exists.', 'error');
                 return;
             }
 
