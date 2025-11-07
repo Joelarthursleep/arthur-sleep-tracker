@@ -1380,6 +1380,113 @@
             color: var(--info);
         }
 
+        /* Collapsed Lead Card */
+        .lead-card.collapsed {
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lead-card.collapsed:hover {
+            background: var(--gray-50);
+            transform: translateY(-1px);
+        }
+
+        .lead-card-header-compact {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .lead-card-info-compact {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .lead-card-name-compact {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .lead-card-email-compact {
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+
+        .lead-card-meta-compact {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .lead-card-amount-compact {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .lead-card-status-compact {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .lead-card-status-compact.overdue {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .lead-card-status-compact.due-soon {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .lead-card-status-compact.fresh {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .lead-card-expand-icon {
+            transition: transform 0.2s;
+        }
+
+        .lead-card.expanded .lead-card-expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .lead-card-details {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+            display: none;
+        }
+
+        .lead-card.expanded .lead-card-details {
+            display: block;
+        }
+
+        /* Employee Dashboard Layout */
+        .employee-charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .employee-charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Follow-up Timeline */
         .followup-timeline {
             margin-top: 12px;
@@ -1995,6 +2102,9 @@
             }
         }
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="notification-container" id="notificationContainer"></div>
@@ -2810,18 +2920,83 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Storage helper
-        const storage = {
-            get: (key) => {
-                const item = localStorage.getItem(key);
-                return item ? JSON.parse(item) : null;
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDrn6M6Z8Sn0UiPepZgsq-9yasZSCqwRIg",
+            authDomain: "arthur-sleep-tracker.firebaseapp.com",
+            projectId: "arthur-sleep-tracker",
+            storageBucket: "arthur-sleep-tracker.firebasestorage.app",
+            messagingSenderId: "403686663951",
+            appId: "1:403686663951:web:d7c66e0f56db5a68b6c07a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Firestore helper functions
+        const firestore = {
+            // Get all leads
+            async getLeads() {
+                const snapshot = await db.collection('leads').orderBy('createdAt', 'desc').get();
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             },
-            set: (key, value) => {
-                localStorage.setItem(key, JSON.stringify(value));
+
+            // Add new lead
+            async addLead(leadData) {
+                const docRef = await db.collection('leads').add({
+                    ...leadData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                return docRef.id;
             },
-            getArray: (key) => {
-                const item = localStorage.getItem(key);
-                return item ? JSON.parse(item) : [];
+
+            // Update lead
+            async updateLead(leadId, leadData) {
+                await db.collection('leads').doc(leadId).update(leadData);
+            },
+
+            // Delete lead
+            async deleteLead(leadId) {
+                await db.collection('leads').doc(leadId).delete();
+            },
+
+            // Get settings
+            async getSettings() {
+                const doc = await db.collection('settings').doc('salesTargets').get();
+                if (doc.exists) {
+                    return doc.data();
+                }
+                return { daily: 6, weekly: 42, monthly: 180, revenue: 10000 };
+            },
+
+            // Update settings
+            async updateSettings(settings) {
+                await db.collection('settings').doc('salesTargets').set(settings);
+            },
+
+            // Get users
+            async getUsers() {
+                const snapshot = await db.collection('users').get();
+                const users = {};
+                snapshot.docs.forEach(doc => {
+                    users[doc.id] = doc.data();
+                });
+                return users;
+            },
+
+            // Add user
+            async addUser(username, userData) {
+                await db.collection('users').doc(username).set(userData);
+            },
+
+            // Delete user
+            async deleteUser(username) {
+                await db.collection('users').doc(username).delete();
+            },
+
+            // Update user password
+            async updateUserPassword(username, newPassword) {
+                await db.collection('users').doc(username).update({ password: newPassword });
             }
         };
 
@@ -2839,11 +3014,12 @@
         }
 
         // Global state
-        let leads = storage.getArray('arthurSleepLeadsAdvanced') || [];
+        let leads = [];
         let selectedLeads = new Set();
         let currentView = 'cards';
         let conversionChart = null;
         let statusChart = null;
+        let unsubscribeLeads = null;
 
         // Notification System
         function showNotification(title, message, type = 'info') {
@@ -2896,7 +3072,7 @@
         }
 
         // Add communication log entry
-        function addCommunication(leadId, type, message) {
+        async function addCommunication(leadId, type, message) {
             const lead = leads.find(l => l.id === leadId);
             if (lead) {
                 if (!lead.communications) lead.communications = [];
@@ -2905,13 +3081,105 @@
                     message,
                     timestamp: new Date().toISOString()
                 });
-                storage.set('arthurSleepLeadsAdvanced', leads);
+                await firestore.updateLead(leadId, { communications: lead.communications });
             }
         }
 
         // Format currency
         function formatCurrency(amount) {
             return '£' + parseFloat(amount).toFixed(2);
+        }
+
+        // Toggle lead card expand/collapse
+        function toggleLeadCard(leadId) {
+            const card = document.getElementById(`lead-${leadId}`);
+            if (card) {
+                card.classList.toggle('collapsed');
+                card.classList.toggle('expanded');
+                lucide.createIcons();
+            }
+        }
+
+        // Render detailed lead information (for expanded view)
+        function renderLeadDetails(lead, status, daysUntil) {
+            return `
+                <!-- Payment Info -->
+                ${lead.paymentLink ? `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Payment Link</div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" value="${lead.paymentLink}" readonly style="flex: 1; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 13px; background: var(--gray-50);">
+                            <button class="btn-small btn-info" onclick="copyPaymentLink('${lead.paymentLink}', ${lead.id})">
+                                <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Interests -->
+                ${lead.interests && lead.interests.length > 0 ? `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Interests</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${lead.interests.map(interest => `
+                                <span style="padding: 4px 10px; background: var(--primary-ultra-light); color: var(--primary); border-radius: 6px; font-size: 12px; font-weight: 500;">${interest}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Notes -->
+                ${lead.notes ? `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Notes</div>
+                        <div style="padding: 12px; background: var(--gray-50); border-radius: 8px; font-size: 13px; color: var(--gray-700);">${lead.notes}</div>
+                    </div>
+                ` : ''}
+
+                <!-- Follow-up Info -->
+                ${lead.linkSentDate ? `
+                    <div style="margin-bottom: 16px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Link Sent</div>
+                        <div style="font-size: 13px; color: var(--gray-600);">
+                            ${new Date(lead.linkSentDate).toLocaleDateString()}
+                            <span style="font-size: 12px; color: var(--gray-500);">(${Math.abs(getDaysUntilFollowUp(lead.linkSentDate))} days ago)</span>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px;">Next Follow-up</div>
+                    <div style="font-size: 13px; color: ${status === 'overdue' ? 'var(--danger)' : status === 'approaching' ? 'var(--warning)' : 'var(--gray-900)'};">
+                        ${new Date(lead.followUpDate).toLocaleDateString()}
+                        <span style="font-size: 12px;">
+                            ${daysUntil < 0 ? `(${Math.abs(daysUntil)} days overdue)` : daysUntil === 0 ? '(Today)' : `(in ${daysUntil} days)`}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    ${status !== 'converted' ? `
+                        <button class="btn-small btn-success" onclick="markAsConverted(${lead.id})">
+                            <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                            Mark as Paid
+                        </button>
+                    ` : ''}
+                    <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
+                        <i data-lucide="edit" style="width: 14px; height: 14px;"></i>
+                        Edit
+                    </button>
+                    ${status !== 'converted' ? `
+                        <button class="btn-small btn-warning" onclick="updateFollowUpDate(${lead.id})">
+                            <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                            Reschedule
+                        </button>
+                    ` : ''}
+                    <button class="btn-small btn-danger" onclick="deleteLead(${lead.id})">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+            `;
         }
 
         // Render leads
@@ -2952,30 +3220,79 @@
                 return;
             }
 
-            // Render card view
-            container.innerHTML = leadsToRender.map((lead, index) => {
-                const status = getLeadStatus(lead);
-                const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
-                const daysSinceSent = Math.abs(getDaysUntilFollowUp(lead.linkSentDate));
+            // Render card view - different for employees (collapsed) vs managers (expanded)
+            if (currentUser.role === 'employee') {
+                // EMPLOYEE: Collapsed cards
+                container.innerHTML = leadsToRender.map((lead, index) => {
+                    const status = getLeadStatus(lead);
+                    const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
 
-                // Get status icon and text
-                let statusIcon = 'circle';
-                let statusText = 'Active';
-                if (status === 'fresh') {
-                    statusIcon = 'sparkles';
-                    statusText = 'Fresh Lead';
-                } else if (status === 'approaching') {
-                    statusIcon = 'clock';
-                    statusText = 'Follow-up Due Soon';
-                } else if (status === 'overdue') {
-                    statusIcon = 'alert-circle';
-                    statusText = 'OVERDUE';
-                } else if (status === 'converted') {
-                    statusIcon = 'check-circle';
-                    statusText = 'Converted';
-                }
+                    // Status info for compact view
+                    let statusText = '';
+                    let statusClass = '';
+                    if (status === 'overdue') {
+                        statusText = `Overdue ${Math.abs(daysUntil)} days`;
+                        statusClass = 'overdue';
+                    } else if (status === 'approaching' || daysUntil === 0) {
+                        statusText = daysUntil === 0 ? 'Due today' : `Due in ${daysUntil} days`;
+                        statusClass = 'due-soon';
+                    } else if (status === 'fresh') {
+                        statusText = 'Fresh lead';
+                        statusClass = 'fresh';
+                    } else if (status === 'converted') {
+                        statusText = 'Converted';
+                        statusClass = 'fresh';
+                    }
 
-                return `
+                    return `
+                        <div class="lead-card collapsed status-${status}" id="lead-${lead.id}" style="animation-delay: ${index * 0.03}s;">
+                            <div class="lead-card-header-compact" onclick="toggleLeadCard(${lead.id})">
+                                <div class="lead-card-info-compact">
+                                    <div>
+                                        <div class="lead-card-name-compact">${lead.customerName}</div>
+                                        <div class="lead-card-email-compact">${lead.customerEmail}</div>
+                                    </div>
+                                </div>
+                                <div class="lead-card-meta-compact">
+                                    <span class="lead-card-amount-compact">${formatCurrency(lead.paymentAmount || 0)}</span>
+                                    <span class="lead-card-status-compact ${statusClass}">
+                                        ${statusText}
+                                    </span>
+                                    <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 20px; height: 20px; color: var(--gray-500);"></i>
+                                </div>
+                            </div>
+
+                            <div class="lead-card-details">
+                                ${renderLeadDetails(lead, status, daysUntil)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // MANAGER: Keep existing expanded card view
+                container.innerHTML = leadsToRender.map((lead, index) => {
+                    const status = getLeadStatus(lead);
+                    const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
+                    const daysSinceSent = Math.abs(getDaysUntilFollowUp(lead.linkSentDate));
+
+                    // Get status icon and text
+                    let statusIcon = 'circle';
+                    let statusText = 'Active';
+                    if (status === 'fresh') {
+                        statusIcon = 'sparkles';
+                        statusText = 'Fresh Lead';
+                    } else if (status === 'approaching') {
+                        statusIcon = 'clock';
+                        statusText = 'Follow-up Due Soon';
+                    } else if (status === 'overdue') {
+                        statusIcon = 'alert-circle';
+                        statusText = 'OVERDUE';
+                    } else if (status === 'converted') {
+                        statusIcon = 'check-circle';
+                        statusText = 'Converted';
+                    }
+
+                    return `
                     <div class="lead-card status-${status}" style="animation-delay: ${index * 0.05}s;">
                         <div class="status-indicator">
                             <i data-lucide="${statusIcon}" style="width: 14px; height: 14px;"></i>
@@ -3206,7 +3523,8 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+                }).join('');
+            }
 
             // Render table view
             tableBody.innerHTML = leadsToRender.map(lead => {
@@ -3307,7 +3625,7 @@
         }
 
         // Update statistics
-        function updateStats() {
+        async function updateStats() {
             // Filter leads based on user role
             let filteredLeads = leads;
             if (currentUser.role === 'employee') {
@@ -3378,8 +3696,8 @@
             document.getElementById('pendingAmount').textContent = formatCurrency(pendingAmount);
             document.getElementById('conversionRate').textContent = conversionRate + '%';
 
-            // Get custom targets from storage or use defaults
-            const targets = storage.get('salesTargets') || { daily: 6, weekly: 42, monthly: 180, revenue: 10000 };
+            // Get custom targets from Firestore or use defaults
+            const targets = await firestore.getSettings();
 
             // Update target text displays
             document.getElementById('dailyTargetDesc').textContent = `Track your daily goal of ${targets.daily} paid conversions`;
@@ -4112,7 +4430,7 @@
         }
 
         // Save lead
-        function saveLead(event) {
+        async function saveLead(event) {
             event.preventDefault();
 
             const leadId = document.getElementById('leadId').value;
@@ -4120,7 +4438,6 @@
             const interests = getSelectedInterests();
 
             const leadData = {
-                id: leadId ? parseInt(leadId) : Date.now(),
                 leadType: leadType,
                 customerName: document.getElementById('customerName').value,
                 customerEmail: document.getElementById('customerEmail').value,
@@ -4130,11 +4447,7 @@
                 productService: document.getElementById('productService').value,
                 notes: document.getElementById('leadNotes').value,
                 pipelineStage: document.getElementById('pipelineStage').value || 'new',
-                status: 'pending',
-                createdAt: leadId ? leads.find(l => l.id === parseInt(leadId)).createdAt : new Date().toISOString(),
-                createdBy: leadId ? leads.find(l => l.id === parseInt(leadId)).createdBy : currentUser.username,
-                communications: leadId ? leads.find(l => l.id === parseInt(leadId)).communications : [],
-                comments: leadId ? leads.find(l => l.id === parseInt(leadId)).comments || [] : []
+                status: 'pending'
             };
 
             // Add payment fields if it's a payment lead
@@ -4148,44 +4461,51 @@
                 leadData.linkSentDate = null;
             }
 
-            // Track stage entry time
-            if (leadId) {
-                const existingLead = leads.find(l => l.id === parseInt(leadId));
-                const newStage = document.getElementById('pipelineStage').value || 'new';
-                const oldStage = existingLead.pipelineStage || 'new';
+            try {
+                if (leadId) {
+                    // Update existing lead
+                    const existingLead = leads.find(l => l.id === leadId);
+                    const newStage = document.getElementById('pipelineStage').value || 'new';
+                    const oldStage = existingLead.pipelineStage || 'new';
 
-                // If stage changed, update stageEnteredAt
-                if (newStage !== oldStage) {
-                    leadData.stageEnteredAt = new Date().toISOString();
+                    // If stage changed, update stageEnteredAt
+                    if (newStage !== oldStage) {
+                        leadData.stageEnteredAt = new Date().toISOString();
+                    } else {
+                        leadData.stageEnteredAt = existingLead.stageEnteredAt || existingLead.createdAt;
+                    }
+
+                    leadData.createdAt = existingLead.createdAt;
+                    leadData.createdBy = existingLead.createdBy;
+                    leadData.communications = existingLead.communications || [];
+                    leadData.comments = existingLead.comments || [];
+                    leadData.id = Date.now();
+
+                    await firestore.updateLead(leadId, leadData);
+                    await addCommunication(leadId, 'note', 'Lead information updated');
+                    showNotification('Lead Updated', 'Lead information has been updated successfully.', 'success');
                 } else {
-                    leadData.stageEnteredAt = existingLead.stageEnteredAt || existingLead.createdAt;
+                    // Add new lead
+                    leadData.id = Date.now();
+                    leadData.createdAt = new Date().toISOString();
+                    leadData.createdBy = currentUser.username;
+                    leadData.communications = [];
+                    leadData.comments = [];
+                    leadData.stageEnteredAt = new Date().toISOString();
+
+                    const docId = await firestore.addLead(leadData);
+
+                    const commMessage = leadType === 'payment' ? 'Lead created and payment link sent' : `${leadType.charAt(0).toUpperCase() + leadType.slice(1)} lead created`;
+                    await addCommunication(docId, 'note', commMessage);
+
+                    showNotification('Lead Added', 'New lead has been added with automatic 24h and 72h follow-up reminders.', 'success');
                 }
-            } else {
-                // New lead
-                leadData.stageEnteredAt = new Date().toISOString();
+
+                closeModal();
+            } catch (error) {
+                showNotification('Error', 'Failed to save lead. Please try again.', 'error');
+                console.error('Error saving lead:', error);
             }
-
-            if (leadId) {
-                const index = leads.findIndex(l => l.id === parseInt(leadId));
-                leads[index] = leadData;
-                addCommunication(leadData.id, 'note', 'Lead information updated');
-                showNotification('Lead Updated', 'Lead information has been updated successfully.', 'success');
-            } else {
-                leads.push(leadData);
-                const commMessage = leadType === 'payment' ? 'Lead created and payment link sent' : `${leadType.charAt(0).toUpperCase() + leadType.slice(1)} lead created`;
-                addCommunication(leadData.id, 'note', commMessage);
-
-                // Create automatic follow-ups for new lead
-                storage.set('arthurSleepLeadsAdvanced', leads);
-                createFollowups(leadData.id);
-
-                showNotification('Lead Added', 'New lead has been added with automatic 24h and 72h follow-up reminders.', 'success');
-            }
-
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            closeModal();
-            renderLeads();
-            updateStats();
         }
 
         // Edit lead
@@ -4348,7 +4668,7 @@
         }
 
         // Mark as converted
-        function markAsConverted(id) {
+        async function markAsConverted(id) {
             const lead = leads.find(l => l.id === id);
             if (!lead) return;
 
@@ -4361,35 +4681,41 @@
 
             if (!confirm('Mark this lead as paid/converted? This will archive the lead.')) return;
 
-            lead.status = 'converted';
-            lead.convertedDate = new Date().toISOString();
-            lead.orderNumber = orderNumber.trim();
-            lead.pipelineStage = 'paid';
-            addCommunication(id, 'success', `Payment received - Order #${orderNumber} - Lead converted successfully`);
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            showNotification('Lead Converted', `${lead.customerName} has been marked as paid with Order #${orderNumber}. Excellent work!`, 'success');
-            renderLeads();
-            updateStats();
+            try {
+                await firestore.updateLead(id, {
+                    status: 'converted',
+                    convertedDate: new Date().toISOString(),
+                    orderNumber: orderNumber.trim(),
+                    pipelineStage: 'paid'
+                });
+                await addCommunication(id, 'success', `Payment received - Order #${orderNumber} - Lead converted successfully`);
+                showNotification('Lead Converted', `${lead.customerName} has been marked as paid with Order #${orderNumber}. Excellent work!`, 'success');
+            } catch (error) {
+                showNotification('Error', 'Failed to mark lead as converted.', 'error');
+                console.error('Error converting lead:', error);
+            }
         }
 
         // Update follow-up date
-        function updateFollowUpDate(id) {
+        async function updateFollowUpDate(id) {
             const newDate = prompt('Enter new follow-up date (YYYY-MM-DD):');
             if (!newDate) return;
 
             const lead = leads.find(l => l.id === id);
             if (lead) {
-                lead.followUpDate = newDate;
-                addCommunication(id, 'calendar', `Follow-up rescheduled to ${new Date(newDate).toLocaleDateString()}`);
-                storage.set('arthurSleepLeadsAdvanced', leads);
-                showNotification('Follow-up Rescheduled', 'Follow-up date has been updated successfully.', 'success');
-                renderLeads();
-                updateStats();
+                try {
+                    await firestore.updateLead(id, { followUpDate: newDate });
+                    await addCommunication(id, 'calendar', `Follow-up rescheduled to ${new Date(newDate).toLocaleDateString()}`);
+                    showNotification('Follow-up Rescheduled', 'Follow-up date has been updated successfully.', 'success');
+                } catch (error) {
+                    showNotification('Error', 'Failed to update follow-up date.', 'error');
+                    console.error('Error updating follow-up date:', error);
+                }
             }
         }
 
         // Add comment to lead
-        function addComment(leadId) {
+        async function addComment(leadId) {
             const input = document.getElementById(`commentInput-${leadId}`);
             const commentText = input.value.trim();
 
@@ -4416,14 +4742,19 @@
             };
 
             lead.comments.push(comment);
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            input.value = '';
-            renderLeads();
-            showNotification('Comment Added', 'Your comment has been added successfully.', 'success');
+
+            try {
+                await firestore.updateLead(leadId, { comments: lead.comments });
+                input.value = '';
+                showNotification('Comment Added', 'Your comment has been added successfully.', 'success');
+            } catch (error) {
+                showNotification('Error', 'Failed to add comment.', 'error');
+                console.error('Error adding comment:', error);
+            }
         }
 
         // Add urgent comment (manager only)
-        function addUrgentComment(leadId) {
+        async function addUrgentComment(leadId) {
             if (currentUser.role !== 'manager') {
                 showNotification('Access Denied', 'Only managers can add urgent comments.', 'danger');
                 return;
@@ -4455,15 +4786,20 @@
             };
 
             lead.comments.push(comment);
-            createUrgentFollowups(leadId);
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            input.value = '';
-            renderLeads();
-            showNotification('Urgent Comment Added', 'Urgent comment added with automatic follow-ups created.', 'danger');
+
+            try {
+                await firestore.updateLead(leadId, { comments: lead.comments });
+                createUrgentFollowups(leadId);
+                input.value = '';
+                showNotification('Urgent Comment Added', 'Urgent comment added with automatic follow-ups created.', 'danger');
+            } catch (error) {
+                showNotification('Error', 'Failed to add urgent comment.', 'error');
+                console.error('Error adding urgent comment:', error);
+            }
         }
 
         // Create urgent follow-ups
-        function createUrgentFollowups(leadId) {
+        async function createUrgentFollowups(leadId) {
             const lead = leads.find(l => l.id === leadId);
             if (!lead || lead.status === 'converted') return;
 
@@ -4503,8 +4839,8 @@
                 completedAt: null
             });
 
-            addCommunication(leadId, 'alert', 'URGENT: Priority follow-ups created (24h and 72h)');
-            storage.set('arthurSleepLeadsAdvanced', leads);
+            await addCommunication(leadId, 'alert', 'URGENT: Priority follow-ups created (24h and 72h)');
+            await firestore.updateLead(leadId, { followups: lead.followups });
         }
 
         // Toggle Kanban view
@@ -4674,26 +5010,28 @@
         }
 
         // Copy payment link
-        function copyPaymentLink(link, leadId) {
-            navigator.clipboard.writeText(link).then(() => {
-                addCommunication(leadId, 'copy', 'Payment link copied to clipboard');
-                storage.set('arthurSleepLeadsAdvanced', leads);
+        async function copyPaymentLink(link, leadId) {
+            try {
+                await navigator.clipboard.writeText(link);
+                await addCommunication(leadId, 'copy', 'Payment link copied to clipboard');
                 showNotification('Link Copied', 'Payment link has been copied to clipboard.', 'success');
-            }).catch(() => {
+            } catch (error) {
                 showNotification('Copy Failed', 'Could not copy link to clipboard.', 'danger');
-            });
+            }
         }
 
         // Delete lead
-        function deleteLead(id) {
+        async function deleteLead(id) {
             const lead = leads.find(l => l.id === id);
             if (!confirm(`Are you sure you want to delete the lead for ${lead.customerName}? This action cannot be undone.`)) return;
 
-            leads = leads.filter(l => l.id !== id);
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            showNotification('Lead Deleted', 'Lead has been removed from your tracker.', 'success');
-            renderLeads();
-            updateStats();
+            try {
+                await firestore.deleteLead(id);
+                showNotification('Lead Deleted', 'Lead has been removed from your tracker.', 'success');
+            } catch (error) {
+                showNotification('Error', 'Failed to delete lead.', 'error');
+                console.error('Error deleting lead:', error);
+            }
         }
 
         // Bulk actions
@@ -4732,33 +5070,46 @@
             }
         }
 
-        function bulkMarkConverted() {
+        async function bulkMarkConverted() {
             if (selectedLeads.size === 0) return;
             if (!confirm(`Mark ${selectedLeads.size} selected leads as paid/converted?`)) return;
 
-            selectedLeads.forEach(id => {
-                const lead = leads.find(l => l.id === id);
-                if (lead) {
-                    lead.status = 'converted';
-                    lead.convertedDate = new Date().toISOString();
-                }
-            });
+            try {
+                const promises = [];
+                selectedLeads.forEach(id => {
+                    promises.push(firestore.updateLead(id, {
+                        status: 'converted',
+                        convertedDate: new Date().toISOString(),
+                        pipelineStage: 'paid'
+                    }));
+                });
 
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            showNotification('Leads Converted', `${selectedLeads.size} leads marked as paid.`, 'success');
-            deselectAll();
-            renderLeads();
-            updateStats();
+                await Promise.all(promises);
+                showNotification('Leads Converted', `${selectedLeads.size} leads marked as paid.`, 'success');
+                deselectAll();
+            } catch (error) {
+                showNotification('Error', 'Failed to convert leads.', 'error');
+                console.error('Error bulk converting leads:', error);
+            }
         }
 
-        function bulkDelete() {
+        async function bulkDelete() {
             if (selectedLeads.size === 0) return;
             if (!confirm(`Are you sure you want to delete ${selectedLeads.size} selected leads? This action cannot be undone.`)) return;
 
-            leads = leads.filter(l => !selectedLeads.has(l.id));
-            storage.set('arthurSleepLeadsAdvanced', leads);
-            showNotification('Leads Deleted', `${selectedLeads.size} leads have been removed.`, 'success');
-            deselectAll();
+            try {
+                const promises = [];
+                selectedLeads.forEach(id => {
+                    promises.push(firestore.deleteLead(id));
+                });
+
+                await Promise.all(promises);
+                showNotification('Leads Deleted', `${selectedLeads.size} leads have been removed.`, 'success');
+                deselectAll();
+            } catch (error) {
+                showNotification('Error', 'Failed to delete leads.', 'error');
+                console.error('Error bulk deleting leads:', error);
+            }
             renderLeads();
             updateStats();
         }
@@ -4778,17 +5129,17 @@
         // ==================== MANAGER CONTROLS ====================
 
         // Open manager controls modal
-        function openManagerControls() {
+        async function openManagerControls() {
             // Load current targets
-            const targets = storage.get('salesTargets') || { daily: 6, weekly: 42, monthly: 180, revenue: 10000 };
+            const targets = await firestore.getSettings();
             document.getElementById('dailyTarget').value = targets.daily;
             document.getElementById('weeklyTarget').value = targets.weekly;
             document.getElementById('monthlyTarget').value = targets.monthly;
             document.getElementById('revenueTarget').value = targets.revenue;
 
             // Load users list
-            loadUsersList();
-            populatePasswordChangeDropdown();
+            await loadUsersList();
+            await populatePasswordChangeDropdown();
 
             document.getElementById('managerControlsModal').classList.add('active');
             lucide.createIcons();
@@ -4801,8 +5152,8 @@
         }
 
         // Load users list
-        function loadUsersList() {
-            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+        async function loadUsersList() {
+            const users = await firestore.getUsers();
             const usersList = document.getElementById('usersList');
 
             usersList.innerHTML = Object.entries(users).map(([username, user]) => `
@@ -4824,8 +5175,8 @@
         }
 
         // Populate password change dropdown
-        function populatePasswordChangeDropdown() {
-            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+        async function populatePasswordChangeDropdown() {
+            const users = await firestore.getUsers();
             const select = document.getElementById('passwordChangeUser');
 
             select.innerHTML = Object.entries(users).map(([username, user]) => `
@@ -4865,7 +5216,7 @@
         }
 
         // Add new user
-        function addNewUser() {
+        async function addNewUser() {
             const username = document.getElementById('newUsername').value.trim().toLowerCase();
             const fullName = document.getElementById('newUserFullName').value.trim();
             const password = document.getElementById('newUserPassword').value;
@@ -4886,42 +5237,47 @@
                 return;
             }
 
-            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+            try {
+                const users = await firestore.getUsers();
 
-            if (users[username]) {
-                showNotification('Error', `Username "${username}" already exists.`, 'error');
-                return;
+                if (users[username]) {
+                    showNotification('Error', `Username "${username}" already exists.`, 'error');
+                    return;
+                }
+
+                await firestore.addUser(username, {
+                    password: password,
+                    role: role,
+                    name: fullName
+                });
+
+                showNotification('Success', `User ${fullName} has been created successfully.`, 'success');
+                hideAddUserForm();
+                await loadUsersList();
+                await populatePasswordChangeDropdown();
+            } catch (error) {
+                showNotification('Error', 'Failed to create user.', 'error');
+                console.error('Error creating user:', error);
             }
-
-            users[username] = {
-                password: password,
-                role: role,
-                name: fullName
-            };
-
-            storage.set('arthurSleepUsers', users);
-            showNotification('Success', `User ${fullName} has been created successfully.`, 'success');
-
-            hideAddUserForm();
-            loadUsersList();
-            populatePasswordChangeDropdown();
         }
 
         // Delete user
-        function deleteUser(username) {
+        async function deleteUser(username) {
             if (!confirm(`Are you sure you want to delete user "${username}"? This cannot be undone.`)) return;
 
-            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
-            delete users[username];
-            storage.set('arthurSleepUsers', users);
-
-            showNotification('Success', 'User has been deleted.', 'success');
-            loadUsersList();
-            populatePasswordChangeDropdown();
+            try {
+                await firestore.deleteUser(username);
+                showNotification('Success', 'User has been deleted.', 'success');
+                await loadUsersList();
+                await populatePasswordChangeDropdown();
+            } catch (error) {
+                showNotification('Error', 'Failed to delete user.', 'error');
+                console.error('Error deleting user:', error);
+            }
         }
 
         // Update user password
-        function updateUserPassword() {
+        async function updateUserPassword() {
             const username = document.getElementById('passwordChangeUser').value;
             const newPassword = document.getElementById('userNewPassword').value;
 
@@ -4935,22 +5291,26 @@
                 return;
             }
 
-            const users = storage.get('arthurSleepUsers') || getDefaultUsers();
+            try {
+                const users = await firestore.getUsers();
 
-            if (!users[username]) {
-                showNotification('Error', 'User not found.', 'error');
-                return;
+                if (!users[username]) {
+                    showNotification('Error', 'User not found.', 'error');
+                    return;
+                }
+
+                await firestore.updateUserPassword(username, newPassword);
+
+                document.getElementById('userNewPassword').value = '';
+                showNotification('Success', `Password updated for ${users[username].name}.`, 'success');
+            } catch (error) {
+                showNotification('Error', 'Failed to update password.', 'error');
+                console.error('Error updating password:', error);
             }
-
-            users[username].password = newPassword;
-            storage.set('arthurSleepUsers', users);
-
-            document.getElementById('userNewPassword').value = '';
-            showNotification('Success', `Password updated for ${users[username].name}.`, 'success');
         }
 
         // Update sales targets
-        function updateTargets() {
+        async function updateTargets() {
             const targets = {
                 daily: parseInt(document.getElementById('dailyTarget').value),
                 weekly: parseInt(document.getElementById('weeklyTarget').value),
@@ -4958,8 +5318,14 @@
                 revenue: parseFloat(document.getElementById('revenueTarget').value)
             };
 
-            storage.set('salesTargets', targets);
-            showNotification('Success', 'Sales targets have been updated successfully.', 'success');
+            try {
+                await firestore.updateSettings(targets);
+                showNotification('Success', 'Sales targets have been updated successfully.', 'success');
+                await updateStats();
+            } catch (error) {
+                showNotification('Error', 'Failed to update targets.', 'error');
+                console.error('Error updating targets:', error);
+            }
 
             // Refresh stats to show new targets
             updateStats();
@@ -5064,7 +5430,7 @@
         }
 
         // Create follow-ups when lead is created
-        function createFollowups(leadId) {
+        async function createFollowups(leadId) {
             const lead = leads.find(l => l.id === leadId);
             if (!lead || lead.status === 'converted') return;
 
@@ -5099,7 +5465,7 @@
                 }
             ];
 
-            storage.set('arthurSleepLeadsAdvanced', leads);
+            await firestore.updateLead(leadId, { followups: lead.followups });
         }
 
         // Open follow-up acknowledgment modal
@@ -5135,7 +5501,7 @@
         }
 
         // Submit follow-up acknowledgment
-        function submitFollowupAck(event) {
+        async function submitFollowupAck(event) {
             event.preventDefault();
 
             const leadId = parseInt(document.getElementById('ackLeadId').value);
@@ -5156,16 +5522,19 @@
             followup.notes = notes;
             followup.completedBy = currentUser.username;
 
-            // Add communication record
-            addCommunication(leadId, 'followup',
-                `${followupType === '24h' ? '24 hour' : '72 hour'} follow-up completed via ${contactMethod}. ${notes ? 'Notes: ' + notes : ''}`
-            );
+            try {
+                await firestore.updateLead(leadId.toString(), { followups: lead.followups });
+                // Add communication record
+                await addCommunication(leadId.toString(), 'followup',
+                    `${followupType === '24h' ? '24 hour' : '72 hour'} follow-up completed via ${contactMethod}. ${notes ? 'Notes: ' + notes : ''}`
+                );
 
-            storage.set('arthurSleepLeadsAdvanced', leads);
-
-            showNotification('Success', 'Follow-up has been acknowledged and recorded.', 'success');
-
-            closeFollowupAck();
+                showNotification('Success', 'Follow-up has been acknowledged and recorded.', 'success');
+                closeFollowupAck();
+            } catch (error) {
+                showNotification('Error', 'Failed to update follow-up.', 'error');
+                console.error('Error updating follow-up:', error);
+            }
             renderCalendar();
             renderLeads();
         }
@@ -5480,24 +5849,86 @@
             }
         }
 
-        function init() {
-            // Initialize dashboard layout
-            initDashboardLayout();
+        // Reorganize dashboard layout for employees
+        function reorganizeEmployeeDashboard() {
+            // Find the analytics section (Daily Target Progress)
+            const analyticsSection = document.querySelector('.analytics-section');
 
-            // Initialize comments array for existing leads if not present
-            leads = leads.map(lead => {
-                if (!lead.comments) {
-                    lead.comments = [];
+            // Find the chart cards
+            const chartCards = document.querySelectorAll('.chart-card');
+
+            // Find the main content area
+            const mainContent = document.querySelector('.main-content');
+
+            if (!analyticsSection || !mainContent) return;
+
+            // Create a wrapper for employee charts section
+            const chartsSection = document.createElement('div');
+            chartsSection.className = 'employee-charts-section';
+            chartsSection.id = 'employeeChartsSection';
+
+            // Move specific charts: Conversion Trend (index 0) and Payment Status (index 2)
+            if (chartCards.length >= 3) {
+                // Clone the charts we want to show
+                const conversionChart = chartCards[0].cloneNode(true);
+                const statusChart = chartCards[2].cloneNode(true);
+
+                chartsSection.appendChild(conversionChart);
+                chartsSection.appendChild(statusChart);
+
+                // Insert charts section before the main content
+                if (mainContent.parentNode) {
+                    mainContent.parentNode.insertBefore(chartsSection, mainContent);
                 }
-                if (!lead.pipelineStage) {
-                    lead.pipelineStage = 'new';
+
+                // Re-initialize chart icons
+                lucide.createIcons();
+            }
+        }
+
+        // Real-time listener for leads
+        function setupRealtimeListeners() {
+            // Listen to leads collection
+            unsubscribeLeads = db.collection('leads').onSnapshot(snapshot => {
+                leads = [];
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    leads.push({
+                        ...data,
+                        id: doc.id
+                    });
+                });
+
+                // Sort by created date descending
+                leads.sort((a, b) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+                    const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+                    return dateB - dateA;
+                });
+
+                // Re-render everything
+                renderLeads();
+                updateStats();
+                initCharts();
+                renderQuickStats();
+                renderUpcomingFollowups();
+                if (currentUser.role === 'manager') {
+                    renderEmployeePerformance();
+                    renderSidebarContent();
                 }
-                if (!lead.stageEnteredAt) {
-                    lead.stageEnteredAt = lead.createdAt;
-                }
-                return lead;
             });
-            storage.set('arthurSleepLeadsAdvanced', leads);
+        }
+
+        async function init() {
+            try {
+                // Initialize dashboard layout
+                initDashboardLayout();
+
+                // Load leads from Firestore
+                leads = await firestore.getLeads();
+
+                // Set up real-time listeners
+                setupRealtimeListeners();
 
             // Set up UI based on user role
             if (currentUser) {
@@ -5547,26 +5978,34 @@
                     document.getElementById('addLeadBtn').style.display = 'inline-flex';
                     document.getElementById('checkFollowupsBtn').style.display = 'inline-flex';
 
+                    // Reorganize dashboard to show charts at top
+                    reorganizeEmployeeDashboard();
+
                     // Filter leads (only show their own) - this will be done in renderLeads()
                 }
             }
 
-            renderLeads();
-            updateStats();
-            initCharts();
-            checkReminders();
-            checkOverdueFollowups();
-
-            // Render sidebar components
-            renderQuickStats();
-            renderUpcomingFollowups();
-            renderSidebarContent();
-
-            // Check reminders and overdue follow-ups every hour
-            setInterval(() => {
+                renderLeads();
+                await updateStats();
+                initCharts();
                 checkReminders();
                 checkOverdueFollowups();
-            }, 60 * 60 * 1000);
+
+                // Render sidebar components
+                renderQuickStats();
+                renderUpcomingFollowups();
+                renderSidebarContent();
+
+                // Check reminders and overdue follow-ups every hour
+                setInterval(() => {
+                    checkReminders();
+                    checkOverdueFollowups();
+                }, 60 * 60 * 1000);
+
+            } catch (error) {
+                showNotification('Error', 'Failed to load data from cloud.', 'error');
+                console.error('Error initializing:', error);
+            }
         }
 
         init();
