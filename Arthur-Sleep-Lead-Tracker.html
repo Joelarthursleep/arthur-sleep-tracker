@@ -161,30 +161,15 @@
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 10px;
+            height: 48px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 18px;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-            position: relative;
-            overflow: hidden;
         }
 
-        .logo-icon::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
+        .logo-icon img {
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shimmer 3s infinite;
+            width: auto;
+            object-fit: contain;
         }
 
         .title-group h1 {
@@ -1664,6 +1649,87 @@
             border-left-color: #3b82f6;
         }
 
+        /* Full-page Kanban view */
+        .kanban-full-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gray-50);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .kanban-full-view.active {
+            display: flex;
+        }
+
+        .kanban-full-header {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .kanban-full-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .kanban-full-title h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .kanban-full-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        .kanban-board.full-page {
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* Time in stage badge */
+        .time-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .time-badge.fresh {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .time-badge.moderate {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .time-badge.stale {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
         .kanban-card-name {
             font-size: 14px;
             font-weight: 600;
@@ -1935,12 +2001,13 @@
 
     <div class="container">
         <!-- Header -->
-        <div class="header">
+        <div class="header" id="mainHeader">
             <div class="header-title">
-                <div class="logo-icon">AS</div>
-                <div class="title-group">
-                    <h1>Advanced Lead Management System</h1>
-                    <p id="userWelcome">Comprehensive payment tracking and follow-up automation</p>
+                <div class="logo-icon">
+                    <img src="Arthur-Sleep-Text-Logo.png" alt="Arthur Sleep">
+                </div>
+                <div class="title-group" style="margin-left: 12px;">
+                    <p id="userWelcome" style="font-size: 14px; font-weight: 600; color: var(--gray-700); margin: 0;">Comprehensive payment tracking and follow-up automation</p>
                 </div>
             </div>
             <div class="header-actions">
@@ -4081,6 +4148,23 @@
                 leadData.linkSentDate = null;
             }
 
+            // Track stage entry time
+            if (leadId) {
+                const existingLead = leads.find(l => l.id === parseInt(leadId));
+                const newStage = document.getElementById('pipelineStage').value || 'new';
+                const oldStage = existingLead.pipelineStage || 'new';
+
+                // If stage changed, update stageEnteredAt
+                if (newStage !== oldStage) {
+                    leadData.stageEnteredAt = new Date().toISOString();
+                } else {
+                    leadData.stageEnteredAt = existingLead.stageEnteredAt || existingLead.createdAt;
+                }
+            } else {
+                // New lead
+                leadData.stageEnteredAt = new Date().toISOString();
+            }
+
             if (leadId) {
                 const index = leads.findIndex(l => l.id === parseInt(leadId));
                 leads[index] = leadData;
@@ -4424,28 +4508,26 @@
         }
 
         // Toggle Kanban view
-        function toggleKanban() {
-            const kanbanView = document.getElementById('kanbanView');
-            const leadsContainer = document.getElementById('leadsContainer');
-            const tableView = document.getElementById('tableView');
-            const kanbanBtn = document.getElementById('kanbanBtn');
+        function toggleKanbanFullView() {
+            const fullView = document.getElementById('kanbanFullView');
 
-            if (kanbanView.style.display === 'none' || kanbanView.style.display === '') {
-                // Show Kanban view
-                kanbanView.style.display = 'block';
-                leadsContainer.style.display = 'none';
-                tableView.classList.remove('active');
-                kanbanBtn.textContent = '← Back to Leads';
-                renderKanban();
+            if (fullView.classList.contains('active')) {
+                // Hide Kanban, show dashboard
+                fullView.classList.remove('active');
+                document.body.style.overflow = 'auto';
             } else {
-                // Hide Kanban view, return to cards view
-                kanbanView.style.display = 'none';
-                leadsContainer.style.display = 'grid';
-                tableView.classList.remove('active');
-                kanbanBtn.innerHTML = '<i data-lucide="trello" style="width: 18px; height: 18px;"></i> Kanban View';
+                // Show Kanban, hide dashboard
+                fullView.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                renderKanbanFull();
             }
 
             lucide.createIcons();
+        }
+
+        // Keep old function name for compatibility, just redirect
+        function toggleKanban() {
+            toggleKanbanFullView();
         }
 
         // Render Kanban board
@@ -4496,6 +4578,90 @@
                                     ` : ''}
                                     ${hasUrgentComments ? `
                                         <div class="kanban-card-urgent">URGENT</div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Get time in stage badge
+        function getTimeInStageBadge(lead) {
+            const stageEnteredAt = lead.stageEnteredAt || lead.createdAt;
+            const now = new Date();
+            const entered = new Date(stageEnteredAt);
+            const hoursInStage = Math.floor((now - entered) / (1000 * 60 * 60));
+            const daysInStage = Math.floor(hoursInStage / 24);
+
+            let badgeText = '';
+            let badgeClass = 'fresh';
+
+            if (hoursInStage < 1) {
+                badgeText = 'Just added';
+                badgeClass = 'fresh';
+            } else if (hoursInStage < 24) {
+                badgeText = `${hoursInStage} ${hoursInStage === 1 ? 'hour' : 'hours'} in stage`;
+                badgeClass = 'fresh';
+            } else if (daysInStage < 2) {
+                badgeText = `${daysInStage} day in stage`;
+                badgeClass = 'fresh';
+            } else if (daysInStage <= 5) {
+                badgeText = `${daysInStage} days in stage`;
+                badgeClass = 'moderate';
+            } else {
+                badgeText = `${daysInStage} days in stage`;
+                badgeClass = 'stale';
+            }
+
+            return `<div class="time-badge ${badgeClass}">${badgeText}</div>`;
+        }
+
+        // Render Kanban board in full-page view
+        function renderKanbanFull() {
+            const kanbanBoard = document.getElementById('kanbanBoardFull');
+
+            const stages = {
+                'new': { name: 'New Leads', color: '#10b981' },
+                'contacted': { name: 'Initial Contact', color: '#06b6d4' },
+                'link-sent': { name: 'Payment Link Sent', color: '#8b5cf6' },
+                'appointment': { name: 'Appointment Booked', color: '#f59e0b' },
+                'followup': { name: 'Follow-up Required', color: '#ef4444' },
+                'paid': { name: 'Paid', color: '#3b82f6' }
+            };
+
+            kanbanBoard.innerHTML = Object.entries(stages).map(([stageKey, stage]) => {
+                const stageLeads = leads.filter(l => (l.pipelineStage || 'new') === stageKey);
+
+                return `
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <span>${stage.name}</span>
+                            <span class="kanban-count">${stageLeads.length}</span>
+                        </div>
+                        ${stageLeads.map(lead => {
+                            const timeBadge = getTimeInStageBadge(lead);
+                            return `
+                                <div class="kanban-card stage-${stageKey}" onclick="editLead(${lead.id})">
+                                    ${timeBadge}
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--gray-900); margin-bottom: 8px;">
+                                        ${lead.customerName}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 8px;">
+                                        ${lead.customerEmail}
+                                    </div>
+                                    ${lead.paymentAmount ? `
+                                        <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 8px;">
+                                            ${formatCurrency(lead.paymentAmount)}
+                                        </div>
+                                    ` : ''}
+                                    ${lead.comments && lead.comments.some(c => c.urgent) ? `
+                                        <div style="color: var(--danger); font-size: 11px; font-weight: 700; margin-top: 8px;">
+                                            URGENT
+                                        </div>
                                     ` : ''}
                                 </div>
                             `;
@@ -5326,6 +5492,9 @@
                 if (!lead.pipelineStage) {
                     lead.pipelineStage = 'new';
                 }
+                if (!lead.stageEnteredAt) {
+                    lead.stageEnteredAt = lead.createdAt;
+                }
                 return lead;
             });
             storage.set('arthurSleepLeadsAdvanced', leads);
@@ -5402,5 +5571,26 @@
 
         init();
     </script>
+
+    <!-- Full-Page Kanban View -->
+    <div class="kanban-full-view" id="kanbanFullView">
+        <div class="kanban-full-header">
+            <div class="kanban-full-title">
+                <div class="logo-icon">
+                    <img src="Arthur-Sleep-Text-Logo.png" alt="Arthur Sleep">
+                </div>
+                <h2>Pipeline Kanban Board</h2>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleKanbanFullView()">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                Back to Dashboard
+            </button>
+        </div>
+        <div class="kanban-full-content">
+            <div class="kanban-board full-page" id="kanbanBoardFull">
+                <!-- Kanban columns will be rendered here -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>
