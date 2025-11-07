@@ -3501,12 +3501,19 @@
             });
             document.querySelector(`[data-view="${view}"]`).classList.add('active');
 
+            const leadsContainer = document.getElementById('leadsContainer');
+            const tableView = document.getElementById('tableView');
+            const kanbanView = document.getElementById('kanbanView');
+
+            // Hide kanban view if switching between cards/table
+            kanbanView.style.display = 'none';
+
             if (view === 'cards') {
-                document.getElementById('leadsContainer').style.display = 'grid';
-                document.getElementById('tableView').classList.remove('active');
+                leadsContainer.style.display = 'grid';
+                tableView.classList.remove('active');
             } else {
-                document.getElementById('leadsContainer').style.display = 'none';
-                document.getElementById('tableView').classList.add('active');
+                leadsContainer.style.display = 'none';
+                tableView.classList.add('active');
             }
 
             lucide.createIcons();
@@ -3910,17 +3917,24 @@
             const kanbanView = document.getElementById('kanbanView');
             const leadsContainer = document.getElementById('leadsContainer');
             const tableView = document.getElementById('tableView');
+            const kanbanBtn = document.getElementById('kanbanBtn');
 
-            if (kanbanView.style.display === 'none') {
+            if (kanbanView.style.display === 'none' || kanbanView.style.display === '') {
+                // Show Kanban view
                 kanbanView.style.display = 'block';
                 leadsContainer.style.display = 'none';
-                tableView.style.display = 'none';
+                tableView.classList.remove('active');
+                kanbanBtn.textContent = '← Back to Leads';
                 renderKanban();
             } else {
+                // Hide Kanban view, return to cards view
                 kanbanView.style.display = 'none';
                 leadsContainer.style.display = 'grid';
-                tableView.style.display = 'none';
+                tableView.classList.remove('active');
+                kanbanBtn.innerHTML = '<i data-lucide="trello" style="width: 18px; height: 18px;"></i> Kanban View';
             }
+
+            lucide.createIcons();
         }
 
         // Render Kanban board
