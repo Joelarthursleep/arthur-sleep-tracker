@@ -1567,6 +1567,138 @@
             flex: 1;
         }
 
+        .urgent-comment {
+            background: var(--danger-light) !important;
+            border-left: 3px solid var(--danger) !important;
+        }
+
+        .urgent-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        /* Kanban Board */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            padding: 20px 0;
+        }
+
+        .kanban-column {
+            background: var(--gray-50);
+            border-radius: 16px;
+            padding: 20px;
+            min-height: 400px;
+            border: 2px solid var(--gray-200);
+        }
+
+        .kanban-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gray-300);
+        }
+
+        .kanban-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .kanban-count {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .kanban-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .kanban-card.stage-new {
+            border-left-color: #10b981;
+        }
+
+        .kanban-card.stage-contacted {
+            border-left-color: #06b6d4;
+        }
+
+        .kanban-card.stage-link-sent {
+            border-left-color: #8b5cf6;
+        }
+
+        .kanban-card.stage-appointment {
+            border-left-color: #f59e0b;
+        }
+
+        .kanban-card.stage-followup {
+            border-left-color: #ef4444;
+        }
+
+        .kanban-card.stage-paid {
+            border-left-color: #3b82f6;
+        }
+
+        .kanban-card-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .kanban-card-email {
+            font-size: 12px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .kanban-card-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 8px;
+        }
+
+        .kanban-card-urgent {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .analytics-section {
@@ -1665,6 +1797,10 @@
                 <button class="btn btn-ghost" id="managerControlsBtn" onclick="openManagerControls()" style="display: none;">
                     <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                     Manager Controls
+                </button>
+                <button class="btn btn-ghost" id="kanbanBtn" onclick="toggleKanban()" style="display: none;">
+                    <i data-lucide="trello" style="width: 18px; height: 18px;"></i>
+                    Kanban View
                 </button>
                 <button class="btn btn-ghost" id="calendarBtn" onclick="toggleCalendar()">
                     <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
@@ -2034,6 +2170,13 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Kanban View -->
+            <div id="kanbanView" style="display: none;">
+                <div class="kanban-board">
+                    <!-- Kanban columns will be dynamically inserted here -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2058,6 +2201,19 @@
                             <option value="payment">Payment Follow-up</option>
                             <option value="inquiry">General Inquiry / Interest</option>
                             <option value="consultation">Consultation Request</option>
+                        </select>
+                    </div>
+
+                    <!-- Pipeline Stage -->
+                    <div class="form-group form-grid-full">
+                        <label class="form-label required">Pipeline Stage</label>
+                        <select class="form-select" id="pipelineStage" required>
+                            <option value="new">New Lead</option>
+                            <option value="contacted">Initial Contact</option>
+                            <option value="link-sent">Payment Link Sent</option>
+                            <option value="appointment">Appointment Booked</option>
+                            <option value="followup">Follow-up Required</option>
+                            <option value="paid">Paid</option>
                         </select>
                     </div>
 
@@ -2655,6 +2811,31 @@
                                 }).join('')}
                             </div>
                         ` : ''}
+
+                        <!-- Comments Section -->
+                        <div class="comments-section">
+                            <div style="font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="message-circle" style="width: 16px; height: 16px;"></i>
+                                Team Comments
+                            </div>
+                            ${lead.comments && lead.comments.length > 0 ? lead.comments.map(comment => `
+                                <div class="comment-item ${comment.urgent ? 'urgent-comment' : ''}">
+                                    ${comment.urgent ? '<div class="urgent-badge">URGENT FOLLOW-UP REQUIRED</div>' : ''}
+                                    <div class="comment-header">
+                                        <span class="comment-author">${comment.authorName} (${comment.role})</span>
+                                        <span class="comment-time">${new Date(comment.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div class="comment-text">${comment.text}</div>
+                                </div>
+                            `).join('') : '<div style="font-size: 13px; color: var(--gray-500); font-style: italic;">No comments yet</div>'}
+                            <div class="comment-input">
+                                <input type="text" class="form-input" id="commentInput-${lead.id}" placeholder="Add a comment...">
+                                <button class="btn-small btn-primary" onclick="addComment(${lead.id})">Send</button>
+                                ${currentUser.role === 'manager' ? `
+                                    <button class="btn-small btn-danger" onclick="addUrgentComment(${lead.id})">Urgent</button>
+                                ` : ''}
+                            </div>
+                        </div>
 
                         <div class="lead-actions">
                             ${status !== 'converted' ? `
@@ -3482,10 +3663,12 @@
                 interests: interests,
                 productService: document.getElementById('productService').value,
                 notes: document.getElementById('leadNotes').value,
+                pipelineStage: document.getElementById('pipelineStage').value || 'new',
                 status: 'pending',
                 createdAt: leadId ? leads.find(l => l.id === parseInt(leadId)).createdAt : new Date().toISOString(),
                 createdBy: leadId ? leads.find(l => l.id === parseInt(leadId)).createdBy : currentUser.username,
-                communications: leadId ? leads.find(l => l.id === parseInt(leadId)).communications : []
+                communications: leadId ? leads.find(l => l.id === parseInt(leadId)).communications : [],
+                comments: leadId ? leads.find(l => l.id === parseInt(leadId)).comments || [] : []
             };
 
             // Add payment fields if it's a payment lead
@@ -3534,6 +3717,9 @@
             document.getElementById('leadType').value = lead.leadType || 'payment';
             togglePaymentFields();
 
+            // Set pipeline stage (default to 'new' for backward compatibility)
+            document.getElementById('pipelineStage').value = lead.pipelineStage || 'new';
+
             document.getElementById('customerName').value = lead.customerName;
             document.getElementById('customerEmail').value = lead.customerEmail;
             document.getElementById('customerPhone').value = lead.customerPhone || '';
@@ -3563,18 +3749,27 @@
 
         // Mark as converted
         function markAsConverted(id) {
+            const lead = leads.find(l => l.id === id);
+            if (!lead) return;
+
+            // Prompt for order number
+            const orderNumber = prompt('Enter the order number for this payment:');
+            if (!orderNumber || orderNumber.trim() === '') {
+                showNotification('Order Number Required', 'Please enter an order number to mark this lead as paid.', 'warning');
+                return;
+            }
+
             if (!confirm('Mark this lead as paid/converted? This will archive the lead.')) return;
 
-            const lead = leads.find(l => l.id === id);
-            if (lead) {
-                lead.status = 'converted';
-                lead.convertedDate = new Date().toISOString();
-                addCommunication(id, 'success', 'Payment received - Lead converted successfully');
-                storage.set('arthurSleepLeadsAdvanced', leads);
-                showNotification('Lead Converted', `${lead.customerName} has been marked as paid. Excellent work!`, 'success');
-                renderLeads();
-                updateStats();
-            }
+            lead.status = 'converted';
+            lead.convertedDate = new Date().toISOString();
+            lead.orderNumber = orderNumber.trim();
+            lead.pipelineStage = 'paid';
+            addCommunication(id, 'success', `Payment received - Order #${orderNumber} - Lead converted successfully`);
+            storage.set('arthurSleepLeadsAdvanced', leads);
+            showNotification('Lead Converted', `${lead.customerName} has been marked as paid with Order #${orderNumber}. Excellent work!`, 'success');
+            renderLeads();
+            updateStats();
         }
 
         // Update follow-up date
@@ -3591,6 +3786,202 @@
                 renderLeads();
                 updateStats();
             }
+        }
+
+        // Add comment to lead
+        function addComment(leadId) {
+            const input = document.getElementById(`commentInput-${leadId}`);
+            const commentText = input.value.trim();
+
+            if (!commentText) {
+                showNotification('Empty Comment', 'Please enter a comment before sending.', 'warning');
+                return;
+            }
+
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            if (!lead.comments) {
+                lead.comments = [];
+            }
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                authorName: currentUser.name,
+                authorUsername: currentUser.username,
+                role: currentUser.role,
+                timestamp: new Date().toISOString(),
+                urgent: false
+            };
+
+            lead.comments.push(comment);
+            storage.set('arthurSleepLeadsAdvanced', leads);
+            input.value = '';
+            renderLeads();
+            showNotification('Comment Added', 'Your comment has been added successfully.', 'success');
+        }
+
+        // Add urgent comment (manager only)
+        function addUrgentComment(leadId) {
+            if (currentUser.role !== 'manager') {
+                showNotification('Access Denied', 'Only managers can add urgent comments.', 'danger');
+                return;
+            }
+
+            const input = document.getElementById(`commentInput-${leadId}`);
+            const commentText = input.value.trim();
+
+            if (!commentText) {
+                showNotification('Empty Comment', 'Please enter a comment before sending.', 'warning');
+                return;
+            }
+
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            if (!lead.comments) {
+                lead.comments = [];
+            }
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                authorName: currentUser.name,
+                authorUsername: currentUser.username,
+                role: currentUser.role,
+                timestamp: new Date().toISOString(),
+                urgent: true
+            };
+
+            lead.comments.push(comment);
+            createUrgentFollowups(leadId);
+            storage.set('arthurSleepLeadsAdvanced', leads);
+            input.value = '';
+            renderLeads();
+            showNotification('Urgent Comment Added', 'Urgent comment added with automatic follow-ups created.', 'danger');
+        }
+
+        // Create urgent follow-ups
+        function createUrgentFollowups(leadId) {
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead || lead.status === 'converted') return;
+
+            const now = new Date();
+
+            // Create 24 hour urgent follow-up
+            const followup24h = new Date(now);
+            followup24h.setHours(followup24h.getHours() + 24);
+
+            // Create 72 hour urgent follow-up
+            const followup72h = new Date(now);
+            followup72h.setHours(followup72h.getHours() + 72);
+
+            if (!lead.followups) {
+                lead.followups = [];
+            }
+
+            lead.followups.push({
+                id: Date.now() + '_urgent_24h',
+                type: '24h',
+                urgent: true,
+                dueDate: followup24h.toISOString(),
+                completed: false,
+                contactMethod: null,
+                notes: null,
+                completedAt: null
+            });
+
+            lead.followups.push({
+                id: Date.now() + '_urgent_72h',
+                type: '72h',
+                urgent: true,
+                dueDate: followup72h.toISOString(),
+                completed: false,
+                contactMethod: null,
+                notes: null,
+                completedAt: null
+            });
+
+            addCommunication(leadId, 'alert', 'URGENT: Priority follow-ups created (24h and 72h)');
+            storage.set('arthurSleepLeadsAdvanced', leads);
+        }
+
+        // Toggle Kanban view
+        function toggleKanban() {
+            const kanbanView = document.getElementById('kanbanView');
+            const leadsContainer = document.getElementById('leadsContainer');
+            const tableView = document.getElementById('tableView');
+
+            if (kanbanView.style.display === 'none') {
+                kanbanView.style.display = 'block';
+                leadsContainer.style.display = 'none';
+                tableView.style.display = 'none';
+                renderKanban();
+            } else {
+                kanbanView.style.display = 'none';
+                leadsContainer.style.display = 'grid';
+                tableView.style.display = 'none';
+            }
+        }
+
+        // Render Kanban board
+        function renderKanban() {
+            const stages = {
+                'new': 'New Leads',
+                'contacted': 'Initial Contact',
+                'link-sent': 'Payment Link Sent',
+                'appointment': 'Appointment Booked',
+                'followup': 'Follow-up Required',
+                'paid': 'Paid'
+            };
+
+            const stageColors = {
+                'new': '#10b981',
+                'contacted': '#06b6d4',
+                'link-sent': '#8b5cf6',
+                'appointment': '#f59e0b',
+                'followup': '#ef4444',
+                'paid': '#3b82f6'
+            };
+
+            const kanbanBoard = document.querySelector('.kanban-board');
+
+            kanbanBoard.innerHTML = Object.keys(stages).map(stageKey => {
+                const stageLeads = leads.filter(lead => {
+                    const leadStage = lead.pipelineStage || 'new';
+                    return leadStage === stageKey && lead.status !== 'converted' && (currentUser.role === 'manager' || !lead.createdBy || lead.createdBy === currentUser.username);
+                });
+
+                return `
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <div class="kanban-title" style="color: ${stageColors[stageKey]};">
+                                <i data-lucide="circle" style="width: 12px; height: 12px; fill: ${stageColors[stageKey]};"></i>
+                                ${stages[stageKey]}
+                            </div>
+                            <div class="kanban-count">${stageLeads.length}</div>
+                        </div>
+                        ${stageLeads.map(lead => {
+                            const hasUrgentComments = lead.comments && lead.comments.some(c => c.urgent);
+                            return `
+                                <div class="kanban-card stage-${stageKey}" onclick="editLead(${lead.id})">
+                                    <div class="kanban-card-name">${lead.customerName}</div>
+                                    <div class="kanban-card-email">${lead.customerEmail}</div>
+                                    ${lead.paymentAmount ? `
+                                        <div class="kanban-card-amount">${formatCurrency(lead.paymentAmount)}</div>
+                                    ` : ''}
+                                    ${hasUrgentComments ? `
+                                        <div class="kanban-card-urgent">URGENT</div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
         }
 
         // Copy payment link
@@ -4168,6 +4559,18 @@
 
         // Initialize
         function init() {
+            // Initialize comments array for existing leads if not present
+            leads = leads.map(lead => {
+                if (!lead.comments) {
+                    lead.comments = [];
+                }
+                if (!lead.pipelineStage) {
+                    lead.pipelineStage = 'new';
+                }
+                return lead;
+            });
+            storage.set('arthurSleepLeadsAdvanced', leads);
+
             // Set up UI based on user role
             if (currentUser) {
                 document.getElementById('userWelcome').textContent = `Welcome back, ${currentUser.name}`;
