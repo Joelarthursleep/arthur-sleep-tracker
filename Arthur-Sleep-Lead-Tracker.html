@@ -1291,6 +1291,158 @@
             background: var(--gray-50);
         }
 
+        /* Manager Control Styles */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc2626;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        .priority-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .priority-critical {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .priority-high {
+            background: #fed7aa;
+            color: #ea580c;
+            border: 1px solid #fdba74;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde047;
+        }
+
+        .notification-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            border-left: 4px solid #667eea;
+        }
+
+        .notification-item {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .notification-urgent {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .notification-important {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .notification-info {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .notification-praise {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--gray-900);
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+
+        .priority-task-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+
+        .priority-task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .priority-label {
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-deadline {
+            font-size: 12px;
+            color: var(--gray-700);
+            font-weight: 600;
+        }
+
+        .priority-instructions {
+            font-size: 14px;
+            color: var(--gray-800);
+            line-height: 1.6;
+            margin-top: 8px;
+        }
+
+        .btn-position-relative {
+            position: relative;
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .analytics-section {
@@ -1382,6 +1534,14 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn btn-ghost" id="managerControlsBtn" onclick="openManagerControls()" style="display: none;">
+                    <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                    Manager Controls
+                </button>
+                <button class="btn btn-ghost" id="notificationsBtn" onclick="openNotifications()" style="display: none;">
+                    <i data-lucide="message-square" style="width: 18px; height: 18px;"></i>
+                    Send Message
+                </button>
                 <button class="btn btn-ghost" id="performanceBtn" onclick="showPerformance()" style="display: none;">
                     <i data-lucide="bar-chart" style="width: 18px; height: 18px;"></i>
                     Performance
@@ -1839,6 +1999,165 @@
         </div>
     </div>
 
+    <!-- Manager Controls Modal -->
+    <div class="modal" id="managerControlsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Manager Controls</h2>
+                <button class="close-btn" onclick="closeManagerControls()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <div style="display: grid; gap: 24px;">
+                <!-- Password Management Section -->
+                <div style="padding: 24px; background: var(--gray-50); border-radius: 16px; border: 2px solid var(--gray-200);">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="key" style="width: 20px; height: 20px; color: var(--primary);"></i>
+                        Password Management
+                    </h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Your Password (Manager)</label>
+                            <input type="password" class="form-input" id="managerNewPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ben's Password</label>
+                            <input type="password" class="form-input" id="benNewPassword" placeholder="Enter Ben's new password">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="updatePasswords()" style="width: 100%;">
+                        <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                        Update Passwords
+                    </button>
+                </div>
+
+                <!-- Target Settings Section -->
+                <div style="padding: 24px; background: var(--gray-50); border-radius: 16px; border: 2px solid var(--gray-200);">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="target" style="width: 20px; height: 20px; color: var(--primary);"></i>
+                        Ben's Sales Targets
+                    </h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Daily Target</label>
+                            <input type="number" class="form-input" id="dailyTarget" value="6" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weekly Target</label>
+                            <input type="number" class="form-input" id="weeklyTarget" value="42" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Monthly Target</label>
+                            <input type="number" class="form-input" id="monthlyTarget" value="180" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Revenue Target (£)</label>
+                            <input type="number" class="form-input" id="revenueTarget" value="10000" min="0" step="100">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="updateTargets()" style="width: 100%;">
+                        <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                        Update Targets
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Notification Modal -->
+    <div class="modal" id="notificationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Send Message to Ben</h2>
+                <button class="close-btn" onclick="closeNotificationModal()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <form onsubmit="sendNotification(event)">
+                <div class="form-group">
+                    <label class="form-label">Message Type</label>
+                    <select class="form-select" id="notificationType" required>
+                        <option value="">Select type...</option>
+                        <option value="urgent">🔴 Urgent - Requires Immediate Attention</option>
+                        <option value="important">🟡 Important - High Priority</option>
+                        <option value="info">🔵 Information - General Message</option>
+                        <option value="praise">🟢 Praise - Great Work!</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message Title</label>
+                    <input type="text" class="form-input" id="notificationTitle" placeholder="e.g., Follow up on overdue leads" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message Content</label>
+                    <textarea class="form-textarea" id="notificationMessage" placeholder="Type your message to Ben..." required style="min-height: 150px;"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+                        Send Message
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeNotificationModal()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Priority Task Modal -->
+    <div class="modal" id="priorityTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Assign Priority Task</h2>
+                <button class="close-btn" onclick="closePriorityTaskModal()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <form onsubmit="assignPriorityTask(event)">
+                <input type="hidden" id="priorityLeadId">
+
+                <div class="form-group">
+                    <label class="form-label">Priority Level</label>
+                    <select class="form-select" id="priorityLevel" required>
+                        <option value="">Select priority...</option>
+                        <option value="critical">🔴 Critical - Must complete today</option>
+                        <option value="high">🟠 High - Complete within 24 hours</option>
+                        <option value="medium">🟡 Medium - Complete this week</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Task Instructions</label>
+                    <textarea class="form-textarea" id="priorityInstructions" placeholder="Specific instructions for Ben..." required style="min-height: 120px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Deadline</label>
+                    <input type="datetime-local" class="form-input" id="priorityDeadline" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-warning" style="flex: 1;">
+                        <i data-lucide="flag" style="width: 18px; height: 18px;"></i>
+                        Assign Priority Task
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closePriorityTaskModal()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
@@ -1978,7 +2297,13 @@
                 const daysSinceSent = Math.abs(getDaysUntilFollowUp(lead.linkSentDate));
 
                 return `
-                    <div class="lead-card ${status === 'overdue' ? 'overdue' : status === 'due-soon' ? 'due-soon' : status === 'converted' ? 'converted' : ''}" style="animation-delay: ${index * 0.05}s;">
+                    <div class="lead-card ${status === 'overdue' ? 'overdue' : status === 'due-soon' ? 'due-soon' : status === 'converted' ? 'converted' : ''}" style="animation-delay: ${index * 0.05}s; position: relative;">
+                        ${lead.priorityTask && !lead.priorityTask.completed ? `
+                            <div class="priority-indicator priority-${lead.priorityTask.level}">
+                                <i data-lucide="flag" style="width: 12px; height: 12px;"></i>
+                                ${lead.priorityTask.level.toUpperCase()}
+                            </div>
+                        ` : ''}
                         <div class="lead-header">
                             <div class="lead-info">
                                 <h3>${lead.customerName}</h3>
@@ -1994,6 +2319,31 @@
                                 <span class="badge badge-${status}">${status.replace('-', ' ')}</span>
                             </div>
                         </div>
+
+                        ${lead.priorityTask && !lead.priorityTask.completed ? `
+                            <div class="priority-task-banner">
+                                <div class="priority-task-header">
+                                    <span class="priority-label">
+                                        <i data-lucide="alert-triangle" style="width: 14px; height: 14px; display: inline; vertical-align: middle;"></i>
+                                        Priority Task - ${lead.priorityTask.level.toUpperCase()}
+                                    </span>
+                                    <span class="priority-deadline">
+                                        <i data-lucide="clock" style="width: 12px; height: 12px; display: inline; vertical-align: middle;"></i>
+                                        Due: ${new Date(lead.priorityTask.deadline).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div class="priority-instructions">${lead.priorityTask.instructions}</div>
+                                <div style="font-size: 11px; color: var(--gray-600); margin-top: 8px;">
+                                    Assigned by ${lead.priorityTask.assignedBy} • ${timeAgo(new Date(lead.priorityTask.assignedAt))}
+                                </div>
+                                ${currentUser.role === 'employee' ? `
+                                    <button class="btn-small btn-success" onclick="completePriorityTask(${lead.id})" style="margin-top: 12px;">
+                                        <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                                        Mark Task Complete
+                                    </button>
+                                ` : ''}
+                            </div>
+                        ` : ''}
 
                         <div class="lead-body">
                             <div class="lead-detail">
@@ -2128,6 +2478,16 @@
                             <button class="btn-small btn-info" onclick="sendReminder(${lead.id})">
                                 <i data-lucide="send" style="width: 16px; height: 16px;"></i>
                                 Send Reminder
+                            </button>
+                            ${currentUser.role === 'manager' ? `
+                                <button class="btn-small btn-outline" onclick="openPriorityTask(${lead.id})" style="background: #fef3c7; border-color: #f59e0b; color: #d97706;">
+                                    <i data-lucide="flag" style="width: 16px; height: 16px;"></i>
+                                    Set Priority
+                                </button>
+                            ` : ''}
+                            <button class="btn-small btn-outline" onclick="addLeadComment(${lead.id})">
+                                <i data-lucide="message-circle" style="width: 16px; height: 16px;"></i>
+                                Comment
                             </button>
                             <button class="btn-small btn-outline" onclick="editLead(${lead.id})">
                                 <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
@@ -2827,6 +3187,288 @@
             );
         }
 
+        // Manager Control Functions
+        function openManagerControls() {
+            if (currentUser.role !== 'manager') return;
+
+            // Load current targets
+            const targets = JSON.parse(localStorage.getItem('salesTargets')) || {
+                daily: 6,
+                weekly: 42,
+                monthly: 180,
+                revenue: 10000
+            };
+
+            document.getElementById('dailyTarget').value = targets.daily;
+            document.getElementById('weeklyTarget').value = targets.weekly;
+            document.getElementById('monthlyTarget').value = targets.monthly;
+            document.getElementById('revenueTarget').value = targets.revenue;
+
+            document.getElementById('managerControlsModal').classList.add('active');
+        }
+
+        function closeManagerControls() {
+            document.getElementById('managerControlsModal').classList.remove('active');
+        }
+
+        function updatePasswords() {
+            const managerPassword = document.getElementById('managerNewPassword').value;
+            const benPassword = document.getElementById('benNewPassword').value;
+
+            if (!managerPassword && !benPassword) {
+                showNotification('Error', 'Please enter at least one password to update', 'error');
+                return;
+            }
+
+            // Get existing users from login page localStorage
+            let users = JSON.parse(localStorage.getItem('userCredentials')) || {
+                'joel': { password: 'manager123', role: 'manager', name: 'Joel (Manager)' },
+                'manager': { password: 'manager123', role: 'manager', name: 'Joel (Manager)' },
+                'ben': { password: 'ben123', role: 'employee', name: 'Ben' }
+            };
+
+            let updated = [];
+
+            if (managerPassword && managerPassword.length >= 6) {
+                users['joel'].password = managerPassword;
+                users['manager'].password = managerPassword;
+                updated.push('Manager password');
+            }
+
+            if (benPassword && benPassword.length >= 6) {
+                users['ben'].password = benPassword;
+                updated.push('Ben\'s password');
+            }
+
+            if (updated.length === 0) {
+                showNotification('Error', 'Passwords must be at least 6 characters', 'error');
+                return;
+            }
+
+            // Save updated users
+            localStorage.setItem('userCredentials', JSON.stringify(users));
+
+            // Clear inputs
+            document.getElementById('managerNewPassword').value = '';
+            document.getElementById('benNewPassword').value = '';
+
+            showNotification('Success', `${updated.join(' and ')} updated successfully`, 'success');
+        }
+
+        function updateTargets() {
+            const targets = {
+                daily: parseInt(document.getElementById('dailyTarget').value) || 6,
+                weekly: parseInt(document.getElementById('weeklyTarget').value) || 42,
+                monthly: parseInt(document.getElementById('monthlyTarget').value) || 180,
+                revenue: parseInt(document.getElementById('revenueTarget').value) || 10000
+            };
+
+            localStorage.setItem('salesTargets', JSON.stringify(targets));
+            showNotification('Success', 'Sales targets updated successfully', 'success');
+
+            // Refresh stats to show new targets
+            updateStats();
+        }
+
+        // Notification Functions
+        function openNotifications() {
+            if (currentUser.role !== 'manager') return;
+            document.getElementById('notificationModal').classList.add('active');
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').classList.remove('active');
+        }
+
+        function sendNotification(event) {
+            event.preventDefault();
+
+            const notification = {
+                id: Date.now(),
+                type: document.getElementById('notificationType').value,
+                title: document.getElementById('notificationTitle').value,
+                message: document.getElementById('notificationMessage').value,
+                timestamp: new Date().toISOString(),
+                read: false,
+                from: currentUser.name
+            };
+
+            // Get existing notifications
+            let notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
+            notifications.unshift(notification);
+
+            // Keep last 50 notifications
+            notifications = notifications.slice(0, 50);
+
+            // Save notifications
+            localStorage.setItem('benNotifications', JSON.stringify(notifications));
+
+            // Clear form
+            document.getElementById('notificationTitle').value = '';
+            document.getElementById('notificationMessage').value = '';
+
+            showNotification('Success', 'Message sent to Ben successfully', 'success');
+            closeNotificationModal();
+        }
+
+        // Priority Task Functions
+        function openPriorityTask(leadId) {
+            if (currentUser.role !== 'manager') return;
+
+            document.getElementById('priorityTaskModal').setAttribute('data-lead-id', leadId);
+            document.getElementById('priorityTaskModal').classList.add('active');
+
+            // Set default deadline to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(17, 0, 0, 0);
+            document.getElementById('priorityDeadline').value = tomorrow.toISOString().slice(0, 16);
+        }
+
+        function closePriorityTaskModal() {
+            document.getElementById('priorityTaskModal').classList.remove('active');
+        }
+
+        function assignPriorityTask(event) {
+            event.preventDefault();
+
+            const leadId = parseInt(document.getElementById('priorityTaskModal').getAttribute('data-lead-id'));
+            const lead = leads.find(l => l.id === leadId);
+
+            if (!lead) return;
+
+            const priorityTask = {
+                level: document.getElementById('priorityLevel').value,
+                instructions: document.getElementById('priorityInstructions').value,
+                deadline: document.getElementById('priorityDeadline').value,
+                assignedBy: currentUser.name,
+                assignedAt: new Date().toISOString(),
+                completed: false
+            };
+
+            // Add priority task to lead
+            lead.priorityTask = priorityTask;
+
+            // Add to communication history
+            lead.communications = lead.communications || [];
+            lead.communications.unshift({
+                date: new Date().toISOString(),
+                action: `Priority task assigned: ${priorityTask.level.toUpperCase()}`,
+                notes: priorityTask.instructions.substring(0, 100) + (priorityTask.instructions.length > 100 ? '...' : '')
+            });
+
+            // Save leads
+            localStorage.setItem('leads', JSON.stringify(leads));
+
+            // Clear form
+            document.getElementById('priorityInstructions').value = '';
+
+            showNotification('Success', 'Priority task assigned successfully', 'success');
+            closePriorityTaskModal();
+            renderLeads();
+        }
+
+        // Load and display notifications for employees
+        function loadUserNotifications() {
+            if (currentUser.role !== 'employee') return;
+
+            const notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
+            const unreadCount = notifications.filter(n => !n.read).length;
+
+            // Show notification panel if there are unread notifications
+            if (unreadCount > 0) {
+                displayNotificationPanel(notifications);
+            }
+        }
+
+        function displayNotificationPanel(notifications) {
+            const unreadNotifications = notifications.filter(n => !n.read);
+
+            if (unreadNotifications.length === 0) return;
+
+            const container = document.querySelector('.container');
+            const statsGrid = container.querySelector('.stats-grid');
+
+            const panel = document.createElement('div');
+            panel.className = 'notification-panel';
+            panel.innerHTML = `
+                <h3 style="margin: 0 0 16px 0; font-size: 18px; color: var(--gray-900);">
+                    New Messages (${unreadNotifications.length})
+                </h3>
+                ${unreadNotifications.map(n => `
+                    <div class="notification-item notification-${n.type}">
+                        <div class="notification-header">
+                            <span class="notification-title">${n.title}</span>
+                            <span class="notification-time">${timeAgo(new Date(n.timestamp))}</span>
+                        </div>
+                        <div class="notification-message">${n.message}</div>
+                        <div style="margin-top: 8px; font-size: 11px; color: var(--gray-500);">From: ${n.from}</div>
+                    </div>
+                `).join('')}
+                <button class="btn btn-secondary" onclick="markNotificationsRead()" style="margin-top: 12px; width: 100%;">
+                    Mark All as Read
+                </button>
+            `;
+
+            container.insertBefore(panel, statsGrid);
+        }
+
+        function markNotificationsRead() {
+            const notifications = JSON.parse(localStorage.getItem('benNotifications')) || [];
+            notifications.forEach(n => n.read = true);
+            localStorage.setItem('benNotifications', JSON.stringify(notifications));
+
+            // Remove notification panel
+            const panel = document.querySelector('.notification-panel');
+            if (panel) panel.remove();
+
+            showNotification('Success', 'All notifications marked as read', 'success');
+        }
+
+        // Add comment to lead
+        function addLeadComment(leadId) {
+            const comment = prompt('Enter your comment:');
+            if (!comment) return;
+
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            lead.communications = lead.communications || [];
+            lead.communications.unshift({
+                date: new Date().toISOString(),
+                action: `Comment by ${currentUser.name}`,
+                notes: comment
+            });
+
+            localStorage.setItem('leads', JSON.stringify(leads));
+            renderLeads();
+
+            showNotification('Success', 'Comment added successfully', 'success');
+        }
+
+        // Complete priority task
+        function completePriorityTask(leadId) {
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead || !lead.priorityTask) return;
+
+            lead.priorityTask.completed = true;
+            lead.priorityTask.completedAt = new Date().toISOString();
+            lead.priorityTask.completedBy = currentUser.name;
+
+            // Add to communication history
+            lead.communications = lead.communications || [];
+            lead.communications.unshift({
+                date: new Date().toISOString(),
+                action: 'Priority task completed',
+                notes: `Task "${lead.priorityTask.level.toUpperCase()}" completed by ${currentUser.name}`
+            });
+
+            localStorage.setItem('leads', JSON.stringify(leads));
+            renderLeads();
+
+            showNotification('Success', 'Priority task marked as complete', 'success');
+        }
+
         // Save lead
         function saveLead(event) {
             event.preventDefault();
@@ -3083,14 +3725,19 @@
             if (currentUser) {
                 document.getElementById('userWelcome').textContent = `Welcome back, ${currentUser.name}`;
 
-                // Show performance button for managers
+                // Show manager control buttons for managers
                 if (currentUser.role === 'manager') {
                     document.getElementById('performanceBtn').style.display = 'inline-flex';
+                    document.getElementById('managerControlsBtn').style.display = 'inline-flex';
+                    document.getElementById('notificationsBtn').style.display = 'inline-flex';
                 }
 
                 // Filter leads for employees (only show their own)
                 if (currentUser.role === 'employee') {
                     leads = leads.filter(l => !l.createdBy || l.createdBy === currentUser.username);
+
+                    // Load and display notifications for employee
+                    loadUserNotifications();
                 }
             }
 

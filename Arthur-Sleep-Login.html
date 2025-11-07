@@ -265,24 +265,36 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // User credentials
-        const users = {
-            'joel': {
-                password: 'manager123',
-                role: 'manager',
-                name: 'Joel (Manager)'
-            },
-            'manager': {
-                password: 'manager',
-                role: 'manager',
-                name: 'Manager'
-            },
-            'ben': {
-                password: 'ben123',
-                role: 'employee',
-                name: 'Ben'
+        // User credentials - check localStorage for updates, otherwise use defaults
+        function getUsers() {
+            const storedUsers = localStorage.getItem('userCredentials');
+            if (storedUsers) {
+                return JSON.parse(storedUsers);
             }
-        };
+
+            // Default credentials
+            const defaultUsers = {
+                'joel': {
+                    password: 'manager123',
+                    role: 'manager',
+                    name: 'Joel (Manager)'
+                },
+                'manager': {
+                    password: 'manager',
+                    role: 'manager',
+                    name: 'Manager'
+                },
+                'ben': {
+                    password: 'ben123',
+                    role: 'employee',
+                    name: 'Ben'
+                }
+            };
+
+            // Save defaults to localStorage
+            localStorage.setItem('userCredentials', JSON.stringify(defaultUsers));
+            return defaultUsers;
+        }
 
         function handleLogin(event) {
             event.preventDefault();
@@ -290,6 +302,9 @@
             const username = document.getElementById('username').value.toLowerCase();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+
+            // Get current user credentials (may have been updated by manager)
+            const users = getUsers();
 
             // Check credentials
             if (users[username] && users[username].password === password) {
