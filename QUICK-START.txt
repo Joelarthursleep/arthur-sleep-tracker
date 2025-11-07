@@ -1,0 +1,159 @@
+========================================
+ARTHUR SLEEP TRACKER - QUICK START GUIDE
+========================================
+
+Your code is ready to deploy! Follow these simple steps:
+
+OPTION 1: AUTOMATED SCRIPT (EASIEST)
+=====================================
+
+1. Open Terminal
+2. Run this command:
+   cd "/Users/joellewis/Desktop/Finished Dashboard Parts/arthur-sleep-tracker"
+   ./push-to-github.sh
+
+3. Enter your GitHub username when prompted
+4. Enter your password (or Personal Access Token)
+5. Done! Follow the on-screen instructions
+
+
+OPTION 2: GITHUB DESKTOP (RECOMMENDED FOR BEGINNERS)
+====================================================
+
+1. Download GitHub Desktop: https://desktop.github.com/
+2. Install and sign in to your GitHub account
+3. Click "File" → "Add Local Repository"
+4. Browse to: /Users/joellewis/Desktop/Finished Dashboard Parts/arthur-sleep-tracker
+5. Click "Publish repository"
+6. Make sure "Keep this code private" is UNCHECKED (must be public for free hosting)
+7. Click "Publish Repository"
+8. Done! Now enable GitHub Pages (see below)
+
+
+OPTION 3: MANUAL (STEP BY STEP)
+================================
+
+Step 1: Create Repository on GitHub
+------------------------------------
+1. Go to: https://github.com/new
+2. Repository name: arthur-sleep-tracker
+3. Make it Public
+4. DON'T check any boxes (no README, etc.)
+5. Click "Create repository"
+
+Step 2: Push Your Code
+-----------------------
+Open Terminal and run:
+
+cd "/Users/joellewis/Desktop/Finished Dashboard Parts/arthur-sleep-tracker"
+git remote add origin https://github.com/YOUR-USERNAME/arthur-sleep-tracker.git
+git branch -M main
+git push -u origin main
+
+(Replace YOUR-USERNAME with your actual GitHub username)
+
+If asked for password, use a Personal Access Token:
+- Get one at: https://github.com/settings/tokens
+- Click "Generate new token (classic)"
+- Check "repo" scope
+- Copy the token and use it as your password
+
+
+ENABLE GITHUB PAGES (HOSTING)
+==============================
+
+After pushing your code:
+
+1. Go to your repository: https://github.com/YOUR-USERNAME/arthur-sleep-tracker
+2. Click "Settings" tab (top right)
+3. Click "Pages" in the left sidebar
+4. Under "Build and deployment":
+   - Source: "Deploy from a branch"
+   - Branch: "main"
+   - Folder: "/ (root)"
+5. Click "Save"
+6. Wait 2-3 minutes
+7. Refresh the page - you'll see your URL!
+
+
+YOUR LIVE URL WILL BE:
+======================
+https://YOUR-USERNAME.github.io/arthur-sleep-tracker/
+
+(Replace YOUR-USERNAME with your GitHub username)
+
+
+TEST YOUR DEPLOYMENT
+====================
+
+1. Open the URL in your browser
+2. You'll see the login page
+3. Use these credentials to test:
+   - Manager: joel / manager123
+   - Employee: ben / ben123
+4. Add a test lead
+5. Verify everything works!
+
+
+IMPORTANT: CHANGE PASSWORDS
+============================
+
+Before sharing with Ben, edit Arthur-Sleep-Login.html:
+1. Open the file in a text editor
+2. Find line ~108 with the passwords
+3. Change "manager123" to something secure
+4. Change "ben123" to something secure
+5. Save the file
+6. Push the update:
+   git add Arthur-Sleep-Login.html
+   git commit -m "Update passwords for production"
+   git push
+
+
+SHARE WITH BEN
+==============
+
+Send Ben:
+1. The live URL: https://YOUR-USERNAME.github.io/arthur-sleep-tracker/
+2. His login credentials
+3. The USER-GUIDE.md file
+
+
+TROUBLESHOOTING
+===============
+
+"Authentication failed":
+→ Use a Personal Access Token instead of password
+→ Get one at: https://github.com/settings/tokens
+
+"Repository not found":
+→ Make sure you created it on GitHub first
+→ Check the repository name is exactly: arthur-sleep-tracker
+
+"Pages not working":
+→ Make sure repository is Public (not Private)
+→ Wait a few minutes after enabling Pages
+→ Check the Pages settings are correct
+
+"Can't push code":
+→ Try GitHub Desktop instead (easiest option)
+→ Or follow the Personal Access Token steps above
+
+
+NEED HELP?
+==========
+
+Read these files:
+- README.md (system overview)
+- GITHUB-SETUP.md (detailed GitHub instructions)
+- USER-GUIDE.md (how to use the system)
+- DEPLOYMENT-GUIDE.md (hosting options)
+
+
+========================================
+READY TO GO!
+========================================
+
+Choose one of the options above and get your system live in minutes!
+
+Questions? Check the documentation files or GitHub's help center.
