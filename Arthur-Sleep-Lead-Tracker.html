@@ -6273,8 +6273,26 @@
                 }, 60 * 60 * 1000);
 
             } catch (error) {
-                showNotification('Error', 'Failed to load data from cloud.', 'error');
                 console.error('Error initializing:', error);
+
+                // Show specific error message
+                let errorMsg = 'Failed to load data from cloud.';
+                if (error.code === 'permission-denied') {
+                    errorMsg = 'Firebase permissions denied. Please update Firestore security rules to allow read/write access.';
+                } else if (error.message) {
+                    errorMsg = `Firebase Error: ${error.message}`;
+                }
+
+                showNotification('Error', errorMsg, 'error');
+
+                // Show detailed instructions in console
+                console.log('%c Firebase Setup Required:', 'color: red; font-weight: bold; font-size: 16px');
+                console.log('%c Please update your Firestore security rules:', 'color: orange; font-weight: bold');
+                console.log('1. Go to https://console.firebase.google.com/');
+                console.log('2. Select project: arthur-sleep-tracker');
+                console.log('3. Navigate to: Firestore Database → Rules');
+                console.log('4. Replace rules with:\n\nrules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n');
+                console.log('5. Click "Publish"');
             }
         }
 
