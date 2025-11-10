@@ -2121,6 +2121,82 @@
             color: var(--gray-900);
         }
 
+        /* Notifications */
+        .notification-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            background: var(--danger);
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .notification-item:hover {
+            background: var(--gray-100);
+        }
+
+        .notification-item.unread {
+            background: #EEF2FF;
+            border-left-color: var(--primary);
+        }
+
+        .notification-item.urgent {
+            background: #FEF2F2;
+            border-left-color: var(--danger);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+
+        .notification-lead-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .notification-time {
+            font-size: 11px;
+            color: var(--gray-500);
+            white-space: nowrap;
+        }
+
+        .notification-message {
+            font-size: 12px;
+            color: var(--gray-700);
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .notification-actions button {
+            font-size: 11px;
+            padding: 4px 8px;
+        }
+
         /* Upcoming Follow-ups */
         .upcoming-followup-item {
             padding: 12px;
@@ -2775,6 +2851,24 @@
                     <div class="quick-stat-item">
                         <span class="quick-stat-label">Avg. Response Time</span>
                         <strong class="quick-stat-value" id="avgResponseTime">-</strong>
+                    </div>
+                </div>
+
+                <!-- Notifications Card (Employee Only) -->
+                <div class="sidebar-card" id="notificationsCard" style="display: none;">
+                    <div class="sidebar-card-header">
+                        <div class="sidebar-card-title">
+                            <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+                            <span>Notifications</span>
+                            <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                        </div>
+                    </div>
+                    <div id="notificationsList" style="max-height: 300px; overflow-y: auto;">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <i data-lucide="bell-off" class="empty-state-icon"></i>
+                            <div>No new notifications</div>
+                        </div>
                     </div>
                 </div>
 
@@ -3777,6 +3871,41 @@
             }, 5000);
         }
 
+        // Create notification in Firestore (for employee notifications)
+        async function createNotification(notificationData) {
+            try {
+                await db.collection('notifications').add({
+                    ...notificationData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    read: false
+                });
+                console.log('✅ Notification created for:', notificationData.recipientUsername);
+            } catch (error) {
+                console.error('Error creating notification:', error);
+            }
+        }
+
+        // Mark notification as read
+        async function markNotificationRead(notificationId) {
+            try {
+                await db.collection('notifications').doc(notificationId).update({
+                    read: true
+                });
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        // Delete notification
+        async function deleteNotification(notificationId) {
+            try {
+                await db.collection('notifications').doc(notificationId).delete();
+                renderNotifications();
+            } catch (error) {
+                console.error('Error deleting notification:', error);
+            }
+        }
+
         // Calculate lead status
         function getLeadStatus(lead) {
             if (lead.status === 'converted') return 'converted';
@@ -4720,7 +4849,15 @@
 
             if (sortedInterests.length === 0) {
                 console.warn('⚠️ No interests found in leads');
-                interestsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px;">No interests tracked</div>';
+                console.warn('💡 Interests are tracked when creating/editing leads. Add interests to leads to see data here.');
+                interestsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px;">
+                        <div style="margin-bottom: 8px;">📊 No interests tracked yet</div>
+                        <div style="font-size: 12px; color: var(--gray-500);">
+                            Add interests when creating or editing leads
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
@@ -5862,6 +5999,19 @@
 
             try {
                 await firestore.updateLead(leadId, { comments: lead.comments });
+
+                // If manager is commenting on an employee's lead, create a notification
+                if (currentUser.role === 'manager' && lead.assignedTo && lead.assignedTo !== currentUser.username) {
+                    await createNotification({
+                        recipientUsername: lead.assignedTo,
+                        leadId: leadId,
+                        leadName: lead.customerName || 'Unknown Lead',
+                        message: `New comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+                        type: 'comment',
+                        urgent: false
+                    });
+                }
+
                 input.value = '';
                 showNotification('Comment Added', 'Your comment has been added successfully.', 'success');
             } catch (error) {
@@ -5907,6 +6057,19 @@
             try {
                 await firestore.updateLead(leadId, { comments: lead.comments });
                 createUrgentFollowups(leadId);
+
+                // Create urgent notification for the assigned employee
+                if (lead.assignedTo && lead.assignedTo !== currentUser.username) {
+                    await createNotification({
+                        recipientUsername: lead.assignedTo,
+                        leadId: leadId,
+                        leadName: lead.customerName || 'Unknown Lead',
+                        message: `🚨 URGENT comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+                        type: 'urgent',
+                        urgent: true
+                    });
+                }
+
                 input.value = '';
                 showNotification('Urgent Comment Added', 'Urgent comment added with automatic follow-ups created.', 'danger');
             } catch (error) {
@@ -7266,6 +7429,86 @@
             return overdueCount;
         }
 
+        // Render notifications for employees
+        let userNotifications = [];
+        function renderNotifications() {
+            const notificationsCard = document.getElementById('notificationsCard');
+            const notificationsList = document.getElementById('notificationsList');
+            const notificationBadge = document.getElementById('notificationBadge');
+
+            if (!notificationsCard || !notificationsList) return;
+
+            // Only show for employees
+            if (currentUser && currentUser.role === 'employee') {
+                notificationsCard.style.display = 'block';
+            } else {
+                notificationsCard.style.display = 'none';
+                return;
+            }
+
+            const unreadCount = userNotifications.filter(n => !n.read).length;
+
+            // Update badge
+            if (unreadCount > 0) {
+                notificationBadge.textContent = unreadCount;
+                notificationBadge.style.display = 'inline-flex';
+            } else {
+                notificationBadge.style.display = 'none';
+            }
+
+            if (userNotifications.length === 0) {
+                notificationsList.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="bell-off" class="empty-state-icon"></i>
+                        <div>No new notifications</div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            notificationsList.innerHTML = userNotifications.map(notification => {
+                const createdAt = notification.createdAt?.toDate ? notification.createdAt.toDate() : new Date(notification.createdAt);
+                const timeAgo = formatTimeAgo(createdAt);
+
+                return `
+                    <div class="notification-item ${notification.read ? '' : 'unread'} ${notification.urgent ? 'urgent' : ''}"
+                         onclick="handleNotificationClick('${notification.id}', '${notification.leadId}')">
+                        <div class="notification-header">
+                            <div class="notification-lead-name">${notification.leadName}</div>
+                            <div class="notification-time">${timeAgo}</div>
+                        </div>
+                        <div class="notification-message">${notification.message}</div>
+                        <div class="notification-actions" onclick="event.stopPropagation()">
+                            ${!notification.read ? `
+                                <button class="btn-small btn-ghost" onclick="markNotificationRead('${notification.id}')">
+                                    Mark Read
+                                </button>
+                            ` : ''}
+                            <button class="btn-small btn-ghost" onclick="deleteNotification('${notification.id}')">
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Handle notification click - opens the lead card
+        function handleNotificationClick(notificationId, leadId) {
+            // Mark as read
+            markNotificationRead(notificationId);
+
+            // Find and expand the lead card
+            const leadCard = document.getElementById(`lead-card-${leadId}`);
+            if (leadCard) {
+                leadCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                toggleLeadCard(leadId);
+            }
+        }
+
         // Initialize
         // Move Main Content into dashboard layout
         function initDashboardLayout() {
@@ -7770,6 +8013,50 @@
                     renderSidebarContent();
                 }
             });
+
+            // Listen to notifications collection (employees only)
+            if (currentUser && currentUser.role === 'employee') {
+                db.collection('notifications')
+                    .where('recipientUsername', '==', currentUser.username)
+                    .orderBy('createdAt', 'desc')
+                    .limit(20)
+                    .onSnapshot(snapshot => {
+                        userNotifications = [];
+                        snapshot.docs.forEach(doc => {
+                            userNotifications.push({
+                                ...doc.data(),
+                                id: doc.id
+                            });
+                        });
+                        console.log('📬 Notifications updated:', userNotifications.length);
+                        renderNotifications();
+                    }, error => {
+                        // If index doesn't exist, fetch without ordering
+                        if (error.code === 'failed-precondition') {
+                            console.warn('Notifications index not found, fetching without ordering');
+                            db.collection('notifications')
+                                .where('recipientUsername', '==', currentUser.username)
+                                .limit(20)
+                                .onSnapshot(snapshot => {
+                                    userNotifications = [];
+                                    snapshot.docs.forEach(doc => {
+                                        userNotifications.push({
+                                            ...doc.data(),
+                                            id: doc.id
+                                        });
+                                    });
+                                    // Sort manually by createdAt
+                                    userNotifications.sort((a, b) => {
+                                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+                                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+                                        return dateB - dateA;
+                                    });
+                                    console.log('📬 Notifications updated:', userNotifications.length);
+                                    renderNotifications();
+                                });
+                        }
+                    });
+            }
 
             // Listen to calendar events collection
             setupCalendarEventsListener();
