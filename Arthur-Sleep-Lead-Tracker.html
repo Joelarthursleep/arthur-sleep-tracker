@@ -7270,14 +7270,22 @@
 
             // Count leads this week
             const weekLeads = userLeads.filter(lead => {
-                const createdDate = new Date(lead.createdAt || lead.date);
+                const createdDate = new Date(lead.createdAt || lead.date || Date.now());
+                if (isNaN(createdDate.getTime())) {
+                    console.warn('Invalid date for lead:', lead.id, 'createdAt:', lead.createdAt, 'date:', lead.date);
+                    return false;
+                }
                 console.log('Lead created:', createdDate.toISOString(), 'Week start:', weekStart.toISOString(), 'Match:', createdDate >= weekStart);
                 return createdDate >= weekStart;
             }).length;
 
             // Count leads this month
             const monthLeads = userLeads.filter(lead => {
-                const createdDate = new Date(lead.createdAt || lead.date);
+                const createdDate = new Date(lead.createdAt || lead.date || Date.now());
+                if (isNaN(createdDate.getTime())) {
+                    console.warn('Invalid date for lead:', lead.id);
+                    return false;
+                }
                 return createdDate >= monthStart;
             }).length;
 
@@ -7286,8 +7294,12 @@
             let avgResponseTime = '-';
             if (convertedLeads.length > 0) {
                 const totalDays = convertedLeads.reduce((sum, lead) => {
-                    const created = new Date(lead.createdAt || lead.date);
-                    const converted = new Date(lead.convertedDate || lead.date);
+                    const created = new Date(lead.createdAt || lead.date || Date.now());
+                    const converted = new Date(lead.convertedDate || lead.date || Date.now());
+                    if (isNaN(created.getTime()) || isNaN(converted.getTime())) {
+                        console.warn('Invalid conversion dates for lead:', lead.id);
+                        return sum;
+                    }
                     const days = Math.ceil((converted - created) / (1000 * 60 * 60 * 24));
                     return sum + days;
                 }, 0);
