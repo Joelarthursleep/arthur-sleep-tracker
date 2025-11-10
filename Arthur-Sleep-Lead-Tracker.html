@@ -7081,13 +7081,17 @@
         async function submitFollowupAck(event) {
             event.preventDefault();
 
-            const leadId = parseInt(document.getElementById('ackLeadId').value);
+            const leadId = document.getElementById('ackLeadId').value;
             const followupType = document.getElementById('ackFollowupType').value;
             const contactMethod = document.getElementById('contactMethod').value;
             const notes = document.getElementById('followupNotes').value;
 
-            const lead = leads.find(l => l.id === leadId);
-            if (!lead) return;
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) {
+                console.error('Lead not found:', leadId, 'Available leads:', leads.map(l => l.id));
+                showNotification('Error', 'Lead not found', 'error');
+                return;
+            }
 
             const followup = lead.followups.find(f => f.type === followupType);
             if (!followup) return;
@@ -7100,9 +7104,9 @@
             followup.completedBy = currentUser.username;
 
             try {
-                await firestore.updateLead(leadId.toString(), { followups: lead.followups });
+                await firestore.updateLead(lead.id, { followups: lead.followups });
                 // Add communication record
-                await addCommunication(leadId.toString(), 'followup',
+                await addCommunication(lead.id, 'followup',
                     `${followupType === '24h' ? '24 hour' : '72 hour'} follow-up completed via ${contactMethod}. ${notes ? 'Notes: ' + notes : ''}`
                 );
 
