@@ -2564,8 +2564,8 @@
 
             <!-- Sidebar Column -->
             <div class="sidebar-column">
-                <!-- Quick Stats Card -->
-                <div class="sidebar-card">
+                <!-- Quick Stats Card (Manager Only) -->
+                <div class="sidebar-card" id="quickStatsCard">
                     <div class="sidebar-card-header">
                         <div class="sidebar-card-title">
                             <i data-lucide="bar-chart-2" style="width: 16px; height: 16px;"></i>
@@ -2587,7 +2587,7 @@
                 </div>
 
                 <!-- Upcoming Follow-ups Card -->
-                <div class="sidebar-card">
+                <div class="sidebar-card" id="upcomingFollowupsCard">
                     <div class="sidebar-card-header">
                         <div class="sidebar-card-title">
                             <i data-lucide="calendar-clock" style="width: 16px; height: 16px;"></i>
@@ -6218,38 +6218,58 @@
             // Only run once to prevent duplicates
             if (employeeDashboardReorganized) return;
 
-            // Find the analytics section (Daily Target Progress)
+            // Hide Quick Stats for employees
+            const quickStatsCard = document.getElementById('quickStatsCard');
+            if (quickStatsCard) quickStatsCard.style.display = 'none';
+
+            // Make dashboard layout full width for employees (remove sidebar)
+            const dashboardLayout = document.querySelector('.dashboard-layout');
+            if (dashboardLayout) {
+                dashboardLayout.style.gridTemplateColumns = '1fr';
+            }
+
+            // Hide the sidebar column for employees
+            const sidebarColumn = document.querySelector('.sidebar-column');
+            if (sidebarColumn) {
+                sidebarColumn.style.display = 'none';
+            }
+
+            // Find elements
             const analyticsSection = document.querySelector('.analytics-section');
-
-            // Find the chart cards
             const chartCards = document.querySelectorAll('.chart-card');
-
-            // Find the main content area
             const mainContent = document.querySelector('.main-content');
+            const upcomingFollowupsCard = document.getElementById('upcomingFollowupsCard');
 
             if (!analyticsSection || !mainContent) return;
 
             // Check if already reorganized
             if (document.getElementById('employeeChartsSection')) return;
 
-            // Create a wrapper for employee charts section
+            // Create a wrapper for employee charts section (below leads)
             const chartsSection = document.createElement('div');
             chartsSection.className = 'employee-charts-section';
             chartsSection.id = 'employeeChartsSection';
+            chartsSection.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;';
 
             // Move specific charts: Conversion Trend (index 0) and Payment Status (index 2)
             if (chartCards.length >= 3) {
-                // MOVE the charts (not clone) - remove from original location
+                // MOVE the charts (not clone)
                 const conversionChart = chartCards[0];
                 const statusChart = chartCards[2];
 
-                // Append to new section (this automatically removes from old location)
                 chartsSection.appendChild(conversionChart);
                 chartsSection.appendChild(statusChart);
 
-                // Insert charts section before the main content
+                // Move Upcoming Follow-ups to be inline with charts
+                if (upcomingFollowupsCard) {
+                    upcomingFollowupsCard.style.display = 'block';
+                    upcomingFollowupsCard.style.margin = '0';
+                    chartsSection.appendChild(upcomingFollowupsCard);
+                }
+
+                // Insert charts section after the main content (leads dashboard)
                 if (mainContent.parentNode) {
-                    mainContent.parentNode.insertBefore(chartsSection, mainContent);
+                    mainContent.parentNode.appendChild(chartsSection);
                 }
 
                 // Re-initialize chart icons
