@@ -3072,22 +3072,68 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Customer Location / Timezone</label>
-                        <select class="form-select" id="customerTimezone">
-                            <option value="Europe/London">UK (GMT/BST)</option>
-                            <option value="Europe/Paris">Europe - Central (CET)</option>
-                            <option value="Europe/Athens">Europe - Eastern (EET)</option>
-                            <option value="America/New_York">USA - Eastern (EST/EDT)</option>
-                            <option value="America/Chicago">USA - Central (CST/CDT)</option>
-                            <option value="America/Denver">USA - Mountain (MST/MDT)</option>
-                            <option value="America/Los_Angeles">USA - Pacific (PST/PDT)</option>
-                            <option value="Asia/Dubai">Middle East (GST)</option>
-                            <option value="Asia/Kolkata">India (IST)</option>
-                            <option value="Asia/Shanghai">China (CST)</option>
-                            <option value="Asia/Tokyo">Japan (JST)</option>
-                            <option value="Australia/Sydney">Australia - East (AEDT)</option>
-                            <option value="Pacific/Auckland">New Zealand (NZDT)</option>
+                        <label class="form-label">Customer Country</label>
+                        <select class="form-select" id="customerCountry" onchange="updateTimezoneFromCountry()">
+                            <option value="">Select country...</option>
+                            <option value="UK" data-timezone="Europe/London">United Kingdom</option>
+                            <option value="US" data-timezone="America/New_York">United States</option>
+                            <option value="CA" data-timezone="America/Toronto">Canada</option>
+                            <option value="AU" data-timezone="Australia/Sydney">Australia</option>
+                            <option value="NZ" data-timezone="Pacific/Auckland">New Zealand</option>
+                            <option value="IE" data-timezone="Europe/Dublin">Ireland</option>
+                            <option value="FR" data-timezone="Europe/Paris">France</option>
+                            <option value="DE" data-timezone="Europe/Berlin">Germany</option>
+                            <option value="ES" data-timezone="Europe/Madrid">Spain</option>
+                            <option value="IT" data-timezone="Europe/Rome">Italy</option>
+                            <option value="NL" data-timezone="Europe/Amsterdam">Netherlands</option>
+                            <option value="BE" data-timezone="Europe/Brussels">Belgium</option>
+                            <option value="SE" data-timezone="Europe/Stockholm">Sweden</option>
+                            <option value="NO" data-timezone="Europe/Oslo">Norway</option>
+                            <option value="DK" data-timezone="Europe/Copenhagen">Denmark</option>
+                            <option value="FI" data-timezone="Europe/Helsinki">Finland</option>
+                            <option value="PL" data-timezone="Europe/Warsaw">Poland</option>
+                            <option value="AE" data-timezone="Asia/Dubai">United Arab Emirates</option>
+                            <option value="IN" data-timezone="Asia/Kolkata">India</option>
+                            <option value="CN" data-timezone="Asia/Shanghai">China</option>
+                            <option value="JP" data-timezone="Asia/Tokyo">Japan</option>
+                            <option value="SG" data-timezone="Asia/Singapore">Singapore</option>
+                            <option value="HK" data-timezone="Asia/Hong_Kong">Hong Kong</option>
                         </select>
+                        <input type="hidden" id="customerTimezone">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Lead Source</label>
+                        <select class="form-select" id="leadSource" required onchange="updateLeadSourceFields()">
+                            <option value="">Select source...</option>
+                            <option value="social-media">Social Media</option>
+                            <option value="referral">Customer Referral</option>
+                            <option value="walk-in">Walk-in Store Visit</option>
+                            <option value="website">Website Inquiry</option>
+                            <option value="phone">Phone Inquiry</option>
+                            <option value="email">Email Inquiry</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="socialMediaGroup" style="display: none;">
+                        <label class="form-label required">Social Media Platform</label>
+                        <select class="form-select" id="socialMediaPlatform">
+                            <option value="">Select platform...</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="facebook-ad">Facebook Ad</option>
+                            <option value="instagram-ad">Instagram Ad</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="twitter">Twitter/X</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="referralGroup" style="display: none;">
+                        <label class="form-label required">Referred By (Customer Name)</label>
+                        <input type="text" class="form-input" id="referralCustomer" placeholder="Enter referring customer name">
                     </div>
 
                     <div class="form-group">
@@ -5237,12 +5283,56 @@
             threeDaysLater.setDate(threeDaysLater.getDate() + 3);
             document.getElementById('followUpDate').value = threeDaysLater.toISOString().split('T')[0];
 
+            // Reset lead source fields
+            document.getElementById('leadSource').value = '';
+            document.getElementById('socialMediaGroup').style.display = 'none';
+            document.getElementById('referralGroup').style.display = 'none';
+            document.getElementById('socialMediaPlatform').value = '';
+            document.getElementById('referralCustomer').value = '';
+
             document.getElementById('leadModal').classList.add('active');
             lucide.createIcons();
         }
 
         function closeModal() {
             document.getElementById('leadModal').classList.remove('active');
+        }
+
+        // Update timezone based on country selection
+        function updateTimezoneFromCountry() {
+            const countrySelect = document.getElementById('customerCountry');
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            const timezone = selectedOption.getAttribute('data-timezone');
+
+            if (timezone) {
+                document.getElementById('customerTimezone').value = timezone;
+            }
+        }
+
+        // Show/hide lead source specific fields
+        function updateLeadSourceFields() {
+            const leadSource = document.getElementById('leadSource').value;
+            const socialMediaGroup = document.getElementById('socialMediaGroup');
+            const referralGroup = document.getElementById('referralGroup');
+            const socialMediaPlatform = document.getElementById('socialMediaPlatform');
+            const referralCustomer = document.getElementById('referralCustomer');
+
+            // Hide all conditional fields first
+            socialMediaGroup.style.display = 'none';
+            referralGroup.style.display = 'none';
+
+            // Remove required attribute from all conditional fields
+            socialMediaPlatform.removeAttribute('required');
+            referralCustomer.removeAttribute('required');
+
+            // Show relevant fields based on source
+            if (leadSource === 'social-media') {
+                socialMediaGroup.style.display = 'block';
+                socialMediaPlatform.setAttribute('required', 'required');
+            } else if (leadSource === 'referral') {
+                referralGroup.style.display = 'block';
+                referralCustomer.setAttribute('required', 'required');
+            }
         }
 
         // Logout function
@@ -5378,7 +5468,11 @@
                 customerName: document.getElementById('customerName').value,
                 customerEmail: document.getElementById('customerEmail').value,
                 customerPhone: document.getElementById('customerPhone').value,
+                customerCountry: document.getElementById('customerCountry').value,
                 customerTimezone: document.getElementById('customerTimezone').value,
+                leadSource: document.getElementById('leadSource').value,
+                socialMediaPlatform: document.getElementById('leadSource').value === 'social-media' ? document.getElementById('socialMediaPlatform').value : null,
+                referralCustomer: document.getElementById('leadSource').value === 'referral' ? document.getElementById('referralCustomer').value : null,
                 followUpDate: document.getElementById('followUpDate').value,
                 interests: interests,
                 productService: document.getElementById('productService').value,
@@ -5476,7 +5570,16 @@
             document.getElementById('customerName').value = lead.customerName;
             document.getElementById('customerEmail').value = lead.customerEmail;
             document.getElementById('customerPhone').value = lead.customerPhone || '';
+            document.getElementById('customerCountry').value = lead.customerCountry || '';
             document.getElementById('customerTimezone').value = lead.customerTimezone || 'Europe/London';
+            document.getElementById('leadSource').value = lead.leadSource || '';
+            updateLeadSourceFields();
+            if (lead.socialMediaPlatform) {
+                document.getElementById('socialMediaPlatform').value = lead.socialMediaPlatform;
+            }
+            if (lead.referralCustomer) {
+                document.getElementById('referralCustomer').value = lead.referralCustomer;
+            }
             document.getElementById('followUpDate').value = lead.followUpDate;
             document.getElementById('productService').value = lead.productService || '';
             document.getElementById('leadNotes').value = lead.notes || '';
