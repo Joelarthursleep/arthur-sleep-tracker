@@ -6295,16 +6295,25 @@
                 // Manager-specific UI
                 if (currentUser.role === 'manager') {
                     // Show manager-only buttons and sections
-                    document.getElementById('performanceBtn').style.display = 'inline-flex';
-                    document.getElementById('managerControlsBtn').style.display = 'inline-flex';
-                    document.getElementById('kanbanBtn').style.display = 'inline-flex';
-                    document.getElementById('exportBtn').style.display = 'inline-flex';
-                    document.getElementById('leadGenerationSection').style.display = 'block';
-                    document.getElementById('employeePerformanceSection').style.display = 'block';
+                    const performanceBtn = document.getElementById('performanceBtn');
+                    const managerControlsBtn = document.getElementById('managerControlsBtn');
+                    const kanbanBtn = document.getElementById('kanbanBtn');
+                    const exportBtn = document.getElementById('exportBtn');
+                    const leadGenerationSection = document.getElementById('leadGenerationSection');
+                    const employeePerformanceSection = document.getElementById('employeePerformanceSection');
+                    const addLeadBtn = document.getElementById('addLeadBtn');
+                    const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
+
+                    if (performanceBtn) performanceBtn.style.display = 'inline-flex';
+                    if (managerControlsBtn) managerControlsBtn.style.display = 'inline-flex';
+                    if (kanbanBtn) kanbanBtn.style.display = 'inline-flex';
+                    if (exportBtn) exportBtn.style.display = 'inline-flex';
+                    if (leadGenerationSection) leadGenerationSection.style.display = 'block';
+                    if (employeePerformanceSection) employeePerformanceSection.style.display = 'block';
 
                     // Hide employee action buttons
-                    document.getElementById('addLeadBtn').style.display = 'none';
-                    document.getElementById('checkFollowupsBtn').style.display = 'none';
+                    if (addLeadBtn) addLeadBtn.style.display = 'none';
+                    if (checkFollowupsBtn) checkFollowupsBtn.style.display = 'none';
 
                     // Render employee performance
                     renderEmployeePerformance();
@@ -6313,21 +6322,33 @@
                 // Employee-specific UI
                 if (currentUser.role === 'employee') {
                     // Hide manager-only buttons and sections
-                    document.getElementById('performanceBtn').style.display = 'none';
-                    document.getElementById('managerControlsBtn').style.display = 'none';
-                    document.getElementById('kanbanBtn').style.display = 'none';
-                    document.getElementById('exportBtn').style.display = 'none';
-                    document.getElementById('leadGenerationSection').style.display = 'none';
-                    document.getElementById('employeePerformanceSection').style.display = 'none';
+                    const performanceBtn = document.getElementById('performanceBtn');
+                    const managerControlsBtn = document.getElementById('managerControlsBtn');
+                    const kanbanBtn = document.getElementById('kanbanBtn');
+                    const exportBtn = document.getElementById('exportBtn');
+                    const leadGenerationSection = document.getElementById('leadGenerationSection');
+                    const employeePerformanceSection = document.getElementById('employeePerformanceSection');
+                    const convertedStatCard = document.getElementById('convertedStatCard');
+                    const leadTypesChartCard = document.getElementById('leadTypesChartCard');
+                    const activityInterestsSection = document.getElementById('activityInterestsSection');
+                    const addLeadBtn = document.getElementById('addLeadBtn');
+                    const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
+
+                    if (performanceBtn) performanceBtn.style.display = 'none';
+                    if (managerControlsBtn) managerControlsBtn.style.display = 'none';
+                    if (kanbanBtn) kanbanBtn.style.display = 'none';
+                    if (exportBtn) exportBtn.style.display = 'none';
+                    if (leadGenerationSection) leadGenerationSection.style.display = 'none';
+                    if (employeePerformanceSection) employeePerformanceSection.style.display = 'none';
 
                     // Hide analytics sections that employees don't need
-                    document.getElementById('convertedStatCard').style.display = 'none';
-                    document.getElementById('leadTypesChartCard').style.display = 'none';
-                    document.getElementById('activityInterestsSection').style.display = 'none';
+                    if (convertedStatCard) convertedStatCard.style.display = 'none';
+                    if (leadTypesChartCard) leadTypesChartCard.style.display = 'none';
+                    if (activityInterestsSection) activityInterestsSection.style.display = 'none';
 
                     // Show employee action buttons (they are shown by default)
-                    document.getElementById('addLeadBtn').style.display = 'inline-flex';
-                    document.getElementById('checkFollowupsBtn').style.display = 'inline-flex';
+                    if (addLeadBtn) addLeadBtn.style.display = 'inline-flex';
+                    if (checkFollowupsBtn) checkFollowupsBtn.style.display = 'inline-flex';
 
                     // Reorganize dashboard to show charts at top
                     reorganizeEmployeeDashboard();
@@ -6442,7 +6463,13 @@
             }
         }
 
-        init();
+        // Wait for DOM to be fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            // DOM is already loaded
+            init();
+        }
     </script>
 
     <!-- Full-Page Kanban View -->
