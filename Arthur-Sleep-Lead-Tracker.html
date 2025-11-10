@@ -3993,9 +3993,14 @@
             }
 
             // Render card view - different for employees (collapsed) vs managers (expanded)
+            console.log('📌 Rendering leads for role:', currentUser.role);
+            console.log('📌 Number of leads to render:', leadsToRender.length);
+
             if (currentUser.role === 'employee') {
+                console.log('📌 Using EMPLOYEE collapsed card view');
                 // EMPLOYEE: Collapsed cards
                 container.innerHTML = leadsToRender.map((lead, index) => {
+                    console.log('📌 Rendering lead:', lead.id, lead.customerName);
                     const status = getLeadStatus(lead);
                     const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
 
@@ -4042,7 +4047,11 @@
                         </div>
                     `;
                 }).join('');
+
+                console.log('📌 Employee cards rendered. HTML length:', container.innerHTML.length);
+                console.log('📌 First 500 chars:', container.innerHTML.substring(0, 500));
             } else {
+                console.log('📌 Using MANAGER expanded card view');
                 // MANAGER: Keep existing expanded card view
                 container.innerHTML = leadsToRender.map((lead, index) => {
                     const status = getLeadStatus(lead);
