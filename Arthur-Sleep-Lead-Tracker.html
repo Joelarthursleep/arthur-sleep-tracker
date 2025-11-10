@@ -6414,16 +6414,150 @@
             const lead = leads.find(l => l.id === leadId);
             if (!lead) return;
 
-            // Populate and show edit modal with read-only view
-            document.getElementById('editLeadId').value = lead.id;
-            document.getElementById('editCustomerName').value = lead.customerName;
-            document.getElementById('editCustomerEmail').value = lead.customerEmail;
-            document.getElementById('editCustomerPhone').value = lead.customerPhone || '';
-            document.getElementById('editPaymentAmount').value = lead.paymentAmount || '';
-            document.getElementById('editProductService').value = lead.productService || '';
-            document.getElementById('editNotes').value = lead.notes || '';
-            document.getElementById('editLeadModal').style.display = 'flex';
+            // Calculate time in current stage
+            const stageEnteredAt = lead.stageEnteredAt || lead.createdAt;
+            const now = new Date();
+            const entered = stageEnteredAt.toDate ? stageEnteredAt.toDate() : new Date(stageEnteredAt);
+            const hoursInStage = Math.floor((now - entered) / (1000 * 60 * 60));
+            const daysInStage = Math.floor(hoursInStage / 24);
+
+            let timeInStage = '';
+            if (hoursInStage < 1) {
+                timeInStage = 'Just added';
+            } else if (hoursInStage < 24) {
+                timeInStage = `${hoursInStage} ${hoursInStage === 1 ? 'hour' : 'hours'}`;
+            } else {
+                timeInStage = `${daysInStage} ${daysInStage === 1 ? 'day' : 'days'}`;
+            }
+
+            const stageName = {
+                'new': 'New Leads',
+                'contacted': 'Initial Contact',
+                'link-sent': 'Payment Link Sent',
+                'appointment': 'Appointment Booked',
+                'followup': 'Follow-up Required',
+                'paid': 'Paid'
+            }[lead.pipelineStage || 'new'];
+
+            // Build modal content
+            const content = `
+                <div style="padding: 20px;">
+                    <!-- Header with name and stage -->
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-size: 24px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">${lead.customerName}</h3>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <span style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">${stageName}</span>
+                            <span style="color: var(--gray-600); font-size: 14px;">In stage for ${timeInStage}</span>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Contact Information</h4>
+                        <div style="display: grid; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="mail" style="width: 16px; height: 16px; color: var(--gray-500);"></i>
+                                <span style="font-size: 14px; color: var(--gray-700);">${lead.customerEmail}</span>
+                            </div>
+                            ${lead.customerPhone ? `
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="phone" style="width: 16px; height: 16px; color: var(--gray-500);"></i>
+                                    <span style="font-size: 14px; color: var(--gray-700);">${lead.customerPhone}</span>
+                                </div>
+                            ` : ''}
+                            ${lead.paymentAmount ? `
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="pound-sterling" style="width: 16px; height: 16px; color: var(--gray-500);"></i>
+                                    <strong style="font-size: 16px; color: var(--primary);">${formatCurrency(lead.paymentAmount)}</strong>
+                                </div>
+                            ` : ''}
+                            ${lead.productService ? `
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="package" style="width: 16px; height: 16px; color: var(--gray-500);"></i>
+                                    <span style="font-size: 14px; color: var(--gray-700);">${lead.productService}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    ${lead.notes ? `
+                        <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 20px; border-left: 3px solid var(--primary);">
+                            <h4 style="font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Internal Notes</h4>
+                            <p style="font-size: 14px; color: var(--gray-700); line-height: 1.6; margin: 0;">${lead.notes}</p>
+                        </div>
+                    ` : ''}
+
+                    <!-- Team Comments Section -->
+                    <div style="margin-top: 24px;">
+                        <h4 style="font-size: 14px; font-weight: 700; color: var(--gray-700); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            <i data-lucide="message-circle" style="width: 16px; height: 16px;"></i>
+                            Team Comments
+                        </h4>
+                        <div id="kanbanCommentsContainer" style="margin-bottom: 16px;">
+                            ${lead.comments && lead.comments.length > 0 ? lead.comments.map(comment => `
+                                <div class="comment-item ${comment.urgent ? 'urgent-comment' : ''}" style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--gray-200);">
+                                    ${comment.urgent ? '<div class="urgent-badge" style="background: var(--danger); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-bottom: 8px; display: inline-block;">URGENT FOLLOW-UP REQUIRED</div>' : ''}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-weight: 600; font-size: 13px; color: var(--gray-900);">${comment.authorName} (${comment.role})</span>
+                                        <span style="font-size: 12px; color: var(--gray-500);">${new Date(comment.timestamp).toLocaleString()}</span>
+                                    </div>
+                                    <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">${comment.text}</div>
+                                </div>
+                            `).join('') : '<div style="font-size: 13px; color: var(--gray-500); font-style: italic; padding: 12px; background: var(--gray-50); border-radius: 8px;">No comments yet</div>'}
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <input type="text" class="form-input" id="kanbanCommentInput-${lead.id}" placeholder="Add a comment..." style="flex: 1;">
+                            <button class="btn-small btn-primary" onclick="addKanbanComment('${lead.id}')">Send</button>
+                            ${currentUser.role === 'manager' ? `
+                                <button class="btn-small btn-danger" onclick="addUrgentKanbanComment('${lead.id}')">Urgent</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('kanbanLeadViewContent').innerHTML = content;
+            document.getElementById('kanbanLeadViewModal').style.display = 'flex';
             lucide.createIcons();
+        }
+
+        // Close Kanban lead modal
+        function closeKanbanLeadModal() {
+            document.getElementById('kanbanLeadViewModal').style.display = 'none';
+        }
+
+        // Add comment from Kanban view
+        async function addKanbanComment(leadId) {
+            const input = document.getElementById(`kanbanCommentInput-${leadId}`);
+            const commentText = input.value.trim();
+
+            if (!commentText) {
+                showNotification('Error', 'Please enter a comment.', 'error');
+                return;
+            }
+
+            await addComment(leadId, false);
+            input.value = '';
+
+            // Refresh the modal content
+            viewKanbanLead(leadId);
+        }
+
+        // Add urgent comment from Kanban view
+        async function addUrgentKanbanComment(leadId) {
+            const input = document.getElementById(`kanbanCommentInput-${leadId}`);
+            const commentText = input.value.trim();
+
+            if (!commentText) {
+                showNotification('Error', 'Please enter a comment.', 'error');
+                return;
+            }
+
+            await addUrgentComment(leadId);
+            input.value = '';
+
+            // Refresh the modal content
+            viewKanbanLead(leadId);
         }
 
         // Copy payment link
@@ -8970,6 +9104,19 @@
         <div class="kanban-full-content">
             <div class="kanban-board full-page" id="kanbanBoardFull">
                 <!-- Kanban columns will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Lead View Modal -->
+    <div class="modal" id="kanbanLeadViewModal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 class="modal-title">Lead Details</h2>
+                <button class="modal-close" onclick="closeKanbanLeadModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="kanbanLeadViewContent">
+                <!-- Lead details will be populated here -->
             </div>
         </div>
     </div>
