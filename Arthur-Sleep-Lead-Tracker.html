@@ -4017,7 +4017,7 @@
 
                     return `
                         <div class="lead-card collapsed status-${status}" id="lead-${lead.id}" style="animation-delay: ${index * 0.03}s;" data-lead-id="${lead.id}">
-                            <div class="lead-card-header-compact" onclick="event.stopPropagation(); toggleLeadCard(${lead.id});">
+                            <div class="lead-card-header-compact" onclick="console.log('Header clicked'); toggleLeadCard(${lead.id});" style="cursor: pointer;">
                                 <div class="lead-card-info-compact">
                                     <div>
                                         <div class="lead-card-name-compact">${lead.customerName}</div>
@@ -4029,8 +4029,8 @@
                                     <span class="lead-card-status-compact ${statusClass}">
                                         ${statusText}
                                     </span>
-                                    <button class="expand-btn" onclick="event.stopPropagation(); toggleLeadCard(${lead.id});" style="background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center;">
-                                        <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 20px; height: 20px; color: var(--gray-500);"></i>
+                                    <button class="expand-btn" onclick="console.log('Button clicked'); event.stopPropagation(); toggleLeadCard(${lead.id});" style="background: none; border: none; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; margin: -8px -12px -8px 8px;">
+                                        <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 24px; height: 24px; color: var(--primary); transition: transform 0.3s ease;"></i>
                                     </button>
                                 </div>
                             </div>
