@@ -6766,19 +6766,12 @@
             if (currentUser && currentUser.role === 'manager') {
                 filterDropdown.style.display = 'block';
 
-                // Get unique workers from leads
-                const workers = new Set();
-                leads.forEach(lead => {
-                    if (lead.assignedTo) {
-                        workers.add(lead.assignedTo);
-                    }
-                });
+                // Get unique workers from leads using createdBy
+                const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
 
                 // Populate dropdown
-                filterDropdown.innerHTML = '<option value="all">All Workers</option>';
-                Array.from(workers).sort().forEach(worker => {
-                    filterDropdown.innerHTML += `<option value="${worker}">${worker.charAt(0).toUpperCase() + worker.slice(1)}</option>`;
-                });
+                filterDropdown.innerHTML = '<option value="all">All Workers</option>' +
+                    workers.sort().map(worker => `<option value="${worker}">${worker}</option>`).join('');
             } else {
                 filterDropdown.style.display = 'none';
             }
@@ -8501,6 +8494,7 @@
                 renderQuickStats();
                 renderUpcomingFollowups();
                 updateWorkerFilters(); // Update worker filter dropdowns
+                populateWorkerFilter(); // Update calendar worker filter
                 if (currentUser.role === 'manager') {
                     renderEmployeePerformance();
                     renderSidebarContent();
