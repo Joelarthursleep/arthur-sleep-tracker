@@ -8395,24 +8395,39 @@
         // Reorganize dashboard layout for employees
         let employeeDashboardReorganized = false;
         function reorganizeEmployeeDashboard() {
+            console.log('=== REORGANIZE EMPLOYEE DASHBOARD CALLED ===');
+
             // Only run once to prevent duplicates
-            if (employeeDashboardReorganized) return;
+            if (employeeDashboardReorganized) {
+                console.log('Already reorganized, returning');
+                return;
+            }
 
             // Find all key elements
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
+            console.log('dashboardLayout found:', !!dashboardLayout);
+
             // Get Daily Payment Target specifically from inside .dashboard-layout
             const analyticsSection = dashboardLayout ? dashboardLayout.querySelector('.analytics-section') : null;
+            console.log('analyticsSection (Daily Payment Target) found:', !!analyticsSection);
+
             const chartsAnalyticsSection = document.getElementById('chartsAnalyticsSection'); // Charts section to hide
             const mainContent = document.querySelector('.main-content'); // Leads Dashboard
             const quickStatsCard = document.getElementById('quickStatsCard');
             const upcomingFollowupsCard = document.getElementById('upcomingFollowupsCard');
             const container = document.querySelector('.container');
 
-            if (!container || !statsGrid) return;
+            if (!container || !statsGrid) {
+                console.log('Missing container or statsGrid, returning');
+                return;
+            }
 
             // Check if already reorganized
-            if (document.getElementById('employeeLayoutWrapper')) return;
+            if (document.getElementById('employeeLayoutWrapper')) {
+                console.log('employeeLayoutWrapper already exists, returning');
+                return;
+            }
 
             // Hide Quick Stats for employees (sidebar card)
             if (quickStatsCard) quickStatsCard.style.display = 'none';
@@ -8437,10 +8452,14 @@
 
             // 2. Add Daily Payment Target (FULL WIDTH) below stats
             if (analyticsSection) {
+                console.log('Cloning Daily Payment Target...');
                 const paymentTarget = analyticsSection.cloneNode(true);
                 paymentTarget.style.cssText = 'grid-template-columns: 1fr; margin-bottom: 20px; width: 100%; display: block !important;';
                 employeeWrapper.appendChild(paymentTarget);
+                console.log('Daily Payment Target cloned and appended');
                 // Don't hide the original yet - we'll hide the whole dashboard-layout at the end
+            } else {
+                console.log('WARNING: analyticsSection not found, Daily Payment Target NOT cloned');
             }
 
             // 3. Add Leads Dashboard below payment target
@@ -8496,7 +8515,12 @@
             // Insert employee wrapper before the dashboard layout
             if (statsGrid.parentNode) {
                 statsGrid.parentNode.insertBefore(employeeWrapper, statsGrid);
+                console.log('Employee wrapper inserted into DOM');
+                console.log('Employee wrapper children count:', employeeWrapper.children.length);
             }
+
+            employeeDashboardReorganized = true;
+            console.log('=== EMPLOYEE DASHBOARD REORGANIZATION COMPLETE ===');
 
             // Re-initialize chart icons and charts
             lucide.createIcons();
