@@ -3396,6 +3396,93 @@
         </div>
     </div>
 
+    <!-- View/Edit Event Details Modal -->
+    <div class="modal" id="viewEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Event Details</h2>
+                <button class="close-btn" onclick="closeViewEvent()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <div id="viewEventContent">
+                <!-- Content will be dynamically filled -->
+            </div>
+
+            <div class="form-actions" style="margin-top: 24px;">
+                <button type="button" class="btn btn-primary" onclick="editCurrentEvent()" id="editEventBtn">
+                    <i data-lucide="edit-2" style="width: 18px; height: 18px;"></i>
+                    Edit Event
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteCurrentEvent()" id="deleteEventBtn">
+                    <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                    Delete
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeViewEvent()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Event Modal -->
+    <div class="modal" id="editEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Event</h2>
+                <button class="close-btn" onclick="closeEditEvent()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitEditEvent(event)">
+                <input type="hidden" id="editEventId">
+
+                <div class="form-group">
+                    <label class="form-label required">Event Type</label>
+                    <select class="form-select" id="editEventType" required>
+                        <option value="meeting">Meeting</option>
+                        <option value="deadline">Deadline</option>
+                        <option value="custom">Custom Event</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Event Title</label>
+                    <input type="text" class="form-input" id="editEventTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Date & Time</label>
+                    <input type="datetime-local" class="form-input" id="editEventDateTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Associated Lead (Optional)</label>
+                    <select class="form-select" id="editEventLeadId">
+                        <option value="">No associated lead</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="editEventDescription"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                        Save Changes
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditEvent()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
@@ -6376,12 +6463,12 @@
                         // Custom event
                         let eventClass = f.completed ? 'completed' : `event-${f.type}`;
                         const displayText = f.lead ? `${f.title} - ${f.lead.customerName}` : f.title;
-                        html += `<div class="calendar-event-item ${eventClass}">${displayText}</div>`;
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.id}', false)" style="cursor: pointer;">${displayText}</div>`;
                     } else {
                         // Follow-up event
                         const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
                         const title = f.type === '24h' ? '24h' : '72h';
-                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${title} ${f.lead.customerName}</div>`;
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${title} ${f.lead.customerName}</div>`;
                     }
                 });
 
@@ -6431,8 +6518,14 @@
 
                     html += '<div class="calendar-hour-cell">';
                     dayFollowups.forEach(f => {
-                        const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
-                        html += `<div class="calendar-event-item ${eventClass}" onclick="openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${f.lead.customerName}</div>`;
+                        if (f.isCustomEvent) {
+                            const eventClass = f.completed ? 'completed' : `event-${f.type}`;
+                            const displayText = f.lead ? `${f.title} - ${f.lead.customerName}` : f.title;
+                            html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.id}', false)" style="cursor: pointer;">${displayText}</div>`;
+                        } else {
+                            const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
+                            html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${f.lead.customerName}</div>`;
+                        }
                     });
                     html += '</div>';
 
@@ -6465,9 +6558,15 @@
 
                 html += '<div class="calendar-hour-cell calendar-day-column">';
                 hourFollowups.forEach(f => {
-                    const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
                     const time = new Date(f.dueDate).toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' });
-                    html += `<div class="calendar-event-item ${eventClass}" onclick="openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${time} - ${f.lead.customerName}</div>`;
+                    if (f.isCustomEvent) {
+                        const eventClass = f.completed ? 'completed' : `event-${f.type}`;
+                        const displayText = f.lead ? `${time} - ${f.title} (${f.lead.customerName})` : `${time} - ${f.title}`;
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.id}', false)" style="cursor: pointer;">${displayText}</div>`;
+                    } else {
+                        const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${time} - ${f.lead.customerName}</div>`;
+                    }
                 });
                 html += '</div>';
             }
@@ -6593,6 +6692,202 @@
                 });
             } catch (error) {
                 console.error('Error loading calendar events:', error);
+            }
+        }
+
+        // View Event Details
+        let currentViewingEvent = null;
+
+        function viewCalendarEvent(eventId, isFollowup = false) {
+            console.log('🔍 Viewing event:', eventId, 'isFollowup:', isFollowup);
+
+            if (isFollowup) {
+                // This is a follow-up event - use existing modal
+                const parts = eventId.split('_');
+                const leadId = parts[0];
+                const followupType = parts[1];
+                openFollowupAcknowledgment(leadId, followupType);
+            } else {
+                // This is a custom calendar event
+                const event = customCalendarEvents.find(e => e.id === eventId);
+                if (!event) {
+                    console.error('Event not found:', eventId);
+                    return;
+                }
+
+                currentViewingEvent = event;
+                const modal = document.getElementById('viewEventModal');
+                const content = document.getElementById('viewEventContent');
+
+                const eventDate = new Date(event.dueDate);
+                const formattedDate = eventDate.toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const lead = event.leadId ? leads.find(l => l.id === parseInt(event.leadId)) : null;
+
+                let eventTypeLabel = event.type.charAt(0).toUpperCase() + event.type.slice(1);
+                let eventTypeClass = `event-${event.type}`;
+
+                content.innerHTML = `
+                    <div style="padding: 16px;">
+                        <div style="margin-bottom: 16px;">
+                            <span class="badge ${eventTypeClass}" style="display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+                                ${eventTypeLabel}
+                            </span>
+                            ${event.completed ? '<span class="badge" style="background: var(--success); color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; margin-left: 8px;">Completed</span>' : ''}
+                        </div>
+
+                        <h3 style="font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">
+                            ${event.title}
+                        </h3>
+
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; color: var(--gray-600);">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            <span>${formattedDate}</span>
+                        </div>
+
+                        ${lead ? `
+                        <div style="padding: 12px; background: var(--gray-50); border-radius: 8px; margin-bottom: 16px;">
+                            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--gray-500); margin-bottom: 4px;">Associated Lead</div>
+                            <div style="font-size: 14px; font-weight: 600; color: var(--gray-900);">${lead.customerName}</div>
+                            <div style="font-size: 13px; color: var(--gray-600);">${lead.customerEmail}</div>
+                        </div>
+                        ` : ''}
+
+                        ${event.description ? `
+                        <div style="margin-top: 16px;">
+                            <div style="font-size: 13px; font-weight: 600; text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px;">Description</div>
+                            <div style="font-size: 14px; color: var(--gray-700); line-height: 1.6; white-space: pre-wrap;">${event.description}</div>
+                        </div>
+                        ` : ''}
+
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-200); font-size: 12px; color: var(--gray-500);">
+                            Created by ${event.createdBy} on ${new Date(event.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+
+                modal.classList.add('active');
+                lucide.createIcons();
+            }
+        }
+
+        function closeViewEvent() {
+            const modal = document.getElementById('viewEventModal');
+            modal.classList.remove('active');
+            currentViewingEvent = null;
+        }
+
+        // Edit Event
+        function editCurrentEvent() {
+            if (!currentViewingEvent) return;
+
+            closeViewEvent();
+
+            const modal = document.getElementById('editEventModal');
+            document.getElementById('editEventId').value = currentViewingEvent.id;
+            document.getElementById('editEventType').value = currentViewingEvent.type;
+            document.getElementById('editEventTitle').value = currentViewingEvent.title;
+
+            const eventDate = new Date(currentViewingEvent.dueDate);
+            const localDateTime = new Date(eventDate.getTime() - (eventDate.getTimezoneOffset() * 60000))
+                .toISOString().slice(0, 16);
+            document.getElementById('editEventDateTime').value = localDateTime;
+
+            document.getElementById('editEventLeadId').value = currentViewingEvent.leadId || '';
+            document.getElementById('editEventDescription').value = currentViewingEvent.description || '';
+
+            // Populate lead dropdown
+            const leadSelect = document.getElementById('editEventLeadId');
+            leadSelect.innerHTML = '<option value="">No associated lead</option>';
+            leads.forEach(lead => {
+                if (lead.status !== 'converted') {
+                    leadSelect.innerHTML += `<option value="${lead.id}" ${currentViewingEvent.leadId == lead.id ? 'selected' : ''}>${lead.customerName}</option>`;
+                }
+            });
+
+            modal.classList.add('active');
+            lucide.createIcons();
+        }
+
+        function closeEditEvent() {
+            const modal = document.getElementById('editEventModal');
+            modal.classList.remove('active');
+        }
+
+        async function submitEditEvent(event) {
+            event.preventDefault();
+
+            const eventId = document.getElementById('editEventId').value;
+            const eventType = document.getElementById('editEventType').value;
+            const eventTitle = document.getElementById('editEventTitle').value;
+            const eventDateTime = document.getElementById('editEventDateTime').value;
+            const eventLeadId = document.getElementById('editEventLeadId').value;
+            const eventDescription = document.getElementById('editEventDescription').value;
+
+            const eventIndex = customCalendarEvents.findIndex(e => e.id === eventId);
+            if (eventIndex === -1) {
+                showNotification('Error', 'Event not found', 'error');
+                return;
+            }
+
+            const updatedEvent = {
+                ...customCalendarEvents[eventIndex],
+                type: eventType,
+                title: eventTitle,
+                dueDate: new Date(eventDateTime).toISOString(),
+                leadId: eventLeadId || null,
+                description: eventDescription,
+                updatedAt: new Date().toISOString(),
+                updatedBy: currentUser.username
+            };
+
+            customCalendarEvents[eventIndex] = updatedEvent;
+
+            // Update in Firestore
+            try {
+                await db.collection('calendarEvents').doc(eventId).set(updatedEvent);
+                showNotification('Success', 'Event updated successfully', 'success');
+            } catch (error) {
+                console.error('Error updating event:', error);
+                showNotification('Error', 'Failed to update event', 'error');
+            }
+
+            closeEditEvent();
+            renderCalendar();
+        }
+
+        // Delete Event
+        async function deleteCurrentEvent() {
+            if (!currentViewingEvent) return;
+
+            if (!confirm(`Are you sure you want to delete "${currentViewingEvent.title}"?`)) {
+                return;
+            }
+
+            const eventId = currentViewingEvent.id;
+            const eventIndex = customCalendarEvents.findIndex(e => e.id === eventId);
+
+            if (eventIndex !== -1) {
+                customCalendarEvents.splice(eventIndex, 1);
+
+                // Delete from Firestore
+                try {
+                    await db.collection('calendarEvents').doc(eventId).delete();
+                    showNotification('Success', 'Event deleted successfully', 'success');
+                } catch (error) {
+                    console.error('Error deleting event:', error);
+                    showNotification('Error', 'Failed to delete event', 'error');
+                }
+
+                closeViewEvent();
+                renderCalendar();
             }
         }
 
