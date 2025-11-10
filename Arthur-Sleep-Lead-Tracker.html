@@ -407,6 +407,69 @@
             letter-spacing: -0.3px;
         }
 
+        /* Activity Timeline */
+        .activity-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+        }
+
+        .activity-timeline-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            position: relative;
+        }
+
+        .activity-timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 48px;
+            bottom: -16px;
+            width: 2px;
+            background: linear-gradient(180deg, #6366f1 0%, #a5b4fc 100%);
+        }
+
+        .activity-timeline-marker {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 1;
+            position: relative;
+        }
+
+        .activity-timeline-content {
+            flex: 1;
+            padding-top: 2px;
+        }
+
+        .activity-timeline-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .activity-timeline-text {
+            font-size: 13px;
+            color: var(--gray-600);
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .activity-timeline-time {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
         /* Main Content */
         .main-content {
             background: white;
@@ -2763,7 +2826,94 @@
             </div>
         </div>
 
-        <!-- Dashboard Layout: Two Column Structure -->
+        <!-- Manager Dashboard: New Clean Layout -->
+        <div id="managerDashboardLayout" style="display: none;">
+            <!-- Row 2: Quick Stats + Upcoming Follow-ups + Recent Activity (3 columns) -->
+            <div class="analytics-section" style="grid-template-columns: 1fr 1fr 1.5fr; margin-bottom: 32px;">
+                <!-- Quick Stats Card -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Quick Stats</h3>
+                        <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Weekly & Monthly</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px; padding: 8px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
+                            <span style="font-size: 13px; color: var(--gray-600); font-weight: 500;">This Week</span>
+                            <strong style="font-size: 18px; font-weight: 700; color: var(--gray-900);" id="weekLeadsCountDash">0 leads</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
+                            <span style="font-size: 13px; color: var(--gray-600); font-weight: 500;">This Month</span>
+                            <strong style="font-size: 18px; font-weight: 700; color: var(--gray-900);" id="monthLeadsCountDash">0 leads</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--gray-50); border-radius: 8px;">
+                            <span style="font-size: 13px; color: var(--gray-600); font-weight: 500;">Avg. Response Time</span>
+                            <strong style="font-size: 18px; font-weight: 700; color: var(--gray-900);" id="avgResponseTimeDash">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Follow-ups Card -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">Upcoming Follow-ups</h3>
+                            <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Next 7 days</span>
+                        </div>
+                        <button class="btn-small btn-ghost" onclick="toggleCalendar()">
+                            <i data-lucide="maximize-2" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                    <div id="upcomingFollowupsDash" style="max-height: 240px; overflow-y: auto;">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="empty-state">
+                            <i data-lucide="calendar-check" class="empty-state-icon"></i>
+                            <div>No upcoming follow-ups</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Card -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Recent Activity</h3>
+                        <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Last 10 actions</span>
+                    </div>
+                    <div id="activityTimelineDash" style="max-height: 240px; overflow-y: auto;">
+                        <!-- Activity items will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Leads Generated Per Day -->
+            <div class="analytics-section" id="leadGenerationSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: block;">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Leads Generated Per Day</h3>
+                        <select class="filter-select" id="leadGenPeriod" onchange="updateLeadGenerationChart()">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                        </select>
+                    </div>
+                    <canvas id="leadGenerationChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Row 4: Employee Performance -->
+            <div class="analytics-section" id="employeePerformanceSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: block;">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Employee Performance Overview</h3>
+                        <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Track team productivity</span>
+                    </div>
+                    <div id="employeePerformanceGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px;">
+                        <!-- Employee performance cards will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Layout: Two Column Structure (LEGACY - Keep for employee view) -->
         <div class="dashboard-layout">
             <!-- Main Column -->
             <div class="main-column">
@@ -2951,55 +3101,9 @@
             </div>
         </div>
 
-        <!-- Lead Generation Chart (Manager Only) -->
-        <div class="analytics-section" id="leadGenerationSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: none;">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title">Leads Generated Per Day</h3>
-                    <select class="filter-select" id="leadGenPeriod" onchange="updateLeadGenerationChart()">
-                        <option value="7">Last 7 Days</option>
-                        <option value="30" selected>Last 30 Days</option>
-                        <option value="90">Last 90 Days</option>
-                    </select>
-                </div>
-                <canvas id="leadGenerationChart" style="max-height: 300px;"></canvas>
-            </div>
-        </div>
-
-        <!-- Employee Performance (Manager Only) -->
-        <div class="analytics-section" id="employeePerformanceSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: none;">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title">Employee Performance Overview</h3>
-                    <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Track team productivity</span>
-                </div>
-                <div id="employeePerformanceGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px;">
-                    <!-- Employee performance cards will be inserted here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Activity Timeline -->
-        <div class="analytics-section" id="activityInterestsSection" style="grid-template-columns: 1.5fr 1fr; margin-bottom: 32px;">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title">Recent Activity</h3>
-                    <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Last 10 actions</span>
-                </div>
-                <div id="activityTimeline" style="max-height: 300px; overflow-y: auto;">
-                    <!-- Activity items will be inserted here -->
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 class="chart-title">Top Interests</h3>
-                    <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Most popular</span>
-                </div>
-                <div id="topInterests" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- Interest bars will be inserted here -->
-                </div>
-            </div>
+        <!-- OLD SECTIONS - HIDDEN FOR MANAGERS (They now use managerDashboardLayout above) -->
+        <div class="analytics-section" id="oldChartsSection" style="display: none; grid-template-columns: 1fr; margin-bottom: 32px;">
+            <!-- These are kept for backwards compatibility but hidden for managers -->
         </div>
 
         <!-- Main Content -->
@@ -8204,6 +8308,169 @@
             setupCalendarEventsListener();
         }
 
+        // Populate Manager Dashboard (New Clean Layout)
+        function populateManagerDashboard() {
+            // Populate Quick Stats
+            renderQuickStatsForDashboard();
+
+            // Populate Upcoming Follow-ups
+            renderUpcomingFollowupsForDashboard();
+
+            // Populate Recent Activity with timeline design
+            renderActivityTimelineForDashboard();
+
+            // Render Employee Performance
+            renderEmployeePerformance();
+
+            // Initialize Lead Generation Chart
+            initLeadGenerationChart();
+        }
+
+        // Render Quick Stats for Dashboard
+        function renderQuickStatsForDashboard() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+            const getLeadDate = (lead) => {
+                let createdAt = lead.createdAt || lead.date;
+                if (!createdAt) return new Date();
+                if (createdAt.toDate && typeof createdAt.toDate === 'function') {
+                    return createdAt.toDate();
+                }
+                return new Date(createdAt);
+            };
+
+            const weekLeads = leads.filter(lead => {
+                const createdDate = getLeadDate(lead);
+                return !isNaN(createdDate.getTime()) && createdDate >= weekStart;
+            }).length;
+
+            const monthLeads = leads.filter(lead => {
+                const createdDate = getLeadDate(lead);
+                return !isNaN(createdDate.getTime()) && createdDate >= monthStart;
+            }).length;
+
+            const convertedLeads = leads.filter(l => l.status === 'converted');
+            let avgResponseTime = '-';
+            if (convertedLeads.length > 0) {
+                const totalDays = convertedLeads.reduce((sum, lead) => {
+                    const created = getLeadDate(lead);
+                    const converted = new Date(lead.convertedDate || lead.date || Date.now());
+                    if (isNaN(created.getTime()) || isNaN(converted.getTime())) return sum;
+                    const days = Math.ceil((converted - created) / (1000 * 60 * 60 * 24));
+                    return sum + days;
+                }, 0);
+                const avgDays = Math.round(totalDays / convertedLeads.length);
+                avgResponseTime = `${avgDays} days`;
+            }
+
+            document.getElementById('weekLeadsCountDash').textContent = `${weekLeads} leads`;
+            document.getElementById('monthLeadsCountDash').textContent = `${monthLeads} leads`;
+            document.getElementById('avgResponseTimeDash').textContent = avgResponseTime;
+        }
+
+        // Render Upcoming Follow-ups for Dashboard
+        function renderUpcomingFollowupsForDashboard() {
+            const container = document.getElementById('upcomingFollowupsDash');
+            if (!container) return;
+
+            const upcomingFollowups = [];
+            const now = new Date();
+            const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            leads.forEach(lead => {
+                if (lead.followups && Array.isArray(lead.followups)) {
+                    lead.followups.forEach(followup => {
+                        const dueDate = new Date(followup.dueDate);
+                        if (!followup.completed && dueDate <= nextWeek) {
+                            upcomingFollowups.push({
+                                ...followup,
+                                leadName: lead.customerName,
+                                leadId: lead.id,
+                                dueDate: dueDate
+                            });
+                        }
+                    });
+                }
+            });
+
+            upcomingFollowups.sort((a, b) => a.dueDate - b.dueDate);
+
+            if (upcomingFollowups.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="calendar-check" class="empty-state-icon"></i>
+                        <div>No upcoming follow-ups</div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = upcomingFollowups.slice(0, 5).map(followup => {
+                const isOverdue = followup.dueDate < now;
+                const daysUntil = Math.ceil((followup.dueDate - now) / (1000 * 60 * 60 * 24));
+                const urgencyClass = isOverdue ? 'danger' : daysUntil <= 1 ? 'warning' : '';
+                const urgencyText = isOverdue ? 'Overdue' : daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil} days`;
+
+                return `
+                    <div class="upcoming-followup-item" style="cursor: pointer;" onclick="toggleLeadCard('${followup.leadId}')">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 4px;">
+                            <span style="font-size: 13px; font-weight: 700; color: var(--gray-900);">${followup.leadName}</span>
+                            <span class="badge badge-${urgencyClass}" style="font-size: 11px;">${urgencyText}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-600);">${followup.type === '24h' ? '24-hour' : '72-hour'} follow-up</div>
+                        <div style="font-size: 11px; color: var(--gray-500); margin-top: 4px;">${followup.dueDate.toLocaleDateString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Render Activity Timeline for Dashboard (with nice styling from screenshot)
+        function renderActivityTimelineForDashboard() {
+            const container = document.getElementById('activityTimelineDash');
+            if (!container) return;
+
+            const activities = getRecentActivity().slice(0, 10);
+
+            if (activities.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="activity" class="empty-state-icon"></i>
+                        <div>No recent activity</div>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="activity-timeline">
+                    ${activities.map(activity => `
+                        <div class="activity-timeline-item">
+                            <div class="activity-timeline-marker">
+                                <i data-lucide="${activity.icon}" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <div class="activity-timeline-content">
+                                <div class="activity-timeline-title">${activity.user}</div>
+                                <div class="activity-timeline-text">${activity.text}</div>
+                                <div class="activity-timeline-time">${activity.time}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            lucide.createIcons();
+        }
+
         async function init() {
             try {
                 // Add sidebar body class
@@ -8237,13 +8504,23 @@
 
                 // Manager-specific UI
                 if (currentUser.role === 'manager') {
-                    // Show manager-only buttons and sections
+                    // Show NEW manager dashboard layout
+                    const managerDashboard = document.getElementById('managerDashboardLayout');
+                    const dashboardLayout = document.querySelector('.dashboard-layout');
+                    const chartsAnalyticsSection = document.getElementById('chartsAnalyticsSection');
+
+                    // Show new manager layout
+                    if (managerDashboard) managerDashboard.style.display = 'block';
+
+                    // Hide old dashboard layout and analytics
+                    if (dashboardLayout) dashboardLayout.style.display = 'none';
+                    if (chartsAnalyticsSection) chartsAnalyticsSection.style.display = 'none';
+
+                    // Show manager-only buttons
                     const performanceBtn = document.getElementById('performanceBtn');
                     const managerControlsBtn = document.getElementById('managerControlsBtn');
                     const kanbanBtn = document.getElementById('kanbanBtn');
                     const exportBtn = document.getElementById('exportBtn');
-                    const leadGenerationSection = document.getElementById('leadGenerationSection');
-                    const employeePerformanceSection = document.getElementById('employeePerformanceSection');
                     const addLeadBtn = document.getElementById('addLeadBtn');
                     const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
 
@@ -8251,15 +8528,13 @@
                     if (managerControlsBtn) managerControlsBtn.style.display = 'inline-flex';
                     if (kanbanBtn) kanbanBtn.style.display = 'inline-flex';
                     if (exportBtn) exportBtn.style.display = 'inline-flex';
-                    if (leadGenerationSection) leadGenerationSection.style.display = 'block';
-                    if (employeePerformanceSection) employeePerformanceSection.style.display = 'block';
 
                     // Hide employee action buttons
                     if (addLeadBtn) addLeadBtn.style.display = 'none';
                     if (checkFollowupsBtn) checkFollowupsBtn.style.display = 'none';
 
-                    // Render employee performance
-                    renderEmployeePerformance();
+                    // Populate new manager dashboard
+                    populateManagerDashboard();
                 }
 
                 // Employee-specific UI
