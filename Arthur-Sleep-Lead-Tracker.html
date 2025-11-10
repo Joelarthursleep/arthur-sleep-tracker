@@ -4957,7 +4957,14 @@
 
                 // Count leads created on this date
                 const leadsOnDate = leads.filter(l => {
-                    const leadDate = new Date(l.createdAt);
+                    let leadDate;
+                    // Handle Firestore Timestamp
+                    if (l.createdAt && l.createdAt.toDate && typeof l.createdAt.toDate === 'function') {
+                        leadDate = l.createdAt.toDate();
+                    } else {
+                        leadDate = new Date(l.createdAt || l.date);
+                    }
+
                     if (isNaN(leadDate.getTime())) {
                         console.warn('Invalid createdAt date for lead:', l.id, l.createdAt);
                         return false;
@@ -7323,9 +7330,22 @@
                 console.log('First lead date:', userLeads[0].date);
             }
 
+            // Helper function to convert Firestore Timestamp or ISO string to Date
+            const getLeadDate = (lead) => {
+                let createdAt = lead.createdAt || lead.date;
+                if (!createdAt) return new Date();
+
+                // Handle Firestore Timestamp object
+                if (createdAt.toDate && typeof createdAt.toDate === 'function') {
+                    return createdAt.toDate();
+                }
+                // Handle ISO string or other date formats
+                return new Date(createdAt);
+            };
+
             // Count leads this week
             const weekLeads = userLeads.filter(lead => {
-                const createdDate = new Date(lead.createdAt || lead.date || Date.now());
+                const createdDate = getLeadDate(lead);
                 if (isNaN(createdDate.getTime())) {
                     console.warn('Invalid date for lead:', lead.id, 'createdAt:', lead.createdAt, 'date:', lead.date);
                     return false;
@@ -7336,7 +7356,7 @@
 
             // Count leads this month
             const monthLeads = userLeads.filter(lead => {
-                const createdDate = new Date(lead.createdAt || lead.date || Date.now());
+                const createdDate = getLeadDate(lead);
                 if (isNaN(createdDate.getTime())) {
                     console.warn('Invalid date for lead:', lead.id);
                     return false;
@@ -7349,7 +7369,7 @@
             let avgResponseTime = '-';
             if (convertedLeads.length > 0) {
                 const totalDays = convertedLeads.reduce((sum, lead) => {
-                    const created = new Date(lead.createdAt || lead.date || Date.now());
+                    const created = getLeadDate(lead);
                     const converted = new Date(lead.convertedDate || lead.date || Date.now());
                     if (isNaN(created.getTime()) || isNaN(converted.getTime())) {
                         console.warn('Invalid conversion dates for lead:', lead.id);
