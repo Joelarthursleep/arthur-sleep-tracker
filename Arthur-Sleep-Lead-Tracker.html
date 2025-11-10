@@ -3715,6 +3715,7 @@
         let statusChart = null;
         let leadTypeChart = null;
         let unsubscribeLeads = null;
+        let unsubscribeCalendarEvents = null;
 
         // Calendar state
         let currentCalendarDate = new Date();
@@ -6794,17 +6795,24 @@
             renderCalendar();
         }
 
-        // Load custom calendar events from Firestore
-        async function loadCustomCalendarEvents() {
-            try {
-                const snapshot = await db.collection('calendarEvents').get();
+        // Load custom calendar events from Firestore (real-time)
+        function setupCalendarEventsListener() {
+            unsubscribeCalendarEvents = db.collection('calendarEvents').onSnapshot(snapshot => {
+                console.log('📅 Calendar events updated:', snapshot.docs.length, 'events');
                 customCalendarEvents = [];
                 snapshot.forEach(doc => {
-                    customCalendarEvents.push(doc.data());
+                    customCalendarEvents.push({
+                        ...doc.data(),
+                        id: doc.id
+                    });
                 });
-            } catch (error) {
+                // Re-render calendar if it's visible
+                if (document.getElementById('calendarContainer')) {
+                    renderCalendar();
+                }
+            }, error => {
                 console.error('Error loading calendar events:', error);
-            }
+            });
         }
 
         // View Event Details
@@ -7650,6 +7658,9 @@
                     renderSidebarContent();
                 }
             });
+
+            // Listen to calendar events collection
+            setupCalendarEventsListener();
         }
 
         async function init() {
@@ -7669,10 +7680,7 @@
                 // Load leads from Firestore
                 leads = await firestore.getLeads();
 
-                // Load custom calendar events
-                await loadCustomCalendarEvents();
-
-                // Set up real-time listeners
+                // Set up real-time listeners (includes calendar events)
                 setupRealtimeListeners();
 
             // Set up UI based on user role
