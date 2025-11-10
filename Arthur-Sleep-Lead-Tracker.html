@@ -8401,7 +8401,8 @@
             // Find all key elements
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
-            const analyticsSection = document.querySelector('.analytics-section'); // Daily Payment Target
+            // Get Daily Payment Target specifically from inside .dashboard-layout
+            const analyticsSection = dashboardLayout ? dashboardLayout.querySelector('.analytics-section') : null;
             const chartsAnalyticsSection = document.getElementById('chartsAnalyticsSection'); // Charts section to hide
             const mainContent = document.querySelector('.main-content'); // Leads Dashboard
             const quickStatsCard = document.getElementById('quickStatsCard');
@@ -8415,6 +8416,10 @@
 
             // Hide Quick Stats for employees (sidebar card)
             if (quickStatsCard) quickStatsCard.style.display = 'none';
+
+            // Hide Recent Activity for employees (sidebar card)
+            const recentActivityCard = document.getElementById('recentActivityCard');
+            if (recentActivityCard) recentActivityCard.style.display = 'none';
 
             // Hide the original charts analytics section (contains the duplicates)
             if (chartsAnalyticsSection) chartsAnalyticsSection.style.display = 'none';
@@ -8433,9 +8438,9 @@
             // 2. Add Daily Payment Target (FULL WIDTH) below stats
             if (analyticsSection) {
                 const paymentTarget = analyticsSection.cloneNode(true);
-                paymentTarget.style.cssText = 'grid-template-columns: 1fr; margin-bottom: 20px; width: 100%;';
+                paymentTarget.style.cssText = 'grid-template-columns: 1fr; margin-bottom: 20px; width: 100%; display: block !important;';
                 employeeWrapper.appendChild(paymentTarget);
-                analyticsSection.style.display = 'none'; // Hide original
+                // Don't hide the original yet - we'll hide the whole dashboard-layout at the end
             }
 
             // 3. Add Leads Dashboard below payment target
@@ -8818,10 +8823,6 @@
                     // HIDE THE NEW MANAGER DASHBOARD LAYOUT
                     const managerDashboard = document.getElementById('managerDashboardLayout');
                     if (managerDashboard) managerDashboard.style.display = 'none';
-
-                    // ENSURE EMPLOYEE DASHBOARD LAYOUT STAYS VISIBLE
-                    const dashboardLayout = document.querySelector('.dashboard-layout');
-                    if (dashboardLayout) dashboardLayout.style.display = 'block';
 
                     // Hide manager-only buttons and sections
                     const performanceBtn = document.getElementById('performanceBtn');
