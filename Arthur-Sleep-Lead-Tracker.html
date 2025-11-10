@@ -6665,16 +6665,23 @@
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
             const kanbanFullView = document.getElementById('kanbanFullView');
+            const mainContent = document.getElementById('mainLeadsContent');
+            const analyticsSection = document.querySelectorAll('.analytics-section');
+            const chartsSection = document.querySelectorAll('.chart-card');
 
             if (calendar.style.display === 'none' || calendar.style.display === '') {
-                // Show calendar
+                // Show calendar FULL PAGE (hide everything else)
                 calendar.style.display = 'block';
 
-                // Hide other content
+                // Hide ALL dashboard content
                 if (employeeWrapper) employeeWrapper.style.display = 'none';
                 if (statsGrid) statsGrid.style.display = 'none';
                 if (dashboardLayout) dashboardLayout.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'none';
                 if (kanbanFullView) kanbanFullView.classList.remove('active');
+
+                // Hide all analytics sections
+                analyticsSection.forEach(section => section.style.display = 'none');
 
                 // Update menu highlighting
                 document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
@@ -6683,13 +6690,30 @@
 
                 renderCalendar();
             } else {
-                // Hide calendar
+                // Hide calendar and restore dashboard
                 calendar.style.display = 'none';
 
-                // Show other content
-                if (employeeWrapper) employeeWrapper.style.display = 'block';
-                if (statsGrid && !employeeWrapper) statsGrid.style.display = 'grid';
-                if (dashboardLayout && !employeeWrapper) dashboardLayout.style.display = 'grid';
+                // Show dashboard content based on user role
+                if (currentUser && currentUser.role === 'manager') {
+                    // Manager view: show stats grid, dashboard layout, and main content
+                    if (statsGrid) statsGrid.style.display = 'grid';
+                    if (dashboardLayout) dashboardLayout.style.display = 'grid';
+                    if (mainContent) mainContent.style.display = 'block';
+                    analyticsSection.forEach(section => {
+                        // Only show manager-specific sections
+                        if (section.id === 'leadGenerationSection' || section.id === 'employeePerformanceSection' || section.id === 'activityInterestsSection') {
+                            section.style.display = 'grid';
+                        }
+                    });
+                } else {
+                    // Employee view: show employee wrapper
+                    if (employeeWrapper) {
+                        employeeWrapper.style.display = 'block';
+                    } else {
+                        if (statsGrid) statsGrid.style.display = 'grid';
+                        if (dashboardLayout) dashboardLayout.style.display = 'grid';
+                    }
+                }
 
                 // Update menu highlighting
                 document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
@@ -8346,12 +8370,24 @@
             const employeeWrapper = document.getElementById('employeeLayoutWrapper');
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
+            const mainContent = document.getElementById('mainLeadsContent');
+            const analyticsSection = document.querySelectorAll('.analytics-section');
 
             if (employeeWrapper) {
                 employeeWrapper.style.display = 'block';
             } else {
                 if (statsGrid) statsGrid.style.display = 'grid';
                 if (dashboardLayout) dashboardLayout.style.display = 'grid';
+                if (mainContent) mainContent.style.display = 'block';
+
+                // Restore analytics sections for managers
+                if (currentUser && currentUser.role === 'manager') {
+                    analyticsSection.forEach(section => {
+                        if (section.id === 'leadGenerationSection' || section.id === 'employeePerformanceSection' || section.id === 'activityInterestsSection') {
+                            section.style.display = 'grid';
+                        }
+                    });
+                }
             }
 
             // Update active state
