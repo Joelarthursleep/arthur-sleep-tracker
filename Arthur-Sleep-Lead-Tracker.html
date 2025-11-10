@@ -2389,6 +2389,9 @@
         <!-- Header -->
         <div class="header" id="mainHeader">
             <div class="header-title">
+                <button class="btn btn-ghost" id="sidebarToggleBtn" onclick="toggleSidebar()" style="margin-right: 12px;">
+                    <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+                </button>
                 <div class="logo-icon">
                     <img src="Arthur-Sleep-Text-Logo.png" alt="Arthur Sleep">
                 </div>
@@ -5676,11 +5679,28 @@
         // Toggle calendar visibility
         function toggleCalendar() {
             const calendar = document.getElementById('calendarSection');
-            if (calendar.style.display === 'none') {
+            const employeeWrapper = document.getElementById('employeeLayoutWrapper');
+            const statsGrid = document.querySelector('.stats-grid');
+            const dashboardLayout = document.querySelector('.dashboard-layout');
+
+            if (calendar.style.display === 'none' || calendar.style.display === '') {
+                // Show calendar
                 calendar.style.display = 'block';
+
+                // Hide other content
+                if (employeeWrapper) employeeWrapper.style.display = 'none';
+                if (statsGrid) statsGrid.style.display = 'none';
+                if (dashboardLayout) dashboardLayout.style.display = 'none';
+
                 renderCalendar();
             } else {
+                // Hide calendar
                 calendar.style.display = 'none';
+
+                // Show other content
+                if (employeeWrapper) employeeWrapper.style.display = 'block';
+                if (statsGrid && !employeeWrapper) statsGrid.style.display = 'grid';
+                if (dashboardLayout && !employeeWrapper) dashboardLayout.style.display = 'grid';
             }
         }
 
