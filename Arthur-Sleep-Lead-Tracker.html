@@ -7239,6 +7239,10 @@
 
         // Render Quick Stats in Sidebar
         function renderQuickStats() {
+            console.log('📊 renderQuickStats called');
+            console.log('Total leads:', leads.length);
+            console.log('Current user role:', currentUser?.role);
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -7249,15 +7253,25 @@
             // Calculate month start
             const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
+            console.log('Week start:', weekStart.toISOString());
+            console.log('Month start:', monthStart.toISOString());
+
             // Filter leads for current user if employee
             let userLeads = leads;
             if (currentUser && currentUser.role === 'employee') {
                 userLeads = leads.filter(lead => lead.assignedTo === currentUser.username);
             }
 
+            console.log('User leads after filter:', userLeads.length);
+            if (userLeads.length > 0) {
+                console.log('First lead createdAt:', userLeads[0].createdAt);
+                console.log('First lead date:', userLeads[0].date);
+            }
+
             // Count leads this week
             const weekLeads = userLeads.filter(lead => {
                 const createdDate = new Date(lead.createdAt || lead.date);
+                console.log('Lead created:', createdDate.toISOString(), 'Week start:', weekStart.toISOString(), 'Match:', createdDate >= weekStart);
                 return createdDate >= weekStart;
             }).length;
 
@@ -7281,10 +7295,21 @@
                 avgResponseTime = `${avgDays} days`;
             }
 
+            console.log('Week leads:', weekLeads, 'Month leads:', monthLeads, 'Avg response:', avgResponseTime);
+
             // Update UI
-            document.getElementById('weekLeadsCount').textContent = `${weekLeads} leads`;
-            document.getElementById('monthLeadsCount').textContent = `${monthLeads} leads`;
-            document.getElementById('avgResponseTime').textContent = avgResponseTime;
+            const weekEl = document.getElementById('weekLeadsCount');
+            const monthEl = document.getElementById('monthLeadsCount');
+            const avgEl = document.getElementById('avgResponseTime');
+
+            if (weekEl && monthEl && avgEl) {
+                weekEl.textContent = `${weekLeads} leads`;
+                monthEl.textContent = `${monthLeads} leads`;
+                avgEl.textContent = avgResponseTime;
+                console.log('✅ Quick Stats UI updated');
+            } else {
+                console.error('❌ Quick Stats DOM elements not found!', {weekEl, monthEl, avgEl});
+            }
         }
 
         // Render Upcoming Follow-ups in Sidebar
