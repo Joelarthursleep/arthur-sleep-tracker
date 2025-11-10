@@ -2819,6 +2819,10 @@
                         <button class="btn btn-ghost" id="viewWeek" onclick="setCalendarView('week')">Week</button>
                         <button class="btn btn-ghost active" id="viewMonth" onclick="setCalendarView('month')">Month</button>
                     </div>
+                    <div style="width: 1px; height: 24px; background: var(--gray-300); margin: 0 8px;"></div>
+                    <select class="filter-select" id="calendarWorkerFilter" onchange="filterCalendarByWorker()" style="min-width: 150px; display: none;">
+                        <option value="all">All Workers</option>
+                    </select>
                 </div>
             </div>
             <div class="calendar-container" id="calendarContainer">
@@ -3651,6 +3655,57 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Manager Follow-up Actions Modal (for calendar event clicks) -->
+    <div class="modal" id="managerFollowupActionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Follow-up Event</h2>
+                <button class="close-btn" onclick="closeManagerFollowupActions()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <input type="hidden" id="managerActionLeadId">
+            <input type="hidden" id="managerActionFollowupType">
+
+            <div style="padding: 16px; background: var(--gray-50); border-radius: 12px; margin-bottom: 24px;">
+                <p style="color: var(--gray-700); line-height: 1.6;" id="managerActionMessage"></p>
+            </div>
+
+            <!-- Priority Badge Section -->
+            <div class="form-group">
+                <label class="form-label">Priority Level</label>
+                <select class="form-select" id="followupPriority">
+                    <option value="none">No Priority</option>
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+
+            <!-- Add Comment Section -->
+            <div class="form-group">
+                <label class="form-label">Add Comment (visible to worker)</label>
+                <textarea class="form-textarea" id="managerFollowupComment" placeholder="Leave a note for the worker about this follow-up..." rows="4"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="submitManagerFollowupActions()" style="flex: 1;">
+                    <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                    Save Changes
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="openRescheduleFromManager()" style="flex: 1;">
+                    <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                    Reschedule
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeManagerFollowupActions()">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -6762,6 +6817,40 @@
 
         // ==================== FOLLOW-UP CALENDAR SYSTEM ====================
 
+        // Worker filter for calendar (managers only)
+        let selectedWorkerFilter = 'all';
+
+        function filterCalendarByWorker() {
+            selectedWorkerFilter = document.getElementById('calendarWorkerFilter').value;
+            renderCalendar();
+        }
+
+        function populateWorkerFilter() {
+            const filterDropdown = document.getElementById('calendarWorkerFilter');
+            if (!filterDropdown) return;
+
+            // Only show for managers
+            if (currentUser && currentUser.role === 'manager') {
+                filterDropdown.style.display = 'block';
+
+                // Get unique workers from leads
+                const workers = new Set();
+                leads.forEach(lead => {
+                    if (lead.assignedTo) {
+                        workers.add(lead.assignedTo);
+                    }
+                });
+
+                // Populate dropdown
+                filterDropdown.innerHTML = '<option value="all">All Workers</option>';
+                Array.from(workers).sort().forEach(worker => {
+                    filterDropdown.innerHTML += `<option value="${worker}">${worker.charAt(0).toUpperCase() + worker.slice(1)}</option>`;
+                });
+            } else {
+                filterDropdown.style.display = 'none';
+            }
+        }
+
         // Toggle calendar visibility
         function toggleCalendar() {
             const calendar = document.getElementById('calendarSection');
@@ -6792,6 +6881,7 @@
                 const calendarItem = document.getElementById('sidebarCalendar');
                 if (calendarItem) calendarItem.classList.add('active');
 
+                populateWorkerFilter();
                 renderCalendar();
             } else {
                 // Hide calendar and restore dashboard
@@ -6872,10 +6962,16 @@
                 return;
             }
 
-            // Get all followups from all leads
+            // Get all followups from all leads (with worker filtering)
             const allFollowups = [];
             leads.forEach(lead => {
                 if (lead.status === 'converted') return;
+
+                // Apply worker filter (managers only)
+                if (currentUser && currentUser.role === 'manager' && selectedWorkerFilter !== 'all') {
+                    if (lead.assignedTo !== selectedWorkerFilter) return;
+                }
+
                 if (lead.followups) {
                     lead.followups.forEach(followup => {
                         allFollowups.push({ ...followup, lead: lead, isFollowup: true });
@@ -7220,11 +7316,17 @@
             console.log('🔍 Viewing event:', eventId, 'isFollowup:', isFollowup);
 
             if (isFollowup) {
-                // This is a follow-up event - use existing modal
+                // This is a follow-up event
                 const parts = eventId.split('_');
                 const leadId = parts[0];
                 const followupType = parts[1];
-                openFollowupAcknowledgment(leadId, followupType);
+
+                // Managers get the new actions modal, employees get the acknowledge modal
+                if (currentUser && currentUser.role === 'manager') {
+                    openManagerFollowupActions(leadId, followupType);
+                } else {
+                    openFollowupAcknowledgment(leadId, followupType);
+                }
             } else {
                 // This is a custom calendar event
                 const event = customCalendarEvents.find(e => e.id === eventId);
@@ -7481,6 +7583,119 @@
             document.getElementById('followupAckModal').classList.remove('active');
             document.getElementById('contactMethod').value = '';
             document.getElementById('followupNotes').value = '';
+        }
+
+        // Manager Follow-up Actions (new system for managers)
+        function openManagerFollowupActions(leadId, followupType) {
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) {
+                console.error('Lead not found:', leadId);
+                return;
+            }
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            document.getElementById('managerActionLeadId').value = leadId;
+            document.getElementById('managerActionFollowupType').value = followupType;
+
+            // Set current priority if exists
+            document.getElementById('followupPriority').value = followup.priority || 'none';
+
+            // Load existing manager comments
+            document.getElementById('managerFollowupComment').value = followup.managerComment || '';
+
+            const dueDate = new Date(followup.dueDate);
+            document.getElementById('managerActionMessage').innerHTML = `
+                <strong>Follow-up for ${lead.customerName}</strong>
+                <br>
+                Type: ${followupType === '24h' ? '24-hour' : '72-hour'} follow-up
+                <br>
+                Assigned to: <strong>${lead.assignedTo || 'Unassigned'}</strong>
+                <br>
+                Due: ${dueDate.toLocaleString()}
+            `;
+
+            document.getElementById('managerFollowupActionsModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        function closeManagerFollowupActions() {
+            document.getElementById('managerFollowupActionsModal').classList.remove('active');
+            document.getElementById('managerFollowupComment').value = '';
+        }
+
+        async function submitManagerFollowupActions() {
+            const leadId = document.getElementById('managerActionLeadId').value;
+            const followupType = document.getElementById('managerActionFollowupType').value;
+            const priority = document.getElementById('followupPriority').value;
+            const comment = document.getElementById('managerFollowupComment').value;
+
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            // Update priority and comment
+            followup.priority = priority;
+            followup.managerComment = comment;
+            followup.lastUpdatedBy = currentUser.username;
+            followup.lastUpdatedAt = new Date().toISOString();
+
+            try {
+                await firestore.updateLead(leadId, { followups: lead.followups });
+                showNotification('Success', 'Follow-up updated successfully', 'success');
+
+                // If comment was added, create notification for worker
+                if (comment && lead.assignedTo && lead.assignedTo !== currentUser.username) {
+                    await createNotification({
+                        recipientUsername: lead.assignedTo,
+                        leadId: leadId,
+                        leadName: lead.customerName || 'Unknown Lead',
+                        message: `Manager added note to ${followupType} follow-up: "${comment.substring(0, 50)}${comment.length > 50 ? '...' : ''}"`,
+                        type: priority === 'urgent' ? 'urgent' : 'comment',
+                        urgent: priority === 'urgent'
+                    });
+                }
+
+                closeManagerFollowupActions();
+                renderCalendar();
+            } catch (error) {
+                showNotification('Error', 'Failed to update follow-up.', 'error');
+                console.error('Error updating follow-up:', error);
+            }
+        }
+
+        function openRescheduleFromManager() {
+            const leadId = document.getElementById('managerActionLeadId').value;
+            const followupType = document.getElementById('managerActionFollowupType').value;
+
+            // Close manager actions modal
+            closeManagerFollowupActions();
+
+            // Open reschedule modal
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            document.getElementById('rescheduleLeadId').value = leadId;
+            document.getElementById('rescheduleFollowupType').value = followupType;
+
+            const currentDate = new Date(followup.dueDate);
+            const dateString = currentDate.toISOString().slice(0, 16);
+            document.getElementById('newFollowupDate').value = dateString;
+
+            document.getElementById('rescheduleMessage').innerHTML = `
+                Reschedule ${followupType === '24h' ? '24 hour' : '72 hour'} follow-up for <strong>${lead.customerName}</strong>
+                <br>
+                Current date: <strong>${currentDate.toLocaleString()}</strong>
+            `;
+
+            document.getElementById('rescheduleFollowupModal').classList.add('active');
+            lucide.createIcons();
         }
 
         // Open reschedule follow-up modal
