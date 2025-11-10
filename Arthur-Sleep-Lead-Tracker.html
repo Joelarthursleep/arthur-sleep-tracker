@@ -4691,8 +4691,14 @@
 
         // Update top interests
         function updateTopInterests() {
+            console.log('📈 updateTopInterests called');
+            console.log('Total leads:', leads.length);
+
             const interestsContainer = document.getElementById('topInterests');
-            if (!interestsContainer) return;
+            if (!interestsContainer) {
+                console.warn('❌ topInterests container not found in DOM');
+                return;
+            }
 
             const interestCounts = {};
 
@@ -4704,11 +4710,16 @@
                 }
             });
 
+            console.log('Interest counts:', interestCounts);
+
             const sortedInterests = Object.entries(interestCounts)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
 
+            console.log('Sorted interests (top 5):', sortedInterests);
+
             if (sortedInterests.length === 0) {
+                console.warn('⚠️ No interests found in leads');
                 interestsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px;">No interests tracked</div>';
                 return;
             }
@@ -4913,8 +4924,17 @@
         // Initialize Lead Generation Chart
         let leadGenerationChart = null;
         function initLeadGenerationChart() {
+            console.log('📊 initLeadGenerationChart called');
+            console.log('Total leads:', leads.length);
+            console.log('Current user role:', currentUser?.role);
+
             const ctx = document.getElementById('leadGenerationChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('❌ leadGenerationChart canvas not found in DOM');
+                return;
+            }
+
+            console.log('✅ Canvas found, creating chart...');
 
             // Destroy existing chart
             if (leadGenerationChart) {
@@ -4926,6 +4946,8 @@
             const data = [];
             const now = new Date();
 
+            console.log('Chart period:', period, 'days');
+
             for (let i = period - 1; i >= 0; i--) {
                 const date = new Date(now);
                 date.setDate(date.getDate() - i);
@@ -4936,12 +4958,18 @@
                 // Count leads created on this date
                 const leadsOnDate = leads.filter(l => {
                     const leadDate = new Date(l.createdAt);
+                    if (isNaN(leadDate.getTime())) {
+                        console.warn('Invalid createdAt date for lead:', l.id, l.createdAt);
+                        return false;
+                    }
                     leadDate.setHours(0, 0, 0, 0);
                     return leadDate.getTime() === date.getTime();
                 }).length;
 
                 data.push(leadsOnDate);
             }
+
+            console.log('Chart data prepared:', { labels: labels.slice(0, 5), data: data.slice(0, 5), totalDataPoints: data.length });
 
             leadGenerationChart = new Chart(ctx, {
                 type: 'bar',
