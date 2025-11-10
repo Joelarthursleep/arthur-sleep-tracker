@@ -6516,8 +6516,23 @@
                 </div>
             `;
 
-            document.getElementById('kanbanLeadViewContent').innerHTML = content;
-            document.getElementById('kanbanLeadViewModal').style.display = 'flex';
+            const modal = document.getElementById('kanbanLeadViewModal');
+            const modalContent = document.getElementById('kanbanLeadViewContent');
+
+            console.log('Opening Kanban modal for lead:', leadId);
+            console.log('Modal element found:', !!modal);
+            console.log('Modal content element found:', !!modalContent);
+
+            if (modalContent) {
+                modalContent.innerHTML = content;
+            }
+
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.zIndex = '10000';
+                console.log('Modal display set to flex, z-index:', modal.style.zIndex);
+            }
+
             lucide.createIcons();
         }
 
