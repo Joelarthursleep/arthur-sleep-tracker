@@ -2561,7 +2561,34 @@
                 </div>
             </div>
             <div class="header-actions">
-                <!-- Navigation moved to sidebar -->
+                <button class="btn btn-primary" id="addLeadBtn" onclick="openAddLeadModal()">
+                    <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                    Add Lead
+                </button>
+                <button class="btn btn-secondary" id="checkFollowupsBtn" onclick="openFollowupOverview()">
+                    <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+                    Check Follow-ups
+                </button>
+                <button class="btn btn-secondary" id="performanceBtn" onclick="window.location.href='Arthur-Sleep-Performance.html'" style="display: none;">
+                    <i data-lucide="bar-chart-2" style="width: 18px; height: 18px;"></i>
+                    Performance
+                </button>
+                <button class="btn btn-secondary" id="kanbanBtn" onclick="window.location.href='Arthur-Sleep-Kanban.html'" style="display: none;">
+                    <i data-lucide="trello" style="width: 18px; height: 18px;"></i>
+                    Kanban
+                </button>
+                <button class="btn btn-secondary" id="managerControlsBtn" onclick="window.location.href='Arthur-Sleep-Manager-Controls.html'" style="display: none;">
+                    <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                    Manager Controls
+                </button>
+                <button class="btn btn-secondary" id="exportBtn" onclick="exportLeadsData()" style="display: none;">
+                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                    Export
+                </button>
+                <button class="btn btn-ghost" onclick="logout()">
+                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+                    Logout
+                </button>
             </div>
         </div>
 
