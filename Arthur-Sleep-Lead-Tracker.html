@@ -2708,22 +2708,6 @@
                     <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
                     Check Follow-ups
                 </button>
-                <button class="btn btn-secondary" id="performanceBtn" onclick="window.location.href='Arthur-Sleep-Performance.html'" style="display: none;">
-                    <i data-lucide="bar-chart-2" style="width: 18px; height: 18px;"></i>
-                    Performance
-                </button>
-                <button class="btn btn-secondary" id="kanbanBtn" onclick="window.location.href='Arthur-Sleep-Kanban.html'" style="display: none;">
-                    <i data-lucide="trello" style="width: 18px; height: 18px;"></i>
-                    Kanban
-                </button>
-                <button class="btn btn-secondary" id="managerControlsBtn" onclick="window.location.href='Arthur-Sleep-Manager-Controls.html'" style="display: none;">
-                    <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
-                    Manager Controls
-                </button>
-                <button class="btn btn-secondary" id="exportBtn" onclick="exportLeadsData()" style="display: none;">
-                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
-                    Export
-                </button>
                 <button class="btn btn-ghost" onclick="logout()">
                     <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
                     Logout
@@ -8779,20 +8763,9 @@
                     if (dashboardLayout) dashboardLayout.style.display = 'none';
                     if (chartsAnalyticsSection) chartsAnalyticsSection.style.display = 'none';
 
-                    // Show manager-only buttons
-                    const performanceBtn = document.getElementById('performanceBtn');
-                    const managerControlsBtn = document.getElementById('managerControlsBtn');
-                    const kanbanBtn = document.getElementById('kanbanBtn');
-                    const exportBtn = document.getElementById('exportBtn');
+                    // Hide employee action buttons
                     const addLeadBtn = document.getElementById('addLeadBtn');
                     const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
-
-                    if (performanceBtn) performanceBtn.style.display = 'inline-flex';
-                    if (managerControlsBtn) managerControlsBtn.style.display = 'inline-flex';
-                    if (kanbanBtn) kanbanBtn.style.display = 'inline-flex';
-                    if (exportBtn) exportBtn.style.display = 'inline-flex';
-
-                    // Hide employee action buttons
                     if (addLeadBtn) addLeadBtn.style.display = 'none';
                     if (checkFollowupsBtn) checkFollowupsBtn.style.display = 'none';
 
@@ -8806,11 +8779,7 @@
                     const managerDashboard = document.getElementById('managerDashboardLayout');
                     if (managerDashboard) managerDashboard.style.display = 'none';
 
-                    // Hide manager-only buttons and sections
-                    const performanceBtn = document.getElementById('performanceBtn');
-                    const managerControlsBtn = document.getElementById('managerControlsBtn');
-                    const kanbanBtn = document.getElementById('kanbanBtn');
-                    const exportBtn = document.getElementById('exportBtn');
+                    // Hide manager-only sections
                     const leadGenerationSection = document.getElementById('leadGenerationSection');
                     const employeePerformanceSection = document.getElementById('employeePerformanceSection');
                     const convertedStatCard = document.getElementById('convertedStatCard');
@@ -8819,10 +8788,6 @@
                     const addLeadBtn = document.getElementById('addLeadBtn');
                     const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
 
-                    if (performanceBtn) performanceBtn.style.display = 'none';
-                    if (managerControlsBtn) managerControlsBtn.style.display = 'none';
-                    if (kanbanBtn) kanbanBtn.style.display = 'none';
-                    if (exportBtn) exportBtn.style.display = 'none';
                     if (leadGenerationSection) leadGenerationSection.style.display = 'none';
                     if (employeePerformanceSection) employeePerformanceSection.style.display = 'none';
 
