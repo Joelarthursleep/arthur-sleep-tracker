@@ -5326,6 +5326,10 @@
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const workerFilter = document.getElementById('filterWorker') ? document.getElementById('filterWorker').value : 'all';
 
+            console.log('=== FILTER LEADS ===');
+            console.log('Worker filter selected:', workerFilter);
+            console.log('Total leads before filter:', leads.length);
+
             let filtered = leads.filter(lead => {
                 const matchesSearch = !searchTerm ||
                     lead.customerName.toLowerCase().includes(searchTerm) ||
@@ -5337,7 +5341,11 @@
                 if (!matchesSearch) return false;
 
                 // Worker filter (manager only)
-                if (workerFilter !== 'all' && lead.createdBy !== workerFilter) return false;
+                if (workerFilter !== 'all') {
+                    const matches = lead.createdBy === workerFilter;
+                    console.log(`Lead: ${lead.customerName}, createdBy: "${lead.createdBy}", filter: "${workerFilter}", matches: ${matches}`);
+                    if (!matches) return false;
+                }
 
                 // Lead type filter
                 if (leadTypeFilter !== 'all') {
