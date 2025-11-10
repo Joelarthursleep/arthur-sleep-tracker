@@ -5270,20 +5270,24 @@
         }
 
         // Update worker filter dropdowns
-        function updateWorkerFilters() {
+        async function updateWorkerFilters() {
             if (!currentUser || currentUser.role !== 'manager') return;
 
-            // Get unique workers from leads
-            const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
+            // Get ALL employees from users collection
+            const users = await firestore.getUsers();
+            const employees = Object.entries(users)
+                .filter(([username, user]) => user.role === 'employee')
+                .map(([username, user]) => username)
+                .sort();
 
             // Update Leads Dashboard worker filter
             const workerFilterSelect = document.getElementById('filterWorker');
             if (workerFilterSelect) {
                 const currentValue = workerFilterSelect.value;
                 workerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
-                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    employees.map(worker => `<option value="${worker}">${worker}</option>`).join('');
                 // Restore selected value if it still exists
-                if (workers.includes(currentValue)) {
+                if (employees.includes(currentValue)) {
                     workerFilterSelect.value = currentValue;
                 }
             }
@@ -5293,9 +5297,9 @@
             if (kanbanWorkerFilterSelect) {
                 const currentValue = kanbanWorkerFilterSelect.value;
                 kanbanWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
-                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    employees.map(worker => `<option value="${worker}">${worker}</option>`).join('');
                 // Restore selected value if it still exists
-                if (workers.includes(currentValue)) {
+                if (employees.includes(currentValue)) {
                     kanbanWorkerFilterSelect.value = currentValue;
                 }
             }
@@ -5305,9 +5309,9 @@
             if (calendarWorkerFilterSelect) {
                 const currentValue = calendarWorkerFilterSelect.value;
                 calendarWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
-                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    employees.map(worker => `<option value="${worker}">${worker}</option>`).join('');
                 // Restore selected value if it still exists
-                if (workers.includes(currentValue)) {
+                if (employees.includes(currentValue)) {
                     calendarWorkerFilterSelect.value = currentValue;
                 }
             }
@@ -6162,7 +6166,7 @@
         }
 
         // Toggle Kanban view
-        function toggleKanbanFullView() {
+        async function toggleKanbanFullView() {
             const fullView = document.getElementById('kanbanFullView');
 
             if (fullView.classList.contains('active')) {
@@ -6178,13 +6182,11 @@
                 // Populate and show worker filter for managers
                 if (currentUser && currentUser.role === 'manager') {
                     const kanbanWorkerFilterGroup = document.getElementById('kanbanWorkerFilterGroup');
-                    const kanbanWorkerFilterSelect = document.getElementById('kanbanFilterWorker');
-                    if (kanbanWorkerFilterGroup && kanbanWorkerFilterSelect) {
+                    if (kanbanWorkerFilterGroup) {
                         kanbanWorkerFilterGroup.style.display = 'block';
-                        const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
-                        kanbanWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
-                            workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
                     }
+                    // Use the shared updateWorkerFilters function
+                    await updateWorkerFilters();
                 }
             }
 
@@ -6907,7 +6909,7 @@
             renderCalendar();
         }
 
-        function populateWorkerFilter() {
+        async function populateWorkerFilter() {
             const filterDropdown = document.getElementById('calendarWorkerFilter');
             if (!filterDropdown) return;
 
@@ -6915,12 +6917,16 @@
             if (currentUser && currentUser.role === 'manager') {
                 filterDropdown.style.display = 'block';
 
-                // Get unique workers from leads using createdBy
-                const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
+                // Get ALL employees from users collection
+                const users = await firestore.getUsers();
+                const employees = Object.entries(users)
+                    .filter(([username, user]) => user.role === 'employee')
+                    .map(([username, user]) => username)
+                    .sort();
 
                 // Populate dropdown
                 filterDropdown.innerHTML = '<option value="all">All Workers</option>' +
-                    workers.sort().map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    employees.map(worker => `<option value="${worker}">${worker}</option>`).join('');
             } else {
                 filterDropdown.style.display = 'none';
             }
