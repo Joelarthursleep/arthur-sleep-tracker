@@ -6260,28 +6260,41 @@
                 mainContent.style.display = 'none'; // Hide original
             }
 
-            // Create 3-column section for charts at bottom
+            // Create 3-column section for ONLY these 3 items at bottom:
+            // 1. Lead Conversion Trend
+            // 2. Payment Status
+            // 3. Upcoming Follow-ups
             const chartsSection = document.createElement('div');
             chartsSection.className = 'employee-charts-section';
             chartsSection.id = 'employeeChartsSection';
             chartsSection.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; width: 100%;';
 
-            // Get the chart cards
-            const chartCards = document.querySelectorAll('.chart-card');
-            if (chartCards.length >= 3) {
-                // Clone charts (since originals might be hidden with parent)
-                const conversionChart = chartCards[0].cloneNode(true);
-                const statusChart = chartCards[2].cloneNode(true);
+            // Get specific chart cards by ID or title
+            const conversionChartEl = document.getElementById('conversionChart');
+            const statusChartEl = document.getElementById('statusChart');
 
-                chartsSection.appendChild(conversionChart);
-                chartsSection.appendChild(statusChart);
-
-                // Clone Upcoming Follow-ups
-                if (upcomingFollowupsCard) {
-                    const followupsClone = upcomingFollowupsCard.cloneNode(true);
-                    followupsClone.style.cssText = 'display: block; margin: 0;';
-                    chartsSection.appendChild(followupsClone);
+            // Find chart cards by their chart canvas IDs
+            if (conversionChartEl) {
+                const conversionCard = conversionChartEl.closest('.chart-card');
+                if (conversionCard) {
+                    const conversionClone = conversionCard.cloneNode(true);
+                    chartsSection.appendChild(conversionClone);
                 }
+            }
+
+            if (statusChartEl) {
+                const statusCard = statusChartEl.closest('.chart-card');
+                if (statusCard) {
+                    const statusClone = statusCard.cloneNode(true);
+                    chartsSection.appendChild(statusClone);
+                }
+            }
+
+            // Add Upcoming Follow-ups as the third item
+            if (upcomingFollowupsCard) {
+                const followupsClone = upcomingFollowupsCard.cloneNode(true);
+                followupsClone.style.cssText = 'display: block; margin: 0;';
+                chartsSection.appendChild(followupsClone);
             }
 
             employeeWrapper.appendChild(chartsSection);
