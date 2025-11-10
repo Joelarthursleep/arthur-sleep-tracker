@@ -8259,12 +8259,20 @@
                         else if (diffHours < 24) timeAgo = `${diffHours}h ago`;
                         else timeAgo = `${diffDays}d ago`;
 
+                        // Get icon based on communication type
+                        let icon = 'message-circle';
+                        if (comm.type === 'email') icon = 'mail';
+                        else if (comm.type === 'call') icon = 'phone';
+                        else if (comm.type === 'copy') icon = 'copy';
+
                         activities.push({
-                            leadName: lead.customer ? lead.customer.name : 'Unknown',
+                            leadName: lead.customerName || 'Unknown',
+                            user: lead.createdBy || 'Unknown',
                             type: comm.type,
+                            icon: icon,
                             message: comm.message,
                             timestamp: timestamp,
-                            text: `${lead.customer ? lead.customer.name : 'Unknown'} - ${comm.message}`,
+                            text: `${lead.customerName || 'Unknown'} - ${comm.message}`,
                             time: timeAgo
                         });
                     });
