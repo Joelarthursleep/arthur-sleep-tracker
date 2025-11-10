@@ -1614,6 +1614,167 @@
             color: var(--gray-600);
         }
 
+        /* Professional Calendar Styles */
+        .calendar-container {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-grid {
+            display: grid;
+            width: 100%;
+        }
+
+        /* Month View */
+        .calendar-grid.month-view {
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .calendar-day-header {
+            background: var(--gray-100);
+            padding: 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .calendar-day-cell {
+            min-height: 100px;
+            padding: 8px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .calendar-day-cell:hover {
+            background: var(--gray-50);
+        }
+
+        .calendar-day-cell.other-month {
+            background: var(--gray-50);
+            color: var(--gray-400);
+        }
+
+        .calendar-day-cell.today {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .calendar-day-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .calendar-day-cell.other-month .calendar-day-number {
+            color: var(--gray-400);
+        }
+
+        .calendar-day-cell.today .calendar-day-number {
+            background: var(--primary);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-event-item {
+            padding: 4px 6px;
+            margin-bottom: 3px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid;
+        }
+
+        .calendar-event-item:hover {
+            transform: translateX(2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .calendar-event-item.followup-24h {
+            background: var(--warning-light);
+            border-left-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .calendar-event-item.followup-72h {
+            background: var(--danger-light);
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .calendar-event-item.completed {
+            opacity: 0.5;
+            background: var(--success-light);
+            border-left-color: var(--success);
+            color: var(--success);
+        }
+
+        .calendar-event-item.event-meeting {
+            background: rgba(99, 102, 241, 0.1);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .calendar-event-item.event-deadline {
+            background: var(--danger-light);
+            border-left-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .calendar-event-item.event-custom {
+            background: rgba(139, 92, 246, 0.1);
+            border-left-color: #8b5cf6;
+            color: #8b5cf6;
+        }
+
+        /* Week View */
+        .calendar-grid.week-view {
+            grid-template-columns: 80px repeat(7, 1fr);
+        }
+
+        .calendar-time-label {
+            padding: 8px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--gray-600);
+            border-right: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .calendar-hour-cell {
+            min-height: 60px;
+            padding: 4px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            position: relative;
+        }
+
+        .calendar-hour-cell:hover {
+            background: var(--gray-50);
+        }
+
+        /* Day View */
+        .calendar-grid.day-view {
+            grid-template-columns: 80px 1fr;
+        }
+
+        .calendar-day-column {
+            border-left: 1px solid var(--gray-200);
+        }
+
         /* Comments Section */
         .comments-section {
             margin-top: 16px;
@@ -2476,25 +2637,26 @@
             <div class="calendar-header">
                 <div>
                     <h2 style="font-size: 24px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px;">Follow-up Calendar</h2>
-                    <p style="color: var(--gray-600); font-size: 14px;">Scheduled follow-ups for unconverted leads</p>
+                    <p style="color: var(--gray-600); font-size: 14px;" id="calendarSubtitle">Scheduled follow-ups for unconverted leads</p>
                 </div>
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn btn-ghost" onclick="filterCalendar('all')">
-                        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
-                        All
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button class="btn btn-secondary" onclick="navigateCalendar('prev')">
+                        <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
                     </button>
-                    <button class="btn btn-ghost" onclick="filterCalendar('pending')">
-                        <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
-                        Pending
+                    <button class="btn btn-secondary" onclick="navigateCalendar('today')">Today</button>
+                    <button class="btn btn-secondary" onclick="navigateCalendar('next')">
+                        <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
                     </button>
-                    <button class="btn btn-ghost" onclick="filterCalendar('overdue')">
-                        <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i>
-                        Overdue
-                    </button>
+                    <div style="width: 1px; height: 24px; background: var(--gray-300); margin: 0 8px;"></div>
+                    <div class="btn-group">
+                        <button class="btn btn-ghost" id="viewDay" onclick="setCalendarView('day')">Day</button>
+                        <button class="btn btn-ghost" id="viewWeek" onclick="setCalendarView('week')">Week</button>
+                        <button class="btn btn-ghost active" id="viewMonth" onclick="setCalendarView('month')">Month</button>
+                    </div>
                 </div>
             </div>
-            <div class="calendar-events" id="calendarEvents">
-                <!-- Calendar events will be dynamically populated -->
+            <div class="calendar-container" id="calendarContainer">
+                <!-- Professional calendar grid will be rendered here -->
             </div>
         </div>
 
@@ -2910,6 +3072,25 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Customer Location / Timezone</label>
+                        <select class="form-select" id="customerTimezone">
+                            <option value="Europe/London">UK (GMT/BST)</option>
+                            <option value="Europe/Paris">Europe - Central (CET)</option>
+                            <option value="Europe/Athens">Europe - Eastern (EET)</option>
+                            <option value="America/New_York">USA - Eastern (EST/EDT)</option>
+                            <option value="America/Chicago">USA - Central (CST/CDT)</option>
+                            <option value="America/Denver">USA - Mountain (MST/MDT)</option>
+                            <option value="America/Los_Angeles">USA - Pacific (PST/PDT)</option>
+                            <option value="Asia/Dubai">Middle East (GST)</option>
+                            <option value="Asia/Kolkata">India (IST)</option>
+                            <option value="Asia/Shanghai">China (CST)</option>
+                            <option value="Asia/Tokyo">Japan (JST)</option>
+                            <option value="Australia/Sydney">Australia - East (AEDT)</option>
+                            <option value="Pacific/Auckland">New Zealand (NZDT)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label required">Next Follow-up Date</label>
                         <input type="date" class="form-input" id="followUpDate" required>
                     </div>
@@ -3157,6 +3338,64 @@
         </div>
     </div>
 
+    <!-- Add Calendar Event Modal -->
+    <div class="modal" id="addCalendarEventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Calendar Event</h2>
+                <button class="close-btn" onclick="closeAddCalendarEvent()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitCalendarEvent(event)">
+                <input type="hidden" id="eventDate">
+
+                <div class="form-group">
+                    <label class="form-label required">Event Type</label>
+                    <select class="form-select" id="eventType" required onchange="updateEventTypeFields()">
+                        <option value="">Select event type...</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="deadline">Deadline</option>
+                        <option value="custom">Custom Event</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Event Title</label>
+                    <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Date & Time</label>
+                    <input type="datetime-local" class="form-input" id="eventDateTime" required>
+                </div>
+
+                <div class="form-group" id="eventLeadGroup" style="display: none;">
+                    <label class="form-label">Associated Lead (Optional)</label>
+                    <select class="form-select" id="eventLeadId">
+                        <option value="">No associated lead</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="eventDescription" placeholder="Add event details..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+                        Add Event
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeAddCalendarEvent()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
@@ -3344,6 +3583,13 @@
         let leadTypeChart = null;
         let unsubscribeLeads = null;
 
+        // Calendar state
+        let currentCalendarDate = new Date();
+        let currentCalendarView = 'month'; // 'day', 'week', or 'month'
+        let customCalendarEvents = []; // Store custom calendar events
+        let lastClickTime = 0;
+        let lastClickedCell = null;
+
         // Notification System
         function showNotification(title, message, type = 'info') {
             const container = document.getElementById('notificationContainer');
@@ -3415,13 +3661,128 @@
 
         // Toggle lead card expand/collapse
         function toggleLeadCard(leadId) {
+            console.log('🔄 toggleLeadCard called with leadId:', leadId);
             const card = document.getElementById(`lead-${leadId}`);
-            if (card) {
-                card.classList.toggle('collapsed');
-                card.classList.toggle('expanded');
-                lucide.createIcons();
+            console.log('Card element:', card);
+
+            if (!card) {
+                console.error('❌ Card not found for leadId:', leadId);
+                // Try to find any card to debug
+                const allCards = document.querySelectorAll('.lead-card');
+                console.log('All cards found:', allCards.length);
+                allCards.forEach((c, i) => {
+                    console.log(`Card ${i}:`, c.id, c.classList.toString());
+                });
+                return;
             }
+
+            const wasCollapsed = card.classList.contains('collapsed');
+
+            // Toggle classes
+            if (wasCollapsed) {
+                card.classList.remove('collapsed');
+                card.classList.add('expanded');
+            } else {
+                card.classList.remove('expanded');
+                card.classList.add('collapsed');
+            }
+
+            console.log(`Card ${wasCollapsed ? 'EXPANDED ✅' : 'COLLAPSED ⬇️'}`);
+            console.log('Current classes:', card.classList.toString());
+
+            // Re-initialize lucide icons
+            setTimeout(() => {
+                lucide.createIcons();
+            }, 10);
         }
+
+        // Make function available globally for debugging
+        window.toggleLeadCard = toggleLeadCard;
+
+        // Debug helper - inspect system state
+        window.debugDashboard = function() {
+            console.log('=== DASHBOARD DEBUG INFO ===');
+            console.log('Current User:', currentUser);
+            console.log('Total Leads:', leads.length);
+            console.log('Leads:', leads);
+
+            const leadsWithFollowups = leads.filter(l => l.followups && l.followups.length > 0);
+            console.log('Leads with followups:', leadsWithFollowups.length);
+
+            leadsWithFollowups.forEach(lead => {
+                console.log(`\n📌 ${lead.customerName}:`, {
+                    id: lead.id,
+                    createdBy: lead.createdBy,
+                    status: lead.status,
+                    followups: lead.followups,
+                    timezone: lead.customerTimezone
+                });
+            });
+
+            console.log('\n=== UPCOMING FOLLOWUPS ===');
+            renderUpcomingFollowups();
+
+            console.log('\n=== CALENDAR ===');
+            renderCalendar();
+
+            console.log('\nTo test card toggle, run: toggleLeadCard(LEAD_ID)');
+            console.log('Run debugDashboard() again to refresh');
+        };
+
+        // Check Firestore data directly
+        window.checkFirestore = async function() {
+            console.log('=== CHECKING FIRESTORE ===');
+            try {
+                const snapshot = await db.collection('leads').get();
+                console.log('Total docs in Firestore:', snapshot.size);
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    console.log(`\n📄 ${data.customerName}:`, {
+                        docId: doc.id,
+                        dataId: data.id,
+                        createdBy: data.createdBy,
+                        hasFollowups: !!data.followups,
+                        followupsCount: data.followups ? data.followups.length : 0,
+                        followups: data.followups
+                    });
+                });
+            } catch (error) {
+                console.error('Error reading Firestore:', error);
+            }
+        };
+
+        // Test card expansion
+        window.testCardExpansion = function() {
+            console.log('🧪 Testing card expansion...');
+            const firstCard = document.querySelector('.lead-card.collapsed');
+            if (firstCard) {
+                console.log('Found card:', firstCard.id);
+                const leadId = firstCard.id.replace('lead-', '');
+                console.log('Attempting to expand lead:', leadId);
+                toggleLeadCard(parseInt(leadId));
+            } else {
+                console.error('No collapsed cards found');
+                const allCards = document.querySelectorAll('.lead-card');
+                console.log('Total cards found:', allCards.length);
+            }
+        };
+
+        // Show clickable areas (visual debug)
+        window.showClickableAreas = function() {
+            const cards = document.querySelectorAll('.lead-card');
+            cards.forEach((card, i) => {
+                card.style.outline = '3px solid red';
+                card.style.outlineOffset = '2px';
+
+                const label = document.createElement('div');
+                label.style.cssText = 'position: absolute; top: -20px; left: 0; background: red; color: white; padding: 2px 8px; font-size: 11px; z-index: 10000;';
+                label.textContent = `CARD ${i+1} - Click me!`;
+                card.style.position = 'relative';
+                card.appendChild(label);
+            });
+            console.log(`✅ Highlighted ${cards.length} cards`);
+        };
 
         // Render detailed lead information (for expanded view)
         function renderLeadDetails(lead, status, daysUntil) {
@@ -3894,46 +4255,103 @@
             }).join('');
 
             lucide.createIcons();
+
+            // Add click handlers as backup (in case onclick attribute doesn't work)
+            setTimeout(() => {
+                const allLeadCards = document.querySelectorAll('.lead-card.collapsed');
+                console.log(`🔧 Adding click handlers to ${allLeadCards.length} lead cards`);
+
+                allLeadCards.forEach(card => {
+                    // Add event listener (don't remove onclick, let both work)
+                    card.style.cursor = 'pointer';
+
+                    card.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const leadId = this.id.replace('lead-', '');
+                        console.log('📌 Card clicked via event listener:', leadId, this.id);
+
+                        if (leadId && leadId !== 'lead-') {
+                            toggleLeadCard(parseInt(leadId));
+                        } else {
+                            console.error('Invalid lead ID extracted from:', this.id);
+                        }
+                    }, true); // Use capture phase
+                });
+
+                console.log('✅ Click handlers attached');
+            }, 200);
         }
 
         // Check for reminders
         function checkReminders() {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            console.log('🔔 Check Follow-ups button clicked');
 
+            const now = new Date();
             let overdueCount = 0;
             let dueSoonCount = 0;
-            let overdueLeads = [];
-            let dueSoonLeads = [];
+            let overdueFollowups = [];
+            let dueSoonFollowups = [];
 
-            leads.forEach(lead => {
-                if (lead.status !== 'converted') {
-                    const followUpDate = new Date(lead.followUpDate);
-                    followUpDate.setHours(0, 0, 0, 0);
-                    const daysUntil = Math.ceil((followUpDate - today) / (1000 * 60 * 60 * 24));
+            // Filter leads for current user if employee
+            let userLeads = leads;
+            if (currentUser && currentUser.role === 'employee') {
+                userLeads = leads.filter(lead => lead.createdBy === currentUser.username);
+            }
 
-                    if (daysUntil < 0) {
-                        overdueCount++;
-                        overdueLeads.push(lead);
-                    } else if (daysUntil <= 3) {
-                        dueSoonCount++;
-                        dueSoonLeads.push(lead);
-                    }
+            console.log('📋 Checking reminders:', {
+                totalLeads: leads.length,
+                userLeads: userLeads.length,
+                userRole: currentUser.role,
+                username: currentUser.username
+            });
+
+            // Check all followups from unconverted leads
+            userLeads.forEach(lead => {
+                if (lead.status !== 'converted' && lead.followups) {
+                    lead.followups.forEach(followup => {
+                        if (!followup.completed) {
+                            const dueDate = new Date(followup.dueDate);
+                            const hoursUntil = (dueDate - now) / (1000 * 60 * 60);
+
+                            console.log(`Followup for ${lead.customerName}:`, {
+                                type: followup.type,
+                                dueDate: followup.dueDate,
+                                hoursUntil: Math.round(hoursUntil),
+                                isOverdue: hoursUntil < 0
+                            });
+
+                            if (hoursUntil < 0) {
+                                overdueCount++;
+                                overdueFollowups.push({ lead, followup, hoursOverdue: Math.abs(hoursUntil) });
+                            } else if (hoursUntil <= 24) {
+                                dueSoonCount++;
+                                dueSoonFollowups.push({ lead, followup, hoursUntil });
+                            }
+                        }
+                    });
                 }
             });
 
+            console.log('📊 Results:', { overdueCount, dueSoonCount });
+
             if (overdueCount > 0) {
+                const topOverdue = overdueFollowups.slice(0, 3);
+                const names = topOverdue.map(f => `${f.lead.customerName} (${f.followup.type})`).join(', ');
                 showNotification(
                     'Urgent: Overdue Follow-ups',
-                    `${overdueCount} lead${overdueCount > 1 ? 's' : ''} require immediate attention. ${overdueLeads.map(l => l.customerName).slice(0, 3).join(', ')}${overdueLeads.length > 3 ? ' and more' : ''}.`,
-                    'danger'
+                    `${overdueCount} follow-up${overdueCount > 1 ? 's' : ''} overdue! ${names}${overdueFollowups.length > 3 ? ' and more' : ''}.`,
+                    'error'
                 );
             }
 
             if (dueSoonCount > 0) {
+                const topDueSoon = dueSoonFollowups.slice(0, 3);
+                const names = topDueSoon.map(f => `${f.lead.customerName} (${f.followup.type})`).join(', ');
                 showNotification(
                     'Follow-ups Due Soon',
-                    `${dueSoonCount} lead${dueSoonCount > 1 ? 's' : ''} require follow-up within the next 3 days.`,
+                    `${dueSoonCount} follow-up${dueSoonCount > 1 ? 's' : ''} due within 24 hours: ${names}${dueSoonFollowups.length > 3 ? ' and more' : ''}.`,
                     'warning'
                 );
             }
@@ -4200,7 +4618,12 @@
             // Conversion trend chart
             const conversionCtx = document.getElementById('conversionChart');
             if (conversionCtx) {
-                const days = 30;
+                // Read period from dropdown (defaults to 30)
+                const chartPeriodSelect = document.getElementById('chartPeriod');
+                const days = chartPeriodSelect ? parseInt(chartPeriodSelect.value) : 30;
+
+                console.log(`📊 Rendering chart for ${days} days`);
+
                 const labels = [];
                 const data = [];
                 const targetData = [];
@@ -4527,6 +4950,16 @@
             initCharts();
         }
 
+        // Update single chart (for period filter)
+        function updateChart() {
+            console.log('🔄 updateChart called - refreshing conversion chart');
+            if (conversionChart) {
+                conversionChart.destroy();
+                conversionChart = null;
+            }
+            initCharts(); // This will re-read the chartPeriod dropdown
+        }
+
         // Filter and sort leads
         function filterLeads() {
             const leadTypeFilter = document.getElementById('filterLeadType').value;
@@ -4772,6 +5205,93 @@
             );
         }
 
+        // Create intelligent follow-ups scheduled during customer's business hours (9 AM - 5 PM local time)
+        function createIntelligentFollowups(createdAtISO, timezone) {
+            // Parse the creation time
+            const createdDate = new Date(createdAtISO);
+
+            // Convert to customer's timezone and find next business hours
+            // We'll use a simplified approach: calculate offset and schedule at 10 AM customer time
+
+            // Get timezone offsets
+            const timezoneOffsets = {
+                'Europe/London': 0,
+                'Europe/Paris': 1,
+                'Europe/Athens': 2,
+                'America/New_York': -5,
+                'America/Chicago': -6,
+                'America/Denver': -7,
+                'America/Los_Angeles': -8,
+                'Asia/Dubai': 4,
+                'Asia/Kolkata': 5.5,
+                'Asia/Shanghai': 8,
+                'Asia/Tokyo': 9,
+                'Australia/Sydney': 11,
+                'Pacific/Auckland': 13
+            };
+
+            const tzOffset = timezoneOffsets[timezone] || 0;
+
+            // Calculate 24h follow-up at 10 AM customer time
+            const followup24h = new Date(createdDate);
+            followup24h.setHours(followup24h.getHours() + 24);
+
+            // Adjust to 10 AM in customer timezone
+            const customerHour = (followup24h.getUTCHours() + tzOffset) % 24;
+            const targetHour = 10; // 10 AM
+            const hourAdjustment = targetHour - customerHour;
+            followup24h.setHours(followup24h.getHours() + hourAdjustment);
+
+            // If it's weekend, move to next Monday
+            if (followup24h.getDay() === 0) { // Sunday
+                followup24h.setDate(followup24h.getDate() + 1);
+            } else if (followup24h.getDay() === 6) { // Saturday
+                followup24h.setDate(followup24h.getDate() + 2);
+            }
+
+            // Calculate 72h follow-up at 2 PM customer time
+            const followup72h = new Date(createdDate);
+            followup72h.setHours(followup72h.getHours() + 72);
+
+            // Adjust to 2 PM in customer timezone
+            const customer72Hour = (followup72h.getUTCHours() + tzOffset) % 24;
+            const target72Hour = 14; // 2 PM
+            const hour72Adjustment = target72Hour - customer72Hour;
+            followup72h.setHours(followup72h.getHours() + hour72Adjustment);
+
+            // If it's weekend, move to next Monday
+            if (followup72h.getDay() === 0) { // Sunday
+                followup72h.setDate(followup72h.getDate() + 1);
+            } else if (followup72h.getDay() === 6) { // Saturday
+                followup72h.setDate(followup72h.getDate() + 2);
+            }
+
+            return [
+                {
+                    id: Date.now() + '_24h',
+                    type: '24h',
+                    dueDate: followup24h.toISOString(),
+                    scheduledHourLocal: 10,
+                    timezone: timezone,
+                    completed: false,
+                    contactMethod: null,
+                    notes: null,
+                    completedAt: null
+                },
+                {
+                    id: Date.now() + 1 + '_72h',
+                    type: '72h',
+                    dueDate: followup72h.toISOString(),
+                    scheduledHourLocal: 14,
+                    timezone: timezone,
+                    completed: false,
+                    contactMethod: null,
+                    notes: null,
+                    completedAt: null
+                }
+            ];
+        }
+
         // Save lead
         async function saveLead(event) {
             event.preventDefault();
@@ -4785,6 +5305,7 @@
                 customerName: document.getElementById('customerName').value,
                 customerEmail: document.getElementById('customerEmail').value,
                 customerPhone: document.getElementById('customerPhone').value,
+                customerTimezone: document.getElementById('customerTimezone').value,
                 followUpDate: document.getElementById('followUpDate').value,
                 interests: interests,
                 productService: document.getElementById('productService').value,
@@ -4836,7 +5357,20 @@
                     leadData.comments = [];
                     leadData.stageEnteredAt = new Date().toISOString();
 
+                    // Create intelligent 24h and 72h follow-ups scheduled during customer's business hours
+                    const timezone = leadData.customerTimezone || 'Europe/London';
+                    leadData.followups = createIntelligentFollowups(leadData.createdAt, timezone);
+
                     const docId = await firestore.addLead(leadData);
+
+                    // Debug: Log the created lead data
+                    console.log('✅ Lead created successfully:', {
+                        id: leadData.id,
+                        name: leadData.customerName,
+                        timezone: leadData.customerTimezone,
+                        followups: leadData.followups,
+                        followupsCount: leadData.followups ? leadData.followups.length : 0
+                    });
 
                     const commMessage = leadType === 'payment' ? 'Lead created and payment link sent' : `${leadType.charAt(0).toUpperCase() + leadType.slice(1)} lead created`;
                     await addCommunication(docId, 'note', commMessage);
@@ -4869,6 +5403,7 @@
             document.getElementById('customerName').value = lead.customerName;
             document.getElementById('customerEmail').value = lead.customerEmail;
             document.getElementById('customerPhone').value = lead.customerPhone || '';
+            document.getElementById('customerTimezone').value = lead.customerTimezone || 'Europe/London';
             document.getElementById('followUpDate').value = lead.followUpDate;
             document.getElementById('productService').value = lead.productService || '';
             document.getElementById('leadNotes').value = lead.notes || '';
@@ -5682,6 +6217,7 @@
             const employeeWrapper = document.getElementById('employeeLayoutWrapper');
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
+            const kanbanFullView = document.getElementById('kanbanFullView');
 
             if (calendar.style.display === 'none' || calendar.style.display === '') {
                 // Show calendar
@@ -5691,6 +6227,12 @@
                 if (employeeWrapper) employeeWrapper.style.display = 'none';
                 if (statsGrid) statsGrid.style.display = 'none';
                 if (dashboardLayout) dashboardLayout.style.display = 'none';
+                if (kanbanFullView) kanbanFullView.classList.remove('active');
+
+                // Update menu highlighting
+                document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+                const calendarItem = document.getElementById('sidebarCalendar');
+                if (calendarItem) calendarItem.classList.add('active');
 
                 renderCalendar();
             } else {
@@ -5701,92 +6243,380 @@
                 if (employeeWrapper) employeeWrapper.style.display = 'block';
                 if (statsGrid && !employeeWrapper) statsGrid.style.display = 'grid';
                 if (dashboardLayout && !employeeWrapper) dashboardLayout.style.display = 'grid';
+
+                // Update menu highlighting
+                document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+                const dashboardItem = document.querySelector('.sidebar-item[onclick*="showDashboard"]');
+                if (dashboardItem) dashboardItem.classList.add('active');
             }
         }
 
-        // Render calendar events
-        function renderCalendar(filter = 'all') {
-            const calendarEvents = document.getElementById('calendarEvents');
-            const now = new Date();
+        // Set calendar view (day/week/month)
+        function setCalendarView(view) {
+            currentCalendarView = view;
+
+            // Update button states
+            document.getElementById('viewDay').classList.toggle('active', view === 'day');
+            document.getElementById('viewWeek').classList.toggle('active', view === 'week');
+            document.getElementById('viewMonth').classList.toggle('active', view === 'month');
+
+            renderCalendar();
+        }
+
+        // Navigate calendar
+        function navigateCalendar(direction) {
+            if (direction === 'today') {
+                currentCalendarDate = new Date();
+            } else if (direction === 'prev') {
+                if (currentCalendarView === 'month') {
+                    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+                } else if (currentCalendarView === 'week') {
+                    currentCalendarDate.setDate(currentCalendarDate.getDate() - 7);
+                } else {
+                    currentCalendarDate.setDate(currentCalendarDate.getDate() - 1);
+                }
+            } else if (direction === 'next') {
+                if (currentCalendarView === 'month') {
+                    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+                } else if (currentCalendarView === 'week') {
+                    currentCalendarDate.setDate(currentCalendarDate.getDate() + 7);
+                } else {
+                    currentCalendarDate.setDate(currentCalendarDate.getDate() + 1);
+                }
+            }
+            renderCalendar();
+        }
+
+        // Render professional calendar
+        function renderCalendar() {
+            const container = document.getElementById('calendarContainer');
+            const subtitle = document.getElementById('calendarSubtitle');
+
+            if (!container) {
+                console.error('Calendar container not found');
+                return;
+            }
 
             // Get all followups from all leads
-            let allFollowups = [];
+            const allFollowups = [];
             leads.forEach(lead => {
-                if (lead.status === 'converted') return; // Skip converted leads
-
+                if (lead.status === 'converted') return;
                 if (lead.followups) {
                     lead.followups.forEach(followup => {
-                        allFollowups.push({
-                            ...followup,
-                            lead: lead
-                        });
+                        allFollowups.push({ ...followup, lead: lead, isFollowup: true });
                     });
                 }
             });
 
-            // Apply filter
-            if (filter === 'pending') {
-                allFollowups = allFollowups.filter(f => !f.completed && new Date(f.dueDate) > now);
-            } else if (filter === 'overdue') {
-                allFollowups = allFollowups.filter(f => !f.completed && new Date(f.dueDate) <= now);
+            console.log('Calendar rendering:', {
+                totalLeads: leads.length,
+                leadsWithFollowups: leads.filter(l => l.followups && l.followups.length > 0).length,
+                totalFollowups: allFollowups.length,
+                view: currentCalendarView
+            });
+
+            // Add custom calendar events
+            customCalendarEvents.forEach(event => {
+                allFollowups.push({
+                    ...event,
+                    isCustomEvent: true,
+                    lead: event.leadId ? leads.find(l => l.id === event.leadId) : null
+                });
+            });
+
+            if (currentCalendarView === 'month') {
+                renderMonthView(container, subtitle, allFollowups);
+            } else if (currentCalendarView === 'week') {
+                renderWeekView(container, subtitle, allFollowups);
+            } else {
+                renderDayView(container, subtitle, allFollowups);
             }
-
-            // Sort by date
-            allFollowups.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-
-            if (allFollowups.length === 0) {
-                calendarEvents.innerHTML = `
-                    <div class="empty-state" style="padding: 40px;">
-                        <i data-lucide="calendar-check" style="width: 48px; height: 48px; color: var(--gray-400); margin-bottom: 16px;"></i>
-                        <p style="color: var(--gray-600);">No follow-ups scheduled</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            calendarEvents.innerHTML = allFollowups.map(followup => {
-                const dueDate = new Date(followup.dueDate);
-                const isOverdue = !followup.completed && dueDate <= now;
-                const eventClass = followup.completed ? 'event-completed' : (isOverdue ? 'event-72h' : 'event-24h');
-
-                return `
-                    <div class="calendar-event ${eventClass}">
-                        <div class="event-time">
-                            ${formatDateTime(followup.dueDate)}
-                        </div>
-                        <div class="event-details">
-                            <div class="event-title">
-                                ${followup.type === '24h' ? '24 Hour Follow-up' : '72 Hour Follow-up'}
-                                ${followup.completed ? '(Completed)' : isOverdue ? '(OVERDUE)' : ''}
-                            </div>
-                            <div class="event-customer">
-                                ${followup.lead.customerName} - ${followup.lead.customerEmail}
-                            </div>
-                            ${followup.contactMethod ? `
-                                <span class="contact-method-badge" style="margin-top: 6px;">
-                                    ${followup.contactMethod === 'whatsapp' ? 'WhatsApp' :
-                                      followup.contactMethod === 'phone' ? 'Phone' :
-                                      followup.contactMethod === 'email' ? 'Email' : 'Shopify Chat'}
-                                </span>
-                            ` : ''}
-                        </div>
-                        ${!followup.completed ? `
-                            <button class="btn btn-primary" onclick="openFollowupAcknowledgment('${followup.lead.id}', '${followup.type}')">
-                                <i data-lucide="check" style="width: 16px; height: 16px;"></i>
-                                Acknowledge
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
 
             lucide.createIcons();
         }
 
-        // Filter calendar
-        function filterCalendar(filter) {
-            renderCalendar(filter);
+        // Render month view
+        function renderMonthView(container, subtitle, followups) {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            const monthName = currentCalendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            subtitle.textContent = monthName;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let html = '<div class="calendar-grid month-view">';
+
+            // Day headers
+            days.forEach(day => {
+                html += `<div class="calendar-day-header">${day}</div>`;
+            });
+
+            // Calendar cells
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const currentDate = new Date(startDate);
+            for (let i = 0; i < 42; i++) {
+                const isOtherMonth = currentDate.getMonth() !== month;
+                const isToday = currentDate.getTime() === today.getTime();
+
+                const dayFollowups = followups.filter(f => {
+                    const fDate = new Date(f.dueDate);
+                    const matches = fDate.getDate() === currentDate.getDate() &&
+                           fDate.getMonth() === currentDate.getMonth() &&
+                           fDate.getFullYear() === currentDate.getFullYear();
+
+                    if (i === 0 && followups.length > 0) {
+                        // Debug first day only
+                        console.log('Day match check:', {
+                            currentDate: currentDate.toDateString(),
+                            fDate: fDate.toDateString(),
+                            followupDueDate: f.dueDate,
+                            matches,
+                            leadName: f.lead ? f.lead.customerName : 'No lead'
+                        });
+                    }
+
+                    return matches;
+                });
+
+                let cellClass = 'calendar-day-cell';
+                if (isOtherMonth) cellClass += ' other-month';
+                if (isToday) cellClass += ' today';
+
+                const dateString = currentDate.toISOString().split('T')[0];
+                html += `<div class="${cellClass}" onclick="handleCalendarCellClick('${dateString}')">`;
+                html += `<div class="calendar-day-number">${currentDate.getDate()}</div>`;
+
+                // Render events
+                dayFollowups.forEach(f => {
+                    if (f.isCustomEvent) {
+                        // Custom event
+                        let eventClass = f.completed ? 'completed' : `event-${f.type}`;
+                        const displayText = f.lead ? `${f.title} - ${f.lead.customerName}` : f.title;
+                        html += `<div class="calendar-event-item ${eventClass}">${displayText}</div>`;
+                    } else {
+                        // Follow-up event
+                        const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
+                        const title = f.type === '24h' ? '24h' : '72h';
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${title} ${f.lead.customerName}</div>`;
+                    }
+                });
+
+                html += '</div>';
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render week view
+        function renderWeekView(container, subtitle, followups) {
+            const startOfWeek = new Date(currentCalendarDate);
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+            subtitle.textContent = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+
+            let html = '<div class="calendar-grid week-view">';
+
+            // Time column header
+            html += '<div class="calendar-day-header"></div>';
+
+            // Day headers
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const currentDay = new Date(startOfWeek);
+            for (let i = 0; i < 7; i++) {
+                html += `<div class="calendar-day-header">${days[i]}<br/>${currentDay.getDate()}</div>`;
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+
+            // Hour rows (6 AM to 10 PM)
+            for (let hour = 6; hour <= 22; hour++) {
+                html += `<div class="calendar-time-label">${hour}:00</div>`;
+
+                const currentDay = new Date(startOfWeek);
+                for (let day = 0; day < 7; day++) {
+                    const dayFollowups = followups.filter(f => {
+                        const fDate = new Date(f.dueDate);
+                        return fDate.getDate() === currentDay.getDate() &&
+                               fDate.getMonth() === currentDay.getMonth() &&
+                               fDate.getFullYear() === currentDay.getFullYear() &&
+                               fDate.getHours() === hour;
+                    });
+
+                    html += '<div class="calendar-hour-cell">';
+                    dayFollowups.forEach(f => {
+                        const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${f.lead.customerName}</div>`;
+                    });
+                    html += '</div>';
+
+                    currentDay.setDate(currentDay.getDate() + 1);
+                }
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Render day view
+        function renderDayView(container, subtitle, followups) {
+            const dayName = currentCalendarDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+            subtitle.textContent = dayName;
+
+            let html = '<div class="calendar-grid day-view">';
+
+            // Hour rows (6 AM to 10 PM)
+            for (let hour = 6; hour <= 22; hour++) {
+                html += `<div class="calendar-time-label">${hour}:00</div>`;
+
+                const hourFollowups = followups.filter(f => {
+                    const fDate = new Date(f.dueDate);
+                    return fDate.getDate() === currentCalendarDate.getDate() &&
+                           fDate.getMonth() === currentCalendarDate.getMonth() &&
+                           fDate.getFullYear() === currentCalendarDate.getFullYear() &&
+                           fDate.getHours() === hour;
+                });
+
+                html += '<div class="calendar-hour-cell calendar-day-column">';
+                hourFollowups.forEach(f => {
+                    const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
+                    const time = new Date(f.dueDate).toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' });
+                    html += `<div class="calendar-event-item ${eventClass}" onclick="openFollowupAcknowledgment('${f.lead.id}', '${f.type}')">${time} - ${f.lead.customerName}</div>`;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Handle double-click on calendar cell
+        function handleCalendarCellClick(dateString) {
+            const now = Date.now();
+            const timeSinceLastClick = now - lastClickTime;
+
+            if (timeSinceLastClick < 300 && lastClickedCell === dateString) {
+                // Double click detected
+                openAddCalendarEvent(dateString);
+            }
+
+            lastClickTime = now;
+            lastClickedCell = dateString;
+        }
+
+        // Open add calendar event modal
+        function openAddCalendarEvent(dateString) {
+            const modal = document.getElementById('addCalendarEventModal');
+            const eventDateInput = document.getElementById('eventDate');
+            const eventDateTimeInput = document.getElementById('eventDateTime');
+            const eventLeadSelect = document.getElementById('eventLeadId');
+
+            // Set the date
+            eventDateInput.value = dateString;
+
+            // Set datetime-local input to the clicked date at 9 AM
+            const date = new Date(dateString);
+            date.setHours(9, 0, 0, 0);
+            const dateTimeString = date.toISOString().slice(0, 16);
+            eventDateTimeInput.value = dateTimeString;
+
+            // Populate leads dropdown
+            eventLeadSelect.innerHTML = '<option value="">No associated lead</option>';
+            leads.forEach(lead => {
+                if (lead.status !== 'converted') {
+                    eventLeadSelect.innerHTML += `<option value="${lead.id}">${lead.customerName}</option>`;
+                }
+            });
+
+            modal.style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        // Close add calendar event modal
+        function closeAddCalendarEvent() {
+            const modal = document.getElementById('addCalendarEventModal');
+            modal.style.display = 'none';
+
+            // Reset form
+            document.getElementById('eventType').value = '';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDateTime').value = '';
+            document.getElementById('eventLeadId').value = '';
+            document.getElementById('eventDescription').value = '';
+        }
+
+        // Update event type fields
+        function updateEventTypeFields() {
+            const eventType = document.getElementById('eventType').value;
+            const leadGroup = document.getElementById('eventLeadGroup');
+
+            // Show lead dropdown for meetings
+            if (eventType === 'meeting') {
+                leadGroup.style.display = 'block';
+            } else {
+                leadGroup.style.display = 'none';
+            }
+        }
+
+        // Submit calendar event
+        async function submitCalendarEvent(event) {
+            event.preventDefault();
+
+            const eventType = document.getElementById('eventType').value;
+            const eventTitle = document.getElementById('eventTitle').value;
+            const eventDateTime = document.getElementById('eventDateTime').value;
+            const eventLeadId = document.getElementById('eventLeadId').value;
+            const eventDescription = document.getElementById('eventDescription').value;
+
+            const newEvent = {
+                id: 'custom_' + Date.now(),
+                type: eventType,
+                title: eventTitle,
+                dueDate: new Date(eventDateTime).toISOString(),
+                leadId: eventLeadId || null,
+                description: eventDescription,
+                completed: false,
+                createdBy: currentUser.username,
+                createdAt: new Date().toISOString()
+            };
+
+            customCalendarEvents.push(newEvent);
+
+            // Save to Firestore
+            try {
+                const customEventsRef = db.collection('calendarEvents');
+                await customEventsRef.doc(newEvent.id).set(newEvent);
+
+                showNotification('Success', 'Calendar event added successfully', 'success');
+            } catch (error) {
+                console.error('Error saving calendar event:', error);
+                showNotification('Error', 'Failed to save calendar event', 'error');
+            }
+
+            closeAddCalendarEvent();
+            renderCalendar();
+        }
+
+        // Load custom calendar events from Firestore
+        async function loadCustomCalendarEvents() {
+            try {
+                const snapshot = await db.collection('calendarEvents').get();
+                customCalendarEvents = [];
+                snapshot.forEach(doc => {
+                    customCalendarEvents.push(doc.data());
+                });
+            } catch (error) {
+                console.error('Error loading calendar events:', error);
+            }
         }
 
         // Create follow-ups when lead is created
@@ -6061,31 +6891,65 @@
         // Render Upcoming Follow-ups in Sidebar
         function renderUpcomingFollowups() {
             const container = document.getElementById('upcomingFollowupsPreview');
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            if (!container) {
+                console.error('❌ upcomingFollowupsPreview container not found');
+                return;
+            }
+
+            const now = new Date();
 
             // Filter leads for current user if employee
             let userLeads = leads;
             if (currentUser && currentUser.role === 'employee') {
-                userLeads = leads.filter(lead => lead.assignedTo === currentUser.username);
+                userLeads = leads.filter(lead => lead.createdBy === currentUser.username);
             }
 
-            // Get unconverted leads with follow-up dates
-            const upcomingLeads = userLeads
-                .filter(lead => lead.status !== 'converted' && lead.followUpDate)
-                .map(lead => {
-                    const followUpDate = new Date(lead.followUpDate);
-                    followUpDate.setHours(0, 0, 0, 0);
-                    return {
-                        ...lead,
-                        daysUntil: Math.ceil((followUpDate - today) / (1000 * 60 * 60 * 24)),
-                        followUpDate: followUpDate
-                    };
-                })
-                .sort((a, b) => a.followUpDate - b.followUpDate)
-                .slice(0, 5);
+            console.log('📋 Rendering upcoming follow-ups:', {
+                totalLeads: leads.length,
+                userLeads: userLeads.length,
+                userRole: currentUser.role,
+                username: currentUser.username
+            });
 
-            if (upcomingLeads.length === 0) {
+            // Collect all upcoming followups from all unconverted leads
+            const allFollowups = [];
+            userLeads.forEach(lead => {
+                if (lead.status === 'converted') return;
+
+                console.log('Checking lead:', {
+                    name: lead.customerName,
+                    hasFollowups: !!lead.followups,
+                    followupsCount: lead.followups ? lead.followups.length : 0,
+                    createdBy: lead.createdBy
+                });
+
+                if (lead.followups) {
+                    lead.followups.forEach(followup => {
+                        if (!followup.completed) {
+                            const dueDate = new Date(followup.dueDate);
+                            const hoursUntil = (dueDate - now) / (1000 * 60 * 60);
+                            allFollowups.push({
+                                lead: lead,
+                                followup: followup,
+                                dueDate: dueDate,
+                                hoursUntil: hoursUntil,
+                                isOverdue: dueDate < now
+                            });
+                        }
+                    });
+                }
+            });
+
+            console.log('📊 Found follow-ups:', allFollowups.length);
+
+            // Sort by due date (soonest first)
+            allFollowups.sort((a, b) => a.dueDate - b.dueDate);
+
+            // Take first 5
+            const upcomingFollowups = allFollowups.slice(0, 5);
+
+            if (upcomingFollowups.length === 0) {
+                console.log('⚠️ No upcoming follow-ups to display');
                 container.innerHTML = `
                     <div class="empty-state">
                         <i data-lucide="calendar-check" class="empty-state-icon"></i>
@@ -6096,31 +6960,51 @@
                 return;
             }
 
-            container.innerHTML = upcomingLeads.map(lead => {
+            console.log('✅ Rendering', upcomingFollowups.length, 'follow-ups');
+
+            container.innerHTML = upcomingFollowups.map(item => {
                 let className = 'upcoming-followup-item';
                 let dateText = '';
+                let timeText = '';
 
-                if (lead.daysUntil < 0) {
+                const hoursAbs = Math.abs(item.hoursUntil);
+
+                if (item.isOverdue) {
                     className += ' overdue';
-                    dateText = `${Math.abs(lead.daysUntil)} days overdue`;
-                } else if (lead.daysUntil === 0) {
-                    className += ' today';
-                    dateText = 'Today';
-                } else if (lead.daysUntil === 1) {
-                    dateText = 'Tomorrow';
-                } else if (lead.daysUntil <= 7) {
-                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                    dateText = days[lead.followUpDate.getDay()];
+                    if (hoursAbs < 24) {
+                        dateText = `${Math.round(hoursAbs)}h overdue`;
+                    } else {
+                        dateText = `${Math.round(hoursAbs / 24)}d overdue`;
+                    }
                 } else {
-                    dateText = `in ${lead.daysUntil} days`;
+                    if (hoursAbs < 1) {
+                        className += ' urgent';
+                        dateText = 'Due now!';
+                    } else if (hoursAbs < 24) {
+                        className += ' today';
+                        dateText = `in ${Math.round(hoursAbs)}h`;
+                    } else if (hoursAbs < 48) {
+                        dateText = 'Tomorrow';
+                    } else {
+                        dateText = `in ${Math.round(hoursAbs / 24)}d`;
+                    }
                 }
 
+                const followupType = item.followup.type === '24h' ? '24h Follow-up' : '72h Follow-up';
+                const followupIcon = item.followup.type === '24h' ? 'clock' : 'alert-circle';
+
                 return `
-                    <div class="${className}">
-                        <div class="followup-name">${lead.customer.name}</div>
-                        <div class="followup-date">
-                            <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
-                            ${dateText}
+                    <div class="${className}" onclick="openFollowupAcknowledgment('${item.lead.id}', '${item.followup.type}')" style="cursor: pointer;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <i data-lucide="${followupIcon}" style="width: 14px; height: 14px;"></i>
+                            <div class="followup-name">${item.lead.customerName}</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-size: 11px; color: var(--gray-500);">${followupType}</div>
+                            <div class="followup-date">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                ${dateText}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -6394,6 +7278,9 @@
                 // Load leads from Firestore
                 leads = await firestore.getLeads();
 
+                // Load custom calendar events
+                await loadCustomCalendarEvents();
+
                 // Set up real-time listeners
                 setupRealtimeListeners();
 
@@ -6540,11 +7427,16 @@
             if (kanbanFullView) kanbanFullView.classList.remove('active');
 
             // Show main dashboard
+            const employeeWrapper = document.getElementById('employeeLayoutWrapper');
             const statsGrid = document.querySelector('.stats-grid');
-            if (statsGrid) statsGrid.style.display = 'grid';
-
             const dashboardLayout = document.querySelector('.dashboard-layout');
-            if (dashboardLayout) dashboardLayout.style.display = 'grid';
+
+            if (employeeWrapper) {
+                employeeWrapper.style.display = 'block';
+            } else {
+                if (statsGrid) statsGrid.style.display = 'grid';
+                if (dashboardLayout) dashboardLayout.style.display = 'grid';
+            }
 
             // Update active state
             document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
