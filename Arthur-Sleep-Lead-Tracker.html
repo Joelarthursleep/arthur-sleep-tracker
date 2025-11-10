@@ -6218,63 +6218,87 @@
             // Only run once to prevent duplicates
             if (employeeDashboardReorganized) return;
 
-            // Hide Quick Stats for employees
-            const quickStatsCard = document.getElementById('quickStatsCard');
-            if (quickStatsCard) quickStatsCard.style.display = 'none';
-
-            // Make dashboard layout full width for employees (remove sidebar)
+            // Find all key elements
             const dashboardLayout = document.querySelector('.dashboard-layout');
-            if (dashboardLayout) {
-                dashboardLayout.style.gridTemplateColumns = '1fr';
-            }
-
-            // Hide the sidebar column for employees
+            const mainColumn = document.querySelector('.main-column');
             const sidebarColumn = document.querySelector('.sidebar-column');
-            if (sidebarColumn) {
-                sidebarColumn.style.display = 'none';
-            }
-
-            // Find elements
             const analyticsSection = document.querySelector('.analytics-section');
-            const chartCards = document.querySelectorAll('.chart-card');
-            const mainContent = document.querySelector('.main-content');
+            const quickStatsCard = document.getElementById('quickStatsCard');
             const upcomingFollowupsCard = document.getElementById('upcomingFollowupsCard');
+            const mainContent = document.querySelector('.main-content');
+            const container = document.querySelector('.container');
 
-            if (!analyticsSection || !mainContent) return;
+            if (!dashboardLayout || !container) return;
 
             // Check if already reorganized
-            if (document.getElementById('employeeChartsSection')) return;
+            if (document.getElementById('employeeLayoutWrapper')) return;
 
-            // Create a wrapper for employee charts section (below leads)
+            // Hide Quick Stats for employees
+            if (quickStatsCard) quickStatsCard.style.display = 'none';
+
+            // Hide the entire sidebar column
+            if (sidebarColumn) sidebarColumn.style.display = 'none';
+
+            // Create new wrapper for employee layout
+            const employeeWrapper = document.createElement('div');
+            employeeWrapper.id = 'employeeLayoutWrapper';
+            employeeWrapper.style.cssText = 'width: 100%; max-width: 100%;';
+
+            // Move Daily Payment Target to the wrapper (FULL WIDTH at top)
+            if (analyticsSection) {
+                const paymentTarget = analyticsSection.cloneNode(true);
+                paymentTarget.style.cssText = 'grid-template-columns: 1fr; margin-bottom: 20px; width: 100%;';
+                employeeWrapper.appendChild(paymentTarget);
+                analyticsSection.style.display = 'none'; // Hide original
+            }
+
+            // Move main content (stats + leads) to wrapper
+            if (mainContent) {
+                const mainContentClone = mainContent.cloneNode(true);
+                mainContentClone.style.cssText = 'width: 100%;';
+                employeeWrapper.appendChild(mainContentClone);
+                mainContent.style.display = 'none'; // Hide original
+            }
+
+            // Create 3-column section for charts at bottom
             const chartsSection = document.createElement('div');
             chartsSection.className = 'employee-charts-section';
             chartsSection.id = 'employeeChartsSection';
-            chartsSection.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;';
+            chartsSection.style.cssText = 'display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; width: 100%;';
 
-            // Move specific charts: Conversion Trend (index 0) and Payment Status (index 2)
+            // Get the chart cards
+            const chartCards = document.querySelectorAll('.chart-card');
             if (chartCards.length >= 3) {
-                // MOVE the charts (not clone)
-                const conversionChart = chartCards[0];
-                const statusChart = chartCards[2];
+                // Clone charts (since originals might be hidden with parent)
+                const conversionChart = chartCards[0].cloneNode(true);
+                const statusChart = chartCards[2].cloneNode(true);
 
                 chartsSection.appendChild(conversionChart);
                 chartsSection.appendChild(statusChart);
 
-                // Move Upcoming Follow-ups to be inline with charts
+                // Clone Upcoming Follow-ups
                 if (upcomingFollowupsCard) {
-                    upcomingFollowupsCard.style.display = 'block';
-                    upcomingFollowupsCard.style.margin = '0';
-                    chartsSection.appendChild(upcomingFollowupsCard);
+                    const followupsClone = upcomingFollowupsCard.cloneNode(true);
+                    followupsClone.style.cssText = 'display: block; margin: 0;';
+                    chartsSection.appendChild(followupsClone);
                 }
-
-                // Insert charts section after the main content (leads dashboard)
-                if (mainContent.parentNode) {
-                    mainContent.parentNode.appendChild(chartsSection);
-                }
-
-                // Re-initialize chart icons
-                lucide.createIcons();
             }
+
+            employeeWrapper.appendChild(chartsSection);
+
+            // Replace dashboard layout with employee wrapper
+            if (dashboardLayout.parentNode) {
+                dashboardLayout.parentNode.insertBefore(employeeWrapper, dashboardLayout);
+                dashboardLayout.style.display = 'none';
+            }
+
+            // Re-initialize chart icons and charts
+            lucide.createIcons();
+
+            // Re-init charts after DOM manipulation
+            setTimeout(() => {
+                initCharts();
+            }, 100);
 
             employeeDashboardReorganized = true;
         }
