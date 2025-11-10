@@ -2637,7 +2637,7 @@
         <!-- End Dashboard Layout -->
 
         <!-- Analytics Section -->
-        <div class="analytics-section" style="grid-template-columns: 2fr 1fr 1fr;">
+        <div class="analytics-section" id="chartsAnalyticsSection" style="grid-template-columns: 2fr 1fr 1fr;">
             <div class="chart-card">
                 <div class="chart-header">
                     <h3 class="chart-title">Lead Conversion Trend</h3>
@@ -6222,6 +6222,7 @@
             const statsGrid = document.querySelector('.stats-grid');
             const dashboardLayout = document.querySelector('.dashboard-layout');
             const analyticsSection = document.querySelector('.analytics-section'); // Daily Payment Target
+            const chartsAnalyticsSection = document.getElementById('chartsAnalyticsSection'); // Charts section to hide
             const mainContent = document.querySelector('.main-content'); // Leads Dashboard
             const quickStatsCard = document.getElementById('quickStatsCard');
             const upcomingFollowupsCard = document.getElementById('upcomingFollowupsCard');
@@ -6234,6 +6235,9 @@
 
             // Hide Quick Stats for employees (sidebar card)
             if (quickStatsCard) quickStatsCard.style.display = 'none';
+
+            // Hide the original charts analytics section (contains the duplicates)
+            if (chartsAnalyticsSection) chartsAnalyticsSection.style.display = 'none';
 
             // Create new wrapper for employee layout
             const employeeWrapper = document.createElement('div');
