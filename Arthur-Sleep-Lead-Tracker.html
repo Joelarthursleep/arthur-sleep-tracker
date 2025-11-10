@@ -7075,7 +7075,32 @@
                         // Follow-up event
                         const eventClass = f.completed ? 'completed' : (f.type === '24h' ? 'followup-24h' : 'followup-72h');
                         const title = f.type === '24h' ? '24h' : '72h';
-                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${title} ${f.lead.customerName}</div>`;
+
+                        // Add priority badge if set
+                        let priorityBadge = '';
+                        if (f.priority && f.priority !== 'none') {
+                            const priorityColors = {
+                                low: '#10b981',
+                                medium: '#f59e0b',
+                                high: '#ef4444',
+                                urgent: '#dc2626'
+                            };
+                            const priorityLabels = {
+                                low: 'LOW',
+                                medium: 'MED',
+                                high: 'HIGH',
+                                urgent: '🚨'
+                            };
+                            priorityBadge = `<span style="background: ${priorityColors[f.priority]}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px;">${priorityLabels[f.priority]}</span>`;
+                        }
+
+                        // Add comment indicator if manager left a note
+                        let commentIndicator = '';
+                        if (f.managerComment) {
+                            commentIndicator = `<span style="margin-left: 4px;" title="${f.managerComment}">💬</span>`;
+                        }
+
+                        html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${title} ${f.lead.customerName}${priorityBadge}${commentIndicator}</div>`;
                     }
                 });
 
@@ -7567,12 +7592,48 @@
             const isOverdue = new Date(followup.dueDate) <= new Date();
             const urgency = isOverdue ? 'OVERDUE' : 'DUE';
 
-            document.getElementById('ackMessage').innerHTML = `
+            // Build message with priority and manager comment
+            let messageHTML = `
                 <strong>${urgency}:</strong> ${followupType === '24h' ? '24 hour' : '72 hour'} follow-up required for
                 <strong>${lead.customerName}</strong>.
                 <br><br>
                 Please confirm that you have contacted this customer and select the contact method used.
             `;
+
+            // Add priority if set by manager
+            if (followup.priority && followup.priority !== 'none') {
+                const priorityColors = {
+                    low: '#10b981',
+                    medium: '#f59e0b',
+                    high: '#ef4444',
+                    urgent: '#dc2626'
+                };
+                const priorityLabels = {
+                    low: 'Low Priority',
+                    medium: 'Medium Priority',
+                    high: 'High Priority',
+                    urgent: '🚨 URGENT'
+                };
+                messageHTML += `
+                    <br><br>
+                    <div style="padding: 12px; background: ${priorityColors[followup.priority]}15; border-left: 4px solid ${priorityColors[followup.priority]}; border-radius: 4px;">
+                        <strong style="color: ${priorityColors[followup.priority]};">${priorityLabels[followup.priority]}</strong>
+                    </div>
+                `;
+            }
+
+            // Add manager comment if exists
+            if (followup.managerComment) {
+                messageHTML += `
+                    <br><br>
+                    <div style="padding: 12px; background: #EEF2FF; border-left: 4px solid #6366f1; border-radius: 4px;">
+                        <strong style="color: #6366f1;">📝 Manager Note:</strong>
+                        <p style="margin: 8px 0 0 0; color: var(--gray-700);">${followup.managerComment}</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('ackMessage').innerHTML = messageHTML;
 
             document.getElementById('followupAckModal').classList.add('active');
             lucide.createIcons();
