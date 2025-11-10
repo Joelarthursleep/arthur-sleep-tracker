@@ -3338,6 +3338,7 @@
         let currentView = 'cards';
         let conversionChart = null;
         let statusChart = null;
+        let leadTypeChart = null;
         let unsubscribeLeads = null;
 
         // Notification System
@@ -4176,6 +4177,16 @@
 
         // Initialize charts
         function initCharts() {
+            // Destroy existing charts to prevent canvas reuse errors
+            if (conversionChart) {
+                conversionChart.destroy();
+                conversionChart = null;
+            }
+            if (statusChart) {
+                statusChart.destroy();
+                statusChart = null;
+            }
+
             // Filter leads based on user role
             let filteredLeads = leads;
             if (currentUser.role === 'employee') {
@@ -4249,13 +4260,18 @@
             // Lead type chart
             const leadTypeCtx = document.getElementById('leadTypeChart');
             if (leadTypeCtx) {
+                // Destroy existing chart
+                if (leadTypeChart) {
+                    leadTypeChart.destroy();
+                }
+
                 const typeCounts = {
                     payment: filteredLeads.filter(l => (l.leadType || 'payment') === 'payment').length,
                     inquiry: filteredLeads.filter(l => l.leadType === 'inquiry').length,
                     consultation: filteredLeads.filter(l => l.leadType === 'consultation').length
                 };
 
-                new Chart(leadTypeCtx, {
+                leadTypeChart = new Chart(leadTypeCtx, {
                     type: 'doughnut',
                     data: {
                         labels: ['Payment', 'Inquiry', 'Consultation'],
@@ -4326,6 +4342,11 @@
         function initLeadGenerationChart() {
             const ctx = document.getElementById('leadGenerationChart');
             if (!ctx) return;
+
+            // Destroy existing chart
+            if (leadGenerationChart) {
+                leadGenerationChart.destroy();
+            }
 
             const period = parseInt(document.getElementById('leadGenPeriod')?.value || 30);
             const labels = [];
