@@ -8819,6 +8819,10 @@
                     const managerDashboard = document.getElementById('managerDashboardLayout');
                     if (managerDashboard) managerDashboard.style.display = 'none';
 
+                    // ENSURE EMPLOYEE DASHBOARD LAYOUT STAYS VISIBLE
+                    const dashboardLayout = document.querySelector('.dashboard-layout');
+                    if (dashboardLayout) dashboardLayout.style.display = 'block';
+
                     // Hide manager-only buttons and sections
                     const performanceBtn = document.getElementById('performanceBtn');
                     const managerControlsBtn = document.getElementById('managerControlsBtn');
