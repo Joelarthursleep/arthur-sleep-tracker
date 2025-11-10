@@ -3171,12 +3171,93 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Test Firestore connection
+        async function testFirestoreConnection() {
+            try {
+                // Try to read from a test collection
+                await db.collection('_test').limit(1).get();
+                console.log('✅ Firebase Firestore connected successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Firebase Firestore connection failed:', error);
+                console.log('Error code:', error.code);
+                console.log('Error message:', error.message);
+
+                if (error.code === 'permission-denied') {
+                    console.log('%c FIRESTORE RULES ERROR', 'color: red; font-weight: bold; font-size: 16px');
+                    console.log('Your Firestore security rules are blocking access.');
+                    console.log('Go to: https://console.firebase.google.com/project/arthur-sleep-tracker/firestore/rules');
+                    console.log('\nCurrent rules should be:');
+                    console.log('rules_version = \'2\';');
+                    console.log('service cloud.firestore {');
+                    console.log('  match /databases/{database}/documents {');
+                    console.log('    match /{document=**} {');
+                    console.log('      allow read, write: if true;');
+                    console.log('    }');
+                    console.log('  }');
+                    console.log('}');
+                } else if (error.message.includes('indexes')) {
+                    console.log('%c INDEX REQUIRED', 'color: orange; font-weight: bold; font-size: 16px');
+                    console.log('Firestore needs an index. Check console for link to create it.');
+                } else if (error.message.includes('unavailable') || error.message.includes('UNAVAILABLE')) {
+                    console.log('%c FIRESTORE DATABASE NOT CREATED', 'color: red; font-weight: bold; font-size: 16px');
+                    console.log('You need to create a Firestore database first:');
+                    console.log('1. Go to: https://console.firebase.google.com/project/arthur-sleep-tracker/firestore');
+                    console.log('2. Click "Create database"');
+                    console.log('3. Choose "Start in production mode" (we\'ll change rules after)');
+                    console.log('4. Select a location (e.g., us-central)');
+                    console.log('5. Then update security rules as shown above');
+                }
+
+                throw error;
+            }
+        }
+
+        // Initialize sample data if database is empty
+        async function initializeSampleData() {
+            try {
+                const leadsSnapshot = await db.collection('leads').limit(1).get();
+                const usersSnapshot = await db.collection('users').limit(1).get();
+
+                if (usersSnapshot.empty) {
+                    console.log('📝 Creating default users...');
+                    await db.collection('users').doc('joel').set({
+                        password: 'manager123',
+                        role: 'manager',
+                        name: 'Joel (Manager)'
+                    });
+                    await db.collection('users').doc('ben').set({
+                        password: 'ben123',
+                        role: 'employee',
+                        name: 'Ben'
+                    });
+                    console.log('✅ Default users created');
+                }
+
+                if (leadsSnapshot.empty) {
+                    console.log('📝 Database is empty. You can now add leads through the dashboard.');
+                }
+            } catch (error) {
+                console.warn('Could not initialize sample data:', error.message);
+            }
+        }
+
         // Firestore helper functions
         const firestore = {
             // Get all leads
             async getLeads() {
-                const snapshot = await db.collection('leads').orderBy('createdAt', 'desc').get();
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                try {
+                    const snapshot = await db.collection('leads').orderBy('createdAt', 'desc').get();
+                    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } catch (error) {
+                    // If orderBy fails (no index), try without ordering
+                    if (error.code === 'failed-precondition' || error.message.includes('index')) {
+                        console.warn('Index not found, fetching without ordering');
+                        const snapshot = await db.collection('leads').get();
+                        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    }
+                    throw error;
+                }
             },
 
             // Add new lead
@@ -6187,6 +6268,12 @@
 
                 // Initialize dashboard layout
                 initDashboardLayout();
+
+                // Test Firestore connection first
+                await testFirestoreConnection();
+
+                // Initialize sample data if needed
+                await initializeSampleData();
 
                 // Load leads from Firestore
                 leads = await firestore.getLeads();

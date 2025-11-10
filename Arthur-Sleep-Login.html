@@ -302,8 +302,17 @@
             }
         }
 
-        // Call on page load
-        initializeUsers();
+        // Call on page load with error handling
+        initializeUsers().catch(error => {
+            console.error('Error initializing users:', error);
+            console.log('%c Firebase Connection Error', 'color: red; font-weight: bold; font-size: 16px');
+            console.log('Error details:', error.message);
+            console.log('Firebase project:', firebaseConfig.projectId);
+            console.log('Please verify:');
+            console.log('1. Firebase project exists and is active');
+            console.log('2. Firestore database is created (go to Firestore Database in console)');
+            console.log('3. Security rules allow read/write access');
+        });
 
         async function handleLogin(event) {
             event.preventDefault();
@@ -330,11 +339,23 @@
                     throw new Error('Invalid credentials');
                 }
             } catch (error) {
-                errorMessage.classList.add('show');
+                console.error('Login error:', error);
+
+                // Show user-friendly error
+                const errorDiv = document.getElementById('errorMessage');
+                if (error.code === 'permission-denied') {
+                    errorDiv.textContent = 'Database connection error. Please check Firebase configuration.';
+                } else if (error.message.includes('Invalid credentials')) {
+                    errorDiv.textContent = 'Invalid username or password. Please try again.';
+                } else {
+                    errorDiv.textContent = 'Login failed. Please check console for details.';
+                }
+
+                errorDiv.classList.add('show');
                 document.getElementById('password').value = '';
                 setTimeout(() => {
-                    errorMessage.classList.remove('show');
-                }, 3000);
+                    errorDiv.classList.remove('show');
+                }, 5000);
             }
         }
 
