@@ -3929,8 +3929,8 @@
                     }
 
                     return `
-                        <div class="lead-card collapsed status-${status}" id="lead-${lead.id}" style="animation-delay: ${index * 0.03}s;" onclick="toggleLeadCard(${lead.id})">
-                            <div class="lead-card-header-compact">
+                        <div class="lead-card collapsed status-${status}" id="lead-${lead.id}" style="animation-delay: ${index * 0.03}s;" data-lead-id="${lead.id}">
+                            <div class="lead-card-header-compact" onclick="event.stopPropagation(); toggleLeadCard(${lead.id});">
                                 <div class="lead-card-info-compact">
                                     <div>
                                         <div class="lead-card-name-compact">${lead.customerName}</div>
@@ -3942,7 +3942,9 @@
                                     <span class="lead-card-status-compact ${statusClass}">
                                         ${statusText}
                                     </span>
-                                    <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 20px; height: 20px; color: var(--gray-500);"></i>
+                                    <button class="expand-btn" onclick="event.stopPropagation(); toggleLeadCard(${lead.id});" style="background: none; border: none; padding: 4px; cursor: pointer; display: flex; align-items: center;">
+                                        <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 20px; height: 20px; color: var(--gray-500);"></i>
+                                    </button>
                                 </div>
                             </div>
 
@@ -4256,32 +4258,7 @@
 
             lucide.createIcons();
 
-            // Add click handlers as backup (in case onclick attribute doesn't work)
-            setTimeout(() => {
-                const allLeadCards = document.querySelectorAll('.lead-card.collapsed');
-                console.log(`🔧 Adding click handlers to ${allLeadCards.length} lead cards`);
-
-                allLeadCards.forEach(card => {
-                    // Add event listener (don't remove onclick, let both work)
-                    card.style.cursor = 'pointer';
-
-                    card.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        const leadId = this.id.replace('lead-', '');
-                        console.log('📌 Card clicked via event listener:', leadId, this.id);
-
-                        if (leadId && leadId !== 'lead-') {
-                            toggleLeadCard(parseInt(leadId));
-                        } else {
-                            console.error('Invalid lead ID extracted from:', this.id);
-                        }
-                    }, true); // Use capture phase
-                });
-
-                console.log('✅ Click handlers attached');
-            }, 200);
+            console.log('✅ Leads rendered, icons initialized');
         }
 
         // Check for reminders
