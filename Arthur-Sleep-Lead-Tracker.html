@@ -6213,7 +6213,11 @@
         }
 
         // Reorganize dashboard layout for employees
+        let employeeDashboardReorganized = false;
         function reorganizeEmployeeDashboard() {
+            // Only run once to prevent duplicates
+            if (employeeDashboardReorganized) return;
+
             // Find the analytics section (Daily Target Progress)
             const analyticsSection = document.querySelector('.analytics-section');
 
@@ -6225,6 +6229,9 @@
 
             if (!analyticsSection || !mainContent) return;
 
+            // Check if already reorganized
+            if (document.getElementById('employeeChartsSection')) return;
+
             // Create a wrapper for employee charts section
             const chartsSection = document.createElement('div');
             chartsSection.className = 'employee-charts-section';
@@ -6232,10 +6239,11 @@
 
             // Move specific charts: Conversion Trend (index 0) and Payment Status (index 2)
             if (chartCards.length >= 3) {
-                // Clone the charts we want to show
-                const conversionChart = chartCards[0].cloneNode(true);
-                const statusChart = chartCards[2].cloneNode(true);
+                // MOVE the charts (not clone) - remove from original location
+                const conversionChart = chartCards[0];
+                const statusChart = chartCards[2];
 
+                // Append to new section (this automatically removes from old location)
                 chartsSection.appendChild(conversionChart);
                 chartsSection.appendChild(statusChart);
 
@@ -6247,6 +6255,8 @@
                 // Re-initialize chart icons
                 lucide.createIcons();
             }
+
+            employeeDashboardReorganized = true;
         }
 
         // Real-time listener for leads
