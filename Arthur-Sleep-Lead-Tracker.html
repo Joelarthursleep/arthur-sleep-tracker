@@ -5285,6 +5285,50 @@
             initCharts(); // This will re-read the chartPeriod dropdown
         }
 
+        // Update worker filter dropdowns
+        function updateWorkerFilters() {
+            if (!currentUser || currentUser.role !== 'manager') return;
+
+            // Get unique workers from leads
+            const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
+
+            // Update Leads Dashboard worker filter
+            const workerFilterSelect = document.getElementById('filterWorker');
+            if (workerFilterSelect) {
+                const currentValue = workerFilterSelect.value;
+                workerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
+                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                // Restore selected value if it still exists
+                if (workers.includes(currentValue)) {
+                    workerFilterSelect.value = currentValue;
+                }
+            }
+
+            // Update Kanban worker filter
+            const kanbanWorkerFilterSelect = document.getElementById('kanbanFilterWorker');
+            if (kanbanWorkerFilterSelect) {
+                const currentValue = kanbanWorkerFilterSelect.value;
+                kanbanWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
+                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                // Restore selected value if it still exists
+                if (workers.includes(currentValue)) {
+                    kanbanWorkerFilterSelect.value = currentValue;
+                }
+            }
+
+            // Update Calendar worker filter
+            const calendarWorkerFilterSelect = document.getElementById('calendarWorkerFilter');
+            if (calendarWorkerFilterSelect) {
+                const currentValue = calendarWorkerFilterSelect.value;
+                calendarWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
+                    workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                // Restore selected value if it still exists
+                if (workers.includes(currentValue)) {
+                    calendarWorkerFilterSelect.value = currentValue;
+                }
+            }
+        }
+
         // Filter and sort leads
         function filterLeads() {
             const leadTypeFilter = document.getElementById('filterLeadType').value;
@@ -8464,6 +8508,7 @@
                 initCharts();
                 renderQuickStats();
                 renderUpcomingFollowups();
+                updateWorkerFilters(); // Update worker filter dropdowns
                 if (currentUser.role === 'manager') {
                     renderEmployeePerformance();
                     renderSidebarContent();
@@ -8906,16 +8951,14 @@
                     if (sidebarManagerSection) sidebarManagerSection.style.display = 'block';
                     if (sidebarEmployeeSection) sidebarEmployeeSection.style.display = 'none';
 
-                    // Show and populate worker filter for managers
+                    // Show worker filter for managers
                     const workerFilterGroup = document.getElementById('workerFilterGroup');
-                    const workerFilterSelect = document.getElementById('filterWorker');
-                    if (workerFilterGroup && workerFilterSelect) {
+                    if (workerFilterGroup) {
                         workerFilterGroup.style.display = 'block';
-                        // Get unique workers from leads
-                        const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
-                        workerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
-                            workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
                     }
+
+                    // Populate all worker filters
+                    updateWorkerFilters();
                 } else {
                     if (sidebarManagerSection) sidebarManagerSection.style.display = 'none';
                     if (sidebarEmployeeSection) sidebarEmployeeSection.style.display = 'block';
