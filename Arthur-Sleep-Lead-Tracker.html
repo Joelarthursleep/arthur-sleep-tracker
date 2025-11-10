@@ -3497,7 +3497,52 @@
                         <i data-lucide="check" style="width: 18px; height: 18px;"></i>
                         Confirm Follow-up Completed
                     </button>
+                    <button type="button" class="btn btn-ghost" onclick="rescheduleFollowup()" style="flex: 1;">
+                        <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+                        Reschedule
+                    </button>
                     <button type="button" class="btn btn-secondary" onclick="closeFollowupAck()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reschedule Follow-up Modal -->
+    <div class="modal" id="rescheduleFollowupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Reschedule Follow-up</h2>
+                <button class="close-btn" onclick="closeRescheduleFollowup()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </div>
+
+            <form onsubmit="submitRescheduleFollowup(event)">
+                <input type="hidden" id="rescheduleLeadId">
+                <input type="hidden" id="rescheduleFollowupType">
+
+                <div style="padding: 16px; background: var(--gray-50); border-radius: 12px; margin-bottom: 24px;">
+                    <p style="color: var(--gray-700); line-height: 1.6;" id="rescheduleMessage"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">New Follow-up Date & Time</label>
+                    <input type="datetime-local" class="form-input" id="newFollowupDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Reason for Rescheduling</label>
+                    <textarea class="form-textarea" id="rescheduleReason" placeholder="Why are you rescheduling this follow-up?"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
+                        Confirm Reschedule
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRescheduleFollowup()">
                         Cancel
                     </button>
                 </div>
@@ -7308,6 +7353,79 @@
             document.getElementById('followupAckModal').classList.remove('active');
             document.getElementById('contactMethod').value = '';
             document.getElementById('followupNotes').value = '';
+        }
+
+        // Open reschedule follow-up modal
+        function rescheduleFollowup() {
+            const leadId = document.getElementById('ackLeadId').value;
+            const followupType = document.getElementById('ackFollowupType').value;
+
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            // Close the acknowledgment modal
+            closeFollowupAck();
+
+            // Set up reschedule modal
+            document.getElementById('rescheduleLeadId').value = leadId;
+            document.getElementById('rescheduleFollowupType').value = followupType;
+
+            // Set current date as default
+            const currentDate = new Date(followup.dueDate);
+            const dateString = currentDate.toISOString().slice(0, 16);
+            document.getElementById('newFollowupDate').value = dateString;
+
+            document.getElementById('rescheduleMessage').innerHTML = `
+                Reschedule ${followupType === '24h' ? '24 hour' : '72 hour'} follow-up for <strong>${lead.customerName}</strong>
+                <br>
+                Current date: <strong>${currentDate.toLocaleString()}</strong>
+            `;
+
+            document.getElementById('rescheduleFollowupModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        // Close reschedule modal
+        function closeRescheduleFollowup() {
+            document.getElementById('rescheduleFollowupModal').classList.remove('active');
+            document.getElementById('newFollowupDate').value = '';
+            document.getElementById('rescheduleReason').value = '';
+        }
+
+        // Submit reschedule
+        async function submitRescheduleFollowup(event) {
+            event.preventDefault();
+
+            const leadId = document.getElementById('rescheduleLeadId').value;
+            const followupType = document.getElementById('rescheduleFollowupType').value;
+            const newDate = document.getElementById('newFollowupDate').value;
+            const reason = document.getElementById('rescheduleReason').value;
+
+            const lead = leads.find(l => l.id == leadId || l.id === parseInt(leadId));
+            if (!lead) return;
+
+            const followup = lead.followups.find(f => f.type === followupType);
+            if (!followup) return;
+
+            // Update the follow-up date
+            followup.dueDate = new Date(newDate).toISOString();
+            followup.rescheduled = true;
+            followup.rescheduleReason = reason;
+            followup.rescheduledAt = new Date().toISOString();
+            followup.rescheduledBy = currentUser.username;
+
+            try {
+                await firestore.updateLead(leadId, { followups: lead.followups });
+                showNotification('Follow-up Rescheduled', `Follow-up has been moved to ${new Date(newDate).toLocaleString()}`, 'success');
+                closeRescheduleFollowup();
+                renderCalendar();
+            } catch (error) {
+                showNotification('Error', 'Failed to reschedule follow-up.', 'error');
+                console.error('Error rescheduling follow-up:', error);
+            }
         }
 
         // Submit follow-up acknowledgment
