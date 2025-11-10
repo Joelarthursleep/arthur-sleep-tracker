@@ -3170,6 +3170,12 @@
                             <option value="name">Customer Name</option>
                         </select>
                     </div>
+                    <div class="filter-group" id="workerFilterGroup" style="display: none;">
+                        <label class="filter-label">Worker</label>
+                        <select class="filter-select" id="filterWorker" onchange="filterLeads()">
+                            <option value="all">All Workers</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="toolbar-divider"></div>
@@ -4398,13 +4404,13 @@
                 return;
             }
 
-            // Render card view - different for employees (collapsed) vs managers (expanded)
+            // Render card view - different for employees (keep as is) vs managers (now collapsed)
             console.log('📌 Rendering leads for role:', currentUser.role);
             console.log('📌 Number of leads to render:', leadsToRender.length);
 
             if (currentUser.role === 'employee') {
                 console.log('📌 Using EMPLOYEE collapsed card view');
-                // EMPLOYEE: Collapsed cards
+                // EMPLOYEE: Keep existing collapsed cards (DON'T TOUCH)
                 container.innerHTML = leadsToRender.map((lead, index) => {
                     console.log('📌 Rendering lead:', lead.id, lead.customerName);
                     const status = getLeadStatus(lead);
@@ -4457,262 +4463,58 @@
                 console.log('📌 Employee cards rendered. HTML length:', container.innerHTML.length);
                 console.log('📌 First 500 chars:', container.innerHTML.substring(0, 500));
             } else {
-                console.log('📌 Using MANAGER expanded card view');
-                // MANAGER: Keep existing expanded card view
+                console.log('📌 Using MANAGER collapsed card view');
+                // MANAGER: NEW collapsed cards with expand functionality
                 container.innerHTML = leadsToRender.map((lead, index) => {
+                    console.log('📌 Rendering lead:', lead.id, lead.customerName);
                     const status = getLeadStatus(lead);
                     const daysUntil = getDaysUntilFollowUp(lead.followUpDate);
-                    const daysSinceSent = Math.abs(getDaysUntilFollowUp(lead.linkSentDate));
 
-                    // Get status icon and text
-                    let statusIcon = 'circle';
-                    let statusText = 'Active';
-                    if (status === 'fresh') {
-                        statusIcon = 'sparkles';
-                        statusText = 'Fresh Lead';
-                    } else if (status === 'approaching') {
-                        statusIcon = 'clock';
-                        statusText = 'Follow-up Due Soon';
-                    } else if (status === 'overdue') {
-                        statusIcon = 'alert-circle';
-                        statusText = 'OVERDUE';
+                    // Status info for compact view
+                    let statusText = '';
+                    let statusClass = '';
+                    if (status === 'overdue') {
+                        statusText = `Overdue ${Math.abs(daysUntil)} days`;
+                        statusClass = 'overdue';
+                    } else if (status === 'approaching' || daysUntil === 0) {
+                        statusText = daysUntil === 0 ? 'Due today' : `Due in ${daysUntil} days`;
+                        statusClass = 'due-soon';
+                    } else if (status === 'fresh') {
+                        statusText = 'Fresh lead';
+                        statusClass = 'fresh';
                     } else if (status === 'converted') {
-                        statusIcon = 'check-circle';
                         statusText = 'Converted';
+                        statusClass = 'fresh';
                     }
 
                     return `
-                    <div class="lead-card status-${status}" style="animation-delay: ${index * 0.05}s;">
-                        <div class="status-indicator">
-                            <i data-lucide="${statusIcon}" style="width: 14px; height: 14px;"></i>
-                            ${statusText}
-                        </div>
-
-                        <div class="lead-header">
-                            <div class="lead-info">
-                                <h3>${lead.customerName}</h3>
-                                <div class="lead-meta">
-                                    <span>Lead #${lead.id}</span>
-                                    <span>•</span>
-                                    <span>${lead.leadType ? lead.leadType.charAt(0).toUpperCase() + lead.leadType.slice(1) : 'Payment'}</span>
-                                    <span>•</span>
-                                    <span>Added ${new Date(lead.createdAt).toLocaleDateString()}</span>
+                        <div class="lead-card collapsed status-${status}" id="lead-${lead.id}" style="animation-delay: ${index * 0.03}s;" data-lead-id="${lead.id}">
+                            <div class="lead-card-header-compact" onclick="console.log('Header clicked'); toggleLeadCard('${lead.id}');" style="cursor: pointer;">
+                                <div class="lead-card-info-compact">
+                                    <div>
+                                        <div class="lead-card-name-compact">${lead.customerName}</div>
+                                        <div class="lead-card-email-compact">${lead.customerEmail}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="lead-body">
-                            <div class="lead-detail">
-                                <i data-lucide="mail" style="width: 18px; height: 18px;"></i>
-                                <span>${lead.customerEmail}</span>
-                            </div>
-                            ${lead.customerPhone ? `
-                                <div class="lead-detail">
-                                    <i data-lucide="phone" style="width: 18px; height: 18px;"></i>
-                                    <span>${lead.customerPhone}</span>
-                                </div>
-                            ` : ''}
-                            ${lead.paymentAmount ? `
-                                <div class="lead-detail">
-                                    <i data-lucide="pound-sterling" style="width: 18px; height: 18px;"></i>
-                                    <strong>${formatCurrency(lead.paymentAmount)}</strong>
-                                </div>
-                            ` : ''}
-                            ${lead.productService ? `
-                                <div class="lead-detail">
-                                    <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                                    <span>${lead.productService}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-
-                        ${lead.interests && lead.interests.length > 0 ? `
-                            <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--gray-200);">
-                                <div style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                    <i data-lucide="heart" style="width: 14px; height: 14px;"></i>
-                                    Customer Interests
-                                </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    ${lead.interests.map(interest => `
-                                        <span style="background: white; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--gray-700); border: 1px solid var(--gray-300);">
-                                            ${interest}
-                                        </span>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        ${lead.paymentLink ? `
-                            <div class="payment-link-section">
-                                <div class="payment-link-header">
-                                    <span class="payment-link-title">
-                                        <i data-lucide="link" style="width: 16px; height: 16px;"></i>
-                                        Payment Link
+                                <div class="lead-card-meta-compact">
+                                    <span class="lead-card-amount-compact">${formatCurrency(lead.paymentAmount || 0)}</span>
+                                    <span class="lead-card-status-compact ${statusClass}">
+                                        ${statusText}
                                     </span>
-                                    <button class="btn-small btn-info" onclick="copyPaymentLink('${lead.paymentLink}', ${lead.id})">
-                                        <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-                                        Copy Link
+                                    <button class="expand-btn" onclick="console.log('Button clicked'); event.stopPropagation(); toggleLeadCard('${lead.id}');" style="background: none; border: none; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; margin: -8px -12px -8px 8px;">
+                                        <i data-lucide="chevron-down" class="lead-card-expand-icon" style="width: 24px; height: 24px; color: var(--primary); transition: transform 0.3s ease;"></i>
                                     </button>
                                 </div>
-                                <div class="payment-link-url">${lead.paymentLink}</div>
-
-                                <div class="follow-up-info ${status === 'overdue' ? 'overdue' : status === 'due-soon' ? 'due-soon' : ''}">
-                                    ${lead.linkSentDate ? `
-                                        <div class="follow-up-item">
-                                            <div class="follow-up-label">Link Sent</div>
-                                            <div class="follow-up-value">
-                                                ${new Date(lead.linkSentDate).toLocaleDateString()}
-                                                <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">(${daysSinceSent} days ago)</span>
-                                            </div>
-                                        </div>
-                                    ` : ''}
-                                    <div class="follow-up-item">
-                                        <div class="follow-up-label">Next Follow-up</div>
-                                        <div class="follow-up-value" style="color: ${status === 'overdue' ? 'var(--danger)' : status === 'due-soon' ? 'var(--warning)' : 'var(--gray-900)'};">
-                                            ${new Date(lead.followUpDate).toLocaleDateString()}
-                                            <span style="font-size: 12px;">
-                                                ${daysUntil < 0 ? `(${Math.abs(daysUntil)} days overdue)` : daysUntil === 0 ? '(Today)' : `(in ${daysUntil} days)`}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-                        ` : `
-                            <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--gray-200);">
-                                <div class="follow-up-info">
-                                    <div class="follow-up-item">
-                                        <div class="follow-up-label">Next Follow-up</div>
-                                        <div class="follow-up-value" style="color: ${status === 'overdue' ? 'var(--danger)' : status === 'due-soon' ? 'var(--warning)' : 'var(--gray-900)'};">
-                                            ${new Date(lead.followUpDate).toLocaleDateString()}
-                                            <span style="font-size: 12px;">
-                                                ${daysUntil < 0 ? `(${Math.abs(daysUntil)} days overdue)` : daysUntil === 0 ? '(Today)' : `(in ${daysUntil} days)`}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `}
 
-                        ${lead.communications && lead.communications.length > 0 ? `
-                            <div class="communication-history">
-                                <div class="communication-title">
-                                    <i data-lucide="message-square" style="width: 16px; height: 16px;"></i>
-                                    Communication History
-                                </div>
-                                ${lead.communications.slice(0, 3).map(comm => `
-                                    <div class="communication-item">
-                                        <div class="communication-icon">
-                                            <i data-lucide="${comm.type === 'email' ? 'mail' : comm.type === 'call' ? 'phone' : 'message-circle'}" style="width: 16px; height: 16px;"></i>
-                                        </div>
-                                        <div class="communication-content">
-                                            <div class="communication-text">${comm.message}</div>
-                                            <div class="communication-time">${new Date(comm.timestamp).toLocaleString()}</div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-
-                        ${lead.notes ? `
-                            <div style="background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 24px; border-left: 3px solid var(--primary);">
-                                <div style="font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">Internal Notes</div>
-                                <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">${lead.notes}</div>
-                            </div>
-                        ` : ''}
-
-                        ${lead.followups && lead.followups.length > 0 && status !== 'converted' ? `
-                            <div class="followup-timeline">
-                                <div style="font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                    <i data-lucide="calendar-clock" style="width: 16px; height: 16px;"></i>
-                                    Automated Follow-up Schedule
-                                </div>
-                                ${lead.followups.map(followup => {
-                                    const now = new Date();
-                                    const dueDate = new Date(followup.dueDate);
-                                    const isOverdue = !followup.completed && dueDate <= now;
-                                    const itemClass = followup.completed ? 'completed' : (isOverdue ? 'overdue' : 'pending');
-
-                                    return `
-                                        <div class="followup-item ${itemClass}">
-                                            <i data-lucide="${followup.completed ? 'check-circle' : isOverdue ? 'alert-circle' : 'clock'}" style="width: 16px; height: 16px;"></i>
-                                            <span style="flex: 1;">
-                                                <strong>${followup.type === '24h' ? '24 Hour' : '72 Hour'} Follow-up</strong>
-                                                - ${formatDateTime(followup.dueDate)}
-                                                ${followup.contactMethod ? `
-                                                    <span class="contact-method-badge" style="margin-left: 8px;">
-                                                        ${followup.contactMethod === 'whatsapp' ? 'WhatsApp' :
-                                                          followup.contactMethod === 'phone' ? 'Phone' :
-                                                          followup.contactMethod === 'email' ? 'Email' : 'Shopify Chat'}
-                                                    </span>
-                                                ` : ''}
-                                            </span>
-                                            ${!followup.completed && isOverdue ? `
-                                                <button class="btn-small btn-danger" onclick="openFollowupAcknowledgment(${lead.id}, '${followup.type}')" style="margin-left: 8px;">
-                                                    Acknowledge
-                                                </button>
-                                            ` : ''}
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-
-                        <!-- Comments Section -->
-                        <div class="comments-section">
-                            <div style="font-size: 12px; font-weight: 700; color: var(--gray-700); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                <i data-lucide="message-circle" style="width: 16px; height: 16px;"></i>
-                                Team Comments
-                            </div>
-                            ${lead.comments && lead.comments.length > 0 ? lead.comments.map(comment => `
-                                <div class="comment-item ${comment.urgent ? 'urgent-comment' : ''}">
-                                    ${comment.urgent ? '<div class="urgent-badge">URGENT FOLLOW-UP REQUIRED</div>' : ''}
-                                    <div class="comment-header">
-                                        <span class="comment-author">${comment.authorName} (${comment.role})</span>
-                                        <span class="comment-time">${new Date(comment.timestamp).toLocaleString()}</span>
-                                    </div>
-                                    <div class="comment-text">${comment.text}</div>
-                                </div>
-                            `).join('') : '<div style="font-size: 13px; color: var(--gray-500); font-style: italic;">No comments yet</div>'}
-                            <div class="comment-input">
-                                <input type="text" class="form-input" id="commentInput-${lead.id}" placeholder="Add a comment...">
-                                <button class="btn-small btn-primary" onclick="addComment('${lead.id}')">Send</button>
-                                ${currentUser.role === 'manager' ? `
-                                    <button class="btn-small btn-danger" onclick="addUrgentComment('${lead.id}')">Urgent</button>
-                                ` : ''}
+                            <div class="lead-card-details" onclick="event.stopPropagation()">
+                                ${renderLeadDetails(lead, status, daysUntil)}
                             </div>
                         </div>
-
-                        <div class="lead-actions">
-                            ${currentUser.role === 'employee' ? `
-                                ${status !== 'converted' ? `
-                                    <button class="btn-small btn-success" onclick="markAsConverted('${lead.id}')">
-                                        <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-                                        Mark as Paid
-                                    </button>
-                                    <button class="btn-small btn-warning" onclick="updateFollowUpDate('${lead.id}')">
-                                        <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
-                                        Reschedule
-                                    </button>
-                                ` : ''}
-                                <button class="btn-small btn-outline" onclick="editLead('${lead.id}')">
-                                    <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
-                                    Edit
-                                </button>
-                                <button class="btn-small btn-danger" onclick="deleteLead('${lead.id}')">
-                                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                                    Delete
-                                </button>
-                            ` : ''}
-                            ${currentUser.role === 'manager' ? `
-                                <button class="btn-small btn-outline" onclick="viewLead('${lead.id}')">
-                                    <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
-                                    View Details
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
+                    `;
                 }).join('');
+
+                console.log('📌 Manager collapsed cards rendered. HTML length:', container.innerHTML.length);
             }
 
             // Render table view
@@ -5490,6 +5292,7 @@
             const dateFilter = document.getElementById('filterDate').value;
             const sortBy = document.getElementById('sortBy').value;
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const workerFilter = document.getElementById('filterWorker') ? document.getElementById('filterWorker').value : 'all';
 
             let filtered = leads.filter(lead => {
                 const matchesSearch = !searchTerm ||
@@ -5500,6 +5303,9 @@
                     (lead.interests && lead.interests.some(i => i.toLowerCase().includes(searchTerm)));
 
                 if (!matchesSearch) return false;
+
+                // Worker filter (manager only)
+                if (workerFilter !== 'all' && lead.createdBy !== workerFilter) return false;
 
                 // Lead type filter
                 if (leadTypeFilter !== 'all') {
@@ -6340,6 +6146,18 @@
                 fullView.classList.add('active');
                 document.body.style.overflow = 'hidden';
                 renderKanbanFull();
+
+                // Populate and show worker filter for managers
+                if (currentUser && currentUser.role === 'manager') {
+                    const kanbanWorkerFilterGroup = document.getElementById('kanbanWorkerFilterGroup');
+                    const kanbanWorkerFilterSelect = document.getElementById('kanbanFilterWorker');
+                    if (kanbanWorkerFilterGroup && kanbanWorkerFilterSelect) {
+                        kanbanWorkerFilterGroup.style.display = 'block';
+                        const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
+                        kanbanWorkerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
+                            workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    }
+                }
             }
 
             lucide.createIcons();
@@ -6490,6 +6308,93 @@
                 `;
             }).join('');
 
+            lucide.createIcons();
+        }
+
+        // Filter Kanban board
+        function filterKanban() {
+            const searchTerm = document.getElementById('kanbanSearchInput')?.value.toLowerCase() || '';
+            const workerFilter = document.getElementById('kanbanFilterWorker')?.value || 'all';
+
+            const kanbanBoard = document.getElementById('kanbanBoardFull');
+            const stages = {
+                'new': { name: 'New Leads', color: '#10b981' },
+                'contacted': { name: 'Initial Contact', color: '#06b6d4' },
+                'link-sent': { name: 'Payment Link Sent', color: '#8b5cf6' },
+                'appointment': { name: 'Appointment Booked', color: '#f59e0b' },
+                'followup': { name: 'Follow-up Required', color: '#ef4444' },
+                'paid': { name: 'Paid', color: '#3b82f6' }
+            };
+
+            kanbanBoard.innerHTML = Object.entries(stages).map(([stageKey, stage]) => {
+                let stageLeads = leads.filter(l => (l.pipelineStage || 'new') === stageKey);
+
+                // Apply worker filter
+                if (workerFilter !== 'all') {
+                    stageLeads = stageLeads.filter(l => l.createdBy === workerFilter);
+                }
+
+                // Apply search filter
+                if (searchTerm) {
+                    stageLeads = stageLeads.filter(l =>
+                        l.customerName.toLowerCase().includes(searchTerm) ||
+                        l.customerEmail.toLowerCase().includes(searchTerm) ||
+                        (l.customerPhone && l.customerPhone.toLowerCase().includes(searchTerm)) ||
+                        (l.productService && l.productService.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                return `
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <span>${stage.name}</span>
+                            <span class="kanban-count">${stageLeads.length}</span>
+                        </div>
+                        ${stageLeads.map(lead => {
+                            const timeBadge = getTimeInStageBadge(lead);
+                            return `
+                                <div class="kanban-card stage-${stageKey}" onclick="viewKanbanLead('${lead.id}')">
+                                    ${timeBadge}
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--gray-900); margin-bottom: 8px;">
+                                        ${lead.customerName}
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 8px;">
+                                        ${lead.customerEmail}
+                                    </div>
+                                    ${lead.paymentAmount ? `
+                                        <div style="font-size: 13px; font-weight: 600; color: var(--primary); margin-top: 8px;">
+                                            ${formatCurrency(lead.paymentAmount)}
+                                        </div>
+                                    ` : ''}
+                                    ${lead.comments && lead.comments.some(c => c.urgent) ? `
+                                        <div style="color: var(--danger); font-size: 11px; font-weight: 700; margin-top: 8px;">
+                                            URGENT
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // View lead details from Kanban (opens modal with full details)
+        function viewKanbanLead(leadId) {
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            // Populate and show edit modal with read-only view
+            document.getElementById('editLeadId').value = lead.id;
+            document.getElementById('editCustomerName').value = lead.customerName;
+            document.getElementById('editCustomerEmail').value = lead.customerEmail;
+            document.getElementById('editCustomerPhone').value = lead.customerPhone || '';
+            document.getElementById('editPaymentAmount').value = lead.paymentAmount || '';
+            document.getElementById('editProductService').value = lead.productService || '';
+            document.getElementById('editNotes').value = lead.notes || '';
+            document.getElementById('editLeadModal').style.display = 'flex';
             lucide.createIcons();
         }
 
@@ -9000,6 +8905,17 @@
                 if (currentUser.role === 'manager') {
                     if (sidebarManagerSection) sidebarManagerSection.style.display = 'block';
                     if (sidebarEmployeeSection) sidebarEmployeeSection.style.display = 'none';
+
+                    // Show and populate worker filter for managers
+                    const workerFilterGroup = document.getElementById('workerFilterGroup');
+                    const workerFilterSelect = document.getElementById('filterWorker');
+                    if (workerFilterGroup && workerFilterSelect) {
+                        workerFilterGroup.style.display = 'block';
+                        // Get unique workers from leads
+                        const workers = [...new Set(leads.map(lead => lead.createdBy).filter(Boolean))];
+                        workerFilterSelect.innerHTML = '<option value="all">All Workers</option>' +
+                            workers.map(worker => `<option value="${worker}">${worker}</option>`).join('');
+                    }
                 } else {
                     if (sidebarManagerSection) sidebarManagerSection.style.display = 'none';
                     if (sidebarEmployeeSection) sidebarEmployeeSection.style.display = 'block';
@@ -9024,6 +8940,17 @@
                     <img src="Arthur-Sleep-Text-Logo.png" alt="Arthur Sleep">
                 </div>
                 <h2>Pipeline Kanban Board</h2>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center; flex: 1; margin: 0 24px;">
+                <div class="search-wrapper" style="flex: 1;">
+                    <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+                    <input type="text" class="search-input" id="kanbanSearchInput" placeholder="Search leads..." oninput="filterKanban()">
+                </div>
+                <div class="filter-group" id="kanbanWorkerFilterGroup" style="display: none; margin: 0;">
+                    <select class="filter-select" id="kanbanFilterWorker" onchange="filterKanban()" style="min-width: 150px;">
+                        <option value="all">All Workers</option>
+                    </select>
+                </div>
             </div>
             <button class="btn btn-secondary" onclick="toggleKanbanFullView()">
                 <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
