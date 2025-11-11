@@ -2903,18 +2903,6 @@
                 </div>
             </div>
 
-            <!-- Row 4: Employee Performance -->
-            <div class="analytics-section" id="employeePerformanceSection" style="grid-template-columns: 1fr; margin-bottom: 32px; display: block;">
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Employee Performance Overview</h3>
-                        <span style="font-size: 12px; color: var(--gray-500); font-weight: 500;">Track team productivity</span>
-                    </div>
-                    <div id="employeePerformanceGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 16px;">
-                        <!-- Employee performance cards will be inserted here -->
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Dashboard Layout: Two Column Structure (LEGACY - Keep for employee view) -->
@@ -5178,92 +5166,7 @@
             initLeadGenerationChart();
         }
 
-        // Render Employee Performance (Manager Only)
-        function renderEmployeePerformance() {
-            const grid = document.getElementById('employeePerformanceGrid');
-            if (!grid || currentUser.role !== 'manager') return;
-
-            // Group leads by employee
-            const employeeStats = {};
-
-            leads.forEach(lead => {
-                const employee = lead.createdBy || 'Unassigned';
-                if (!employeeStats[employee]) {
-                    employeeStats[employee] = {
-                        username: employee,
-                        totalLeads: 0,
-                        convertedLeads: 0,
-                        overdueLeads: 0,
-                        pendingAmount: 0,
-                        convertedAmount: 0,
-                        missedDeadlines: 0
-                    };
-                }
-
-                employeeStats[employee].totalLeads++;
-
-                if (lead.status === 'converted') {
-                    employeeStats[employee].convertedLeads++;
-                    if (lead.paymentAmount) {
-                        employeeStats[employee].convertedAmount += parseFloat(lead.paymentAmount);
-                    }
-                } else {
-                    if (lead.paymentAmount) {
-                        employeeStats[employee].pendingAmount += parseFloat(lead.paymentAmount);
-                    }
-                }
-
-                if (getLeadStatus(lead) === 'overdue') {
-                    employeeStats[employee].overdueLeads++;
-                    employeeStats[employee].missedDeadlines++;
-                }
-            });
-
-            // Render employee cards
-            grid.innerHTML = Object.values(employeeStats).map(stats => {
-                const conversionRate = stats.totalLeads > 0 ? Math.round((stats.convertedLeads / stats.totalLeads) * 100) : 0;
-                const overduePercentage = stats.totalLeads > 0 ? Math.round((stats.overdueLeads / stats.totalLeads) * 100) : 0;
-
-                return `
-                    <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary-ultra-light); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary); font-size: 18px;">
-                                ${stats.username.substring(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                                <h4 style="font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px;">${stats.username}</h4>
-                                <p style="font-size: 13px; color: var(--gray-500);">${stats.totalLeads} Total Leads</p>
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                            <div style="background: var(--success-light); padding: 12px; border-radius: 8px;">
-                                <div style="font-size: 11px; font-weight: 600; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Converted</div>
-                                <div style="font-size: 20px; font-weight: 800; color: var(--success);">${stats.convertedLeads}</div>
-                                <div style="font-size: 12px; color: var(--success); font-weight: 600;">${conversionRate}% rate</div>
-                            </div>
-
-                            <div style="background: ${stats.overdueLeads > 0 ? 'var(--danger-light)' : 'var(--gray-100)'}; padding: 12px; border-radius: 8px;">
-                                <div style="font-size: 11px; font-weight: 600; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'}; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Overdue</div>
-                                <div style="font-size: 20px; font-weight: 800; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'};">${stats.overdueLeads}</div>
-                                <div style="font-size: 12px; color: ${stats.overdueLeads > 0 ? 'var(--danger)' : 'var(--gray-600)'}; font-weight: 600;">${overduePercentage}% of total</div>
-                            </div>
-                        </div>
-
-                        <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--gray-200);">
-                            <div>
-                                <div style="font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Pending Value</div>
-                                <div style="font-size: 14px; font-weight: 700; color: var(--gray-900);">${formatCurrency(stats.pendingAmount)}</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Converted Value</div>
-                                <div style="font-size: 14px; font-weight: 700; color: var(--success);">${formatCurrency(stats.convertedAmount)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+        // Employee Performance feature removed - information already displayed in other dashboard elements
 
         function updateCharts() {
             if (conversionChart) {
@@ -6558,7 +6461,7 @@
 
             if (modal) {
                 modal.style.display = 'flex';
-                modal.style.zIndex = '10000';
+                modal.style.zIndex = '10001';
                 console.log('Modal display set to flex, z-index:', modal.style.zIndex);
             }
 
@@ -7084,7 +6987,7 @@
                     if (mainContent) mainContent.style.display = 'block';
                     analyticsSection.forEach(section => {
                         // Only show manager-specific sections
-                        if (section.id === 'leadGenerationSection' || section.id === 'employeePerformanceSection' || section.id === 'activityInterestsSection') {
+                        if (section.id === 'leadGenerationSection' || section.id === 'activityInterestsSection') {
                             section.style.display = 'grid';
                         }
                     });
@@ -8761,7 +8664,6 @@
                 updateWorkerFilters(); // Update worker filter dropdowns
                 populateWorkerFilter(); // Update calendar worker filter
                 if (currentUser.role === 'manager') {
-                    renderEmployeePerformance();
                     renderSidebarContent();
                 }
             });
@@ -8825,8 +8727,7 @@
             // Populate Recent Activity with timeline design
             renderActivityTimelineForDashboard();
 
-            // Render Employee Performance
-            renderEmployeePerformance();
+            // Employee Performance feature removed
 
             // Initialize Lead Generation Chart
             initLeadGenerationChart();
@@ -8982,9 +8883,6 @@
                 // Add sidebar body class
                 document.body.classList.add('with-sidebar');
 
-                // Initialize dashboard layout
-                initDashboardLayout();
-
                 // Test Firestore connection first
                 await testFirestoreConnection();
 
@@ -8997,7 +8895,7 @@
                 // Set up real-time listeners (includes calendar events)
                 setupRealtimeListeners();
 
-            // Set up UI based on user role
+            // Set up UI based on user role - MUST BE DONE BEFORE initDashboardLayout()
             if (currentUser) {
                 document.getElementById('userWelcome').textContent = `Welcome back, ${currentUser.name}`;
 
@@ -9007,6 +8905,9 @@
                 } else {
                     document.getElementById('totalLeadsLabel').textContent = 'Total Active Leads';
                 }
+
+                // Initialize dashboard layout AFTER currentUser is confirmed
+                initDashboardLayout();
 
                 // Manager-specific UI
                 if (currentUser.role === 'manager') {
@@ -9040,7 +8941,6 @@
 
                     // Hide manager-only sections
                     const leadGenerationSection = document.getElementById('leadGenerationSection');
-                    const employeePerformanceSection = document.getElementById('employeePerformanceSection');
                     const convertedStatCard = document.getElementById('convertedStatCard');
                     const leadTypesChartCard = document.getElementById('leadTypesChartCard');
                     const activityInterestsSection = document.getElementById('activityInterestsSection');
@@ -9048,7 +8948,6 @@
                     const checkFollowupsBtn = document.getElementById('checkFollowupsBtn');
 
                     if (leadGenerationSection) leadGenerationSection.style.display = 'none';
-                    if (employeePerformanceSection) employeePerformanceSection.style.display = 'none';
 
                     // Hide analytics sections that employees don't need
                     if (convertedStatCard) convertedStatCard.style.display = 'none';
@@ -9149,7 +9048,7 @@
                 // Restore analytics sections for managers
                 if (currentUser && currentUser.role === 'manager') {
                     analyticsSection.forEach(section => {
-                        if (section.id === 'leadGenerationSection' || section.id === 'employeePerformanceSection' || section.id === 'activityInterestsSection') {
+                        if (section.id === 'leadGenerationSection' || section.id === 'activityInterestsSection') {
                             section.style.display = 'grid';
                         }
                     });
@@ -9240,7 +9139,7 @@
     </div>
 
     <!-- Kanban Lead View Modal (OUTSIDE kanban, z-index higher than 9999) -->
-    <div class="modal" id="kanbanLeadViewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000;">
+    <div class="modal" id="kanbanLeadViewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10001 !important; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 24px;">
         <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
                 <h2 class="modal-title">Lead Details</h2>
