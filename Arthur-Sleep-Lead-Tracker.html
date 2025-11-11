@@ -2649,10 +2649,6 @@
                     <i data-lucide="trello"></i>
                     <span>Kanban Board</span>
                 </div>
-                <div class="sidebar-item" onclick="showPerformance()">
-                    <i data-lucide="bar-chart"></i>
-                    <span>Performance</span>
-                </div>
                 <div class="sidebar-item" onclick="openManagerControls()">
                     <i data-lucide="settings"></i>
                     <span>Manager Controls</span>
@@ -5513,31 +5509,6 @@
                 sessionStorage.removeItem('currentUser');
                 window.location.href = 'Arthur-Sleep-Login.html';
             }
-        }
-
-        // Show performance (manager only)
-        function showPerformance() {
-            if (currentUser.role !== 'manager') return;
-
-            const benLeads = leads.filter(l => l.createdBy === 'ben');
-            const benConverted = benLeads.filter(l => l.status === 'converted').length;
-            const convRate = benLeads.length > 0 ? Math.round((benConverted / benLeads.length) * 100) : 0;
-
-            // Calculate today's performance
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayConverted = leads.filter(l => {
-                if (l.status !== 'converted' || l.createdBy !== 'ben') return false;
-                const convertDate = new Date(l.convertedDate);
-                convertDate.setHours(0, 0, 0, 0);
-                return convertDate.getTime() === today.getTime();
-            }).length;
-
-            showNotification(
-                'Ben\'s Performance',
-                `Total Leads: ${benLeads.length} | Converted: ${benConverted} (${convRate}%) | Today: ${todayConverted}/6`,
-                'info'
-            );
         }
 
         // Create intelligent follow-ups scheduled during customer's business hours (9 AM - 5 PM local time)
