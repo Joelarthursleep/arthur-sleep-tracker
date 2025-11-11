@@ -4842,7 +4842,10 @@
                 console.warn('💡 Interests are tracked when creating/editing leads. Add interests to leads to see data here.');
                 interestsContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--gray-400); font-size: 14px;">
-                        <div style="margin-bottom: 8px;">📊 No interests tracked yet</div>
+                        <div style="margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i data-lucide="bar-chart-3" style="width: 16px; height: 16px;"></i>
+                            No interests tracked yet
+                        </div>
                         <div style="font-size: 12px; color: var(--gray-500);">
                             Add interests when creating or editing leads
                         </div>
@@ -6114,7 +6117,7 @@
                         recipientUsername: lead.assignedTo,
                         leadId: leadId,
                         leadName: lead.customerName || 'Unknown Lead',
-                        message: `🚨 URGENT comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+                        message: `[URGENT] comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
                         type: 'urgent',
                         urgent: true
                     });
@@ -6561,15 +6564,58 @@
                 return;
             }
 
-            await addComment(leadId, false);
-            input.value = '';
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
 
-            // Refresh the modal content
-            viewKanbanLead(leadId);
+            if (!lead.comments) {
+                lead.comments = [];
+            }
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                authorName: currentUser.name,
+                authorUsername: currentUser.username,
+                role: currentUser.role,
+                timestamp: new Date().toISOString(),
+                urgent: false
+            };
+
+            lead.comments.push(comment);
+
+            try {
+                await firestore.updateLead(leadId, { comments: lead.comments });
+
+                // If manager is commenting on an employee's lead, create a notification
+                if (currentUser.role === 'manager' && lead.assignedTo && lead.assignedTo !== currentUser.username) {
+                    await createNotification({
+                        recipientUsername: lead.assignedTo,
+                        leadId: leadId,
+                        leadName: lead.customerName || 'Unknown Lead',
+                        message: `New comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+                        type: 'comment',
+                        urgent: false
+                    });
+                }
+
+                input.value = '';
+                showNotification('Comment Added', 'Your comment has been added successfully.', 'success');
+
+                // Refresh the modal content
+                viewKanbanLead(leadId);
+            } catch (error) {
+                showNotification('Error', 'Failed to add comment.', 'error');
+                console.error('Error adding comment:', error);
+            }
         }
 
         // Add urgent comment from Kanban view
         async function addUrgentKanbanComment(leadId) {
+            if (currentUser.role !== 'manager') {
+                showNotification('Access Denied', 'Only managers can add urgent comments.', 'danger');
+                return;
+            }
+
             const input = document.getElementById(`kanbanCommentInput-${leadId}`);
             const commentText = input.value.trim();
 
@@ -6578,11 +6624,49 @@
                 return;
             }
 
-            await addUrgentComment(leadId);
-            input.value = '';
+            const lead = leads.find(l => l.id === leadId);
+            if (!lead) return;
 
-            // Refresh the modal content
-            viewKanbanLead(leadId);
+            if (!lead.comments) {
+                lead.comments = [];
+            }
+
+            const comment = {
+                id: Date.now(),
+                text: commentText,
+                authorName: currentUser.name,
+                authorUsername: currentUser.username,
+                role: currentUser.role,
+                timestamp: new Date().toISOString(),
+                urgent: true
+            };
+
+            lead.comments.push(comment);
+
+            try {
+                await firestore.updateLead(leadId, { comments: lead.comments });
+
+                // Create urgent notification for assigned worker
+                if (lead.assignedTo && lead.assignedTo !== currentUser.username) {
+                    await createNotification({
+                        recipientUsername: lead.assignedTo,
+                        leadId: leadId,
+                        leadName: lead.customerName || 'Unknown Lead',
+                        message: `URGENT comment from ${currentUser.name}: "${commentText.substring(0, 50)}${commentText.length > 50 ? '...' : ''}"`,
+                        type: 'urgent_comment',
+                        urgent: true
+                    });
+                }
+
+                input.value = '';
+                showNotification('Urgent Comment Added', 'Your urgent comment has been added and the worker has been notified.', 'success');
+
+                // Refresh the modal content
+                viewKanbanLead(leadId);
+            } catch (error) {
+                showNotification('Error', 'Failed to add urgent comment.', 'error');
+                console.error('Error adding urgent comment:', error);
+            }
         }
 
         // Copy payment link
@@ -7058,7 +7142,7 @@
 
                 // Apply worker filter (managers only)
                 if (currentUser && currentUser.role === 'manager' && selectedWorkerFilter !== 'all') {
-                    if (lead.assignedTo !== selectedWorkerFilter) return;
+                    if (lead.createdBy !== selectedWorkerFilter) return;
                 }
 
                 if (lead.followups) {
@@ -7178,7 +7262,7 @@
                                 low: 'LOW',
                                 medium: 'MED',
                                 high: 'HIGH',
-                                urgent: '🚨'
+                                urgent: 'URGENT'
                             };
                             priorityBadge = `<span style="background: ${priorityColors[f.priority]}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px;">${priorityLabels[f.priority]}</span>`;
                         }
@@ -7186,7 +7270,7 @@
                         // Add comment indicator if manager left a note
                         let commentIndicator = '';
                         if (f.managerComment) {
-                            commentIndicator = `<span style="margin-left: 4px;" title="${f.managerComment}">💬</span>`;
+                            commentIndicator = `<span style="margin-left: 4px; display: inline-flex; align-items: center;" title="${f.managerComment}"><i data-lucide="message-circle" style="width: 12px; height: 12px;"></i></span>`;
                         }
 
                         html += `<div class="calendar-event-item ${eventClass}" onclick="event.stopPropagation(); viewCalendarEvent('${f.lead.id}_${f.type}', true)" style="cursor: pointer;">${title} ${f.lead.customerName}${priorityBadge}${commentIndicator}</div>`;
@@ -7701,7 +7785,7 @@
                     low: 'Low Priority',
                     medium: 'Medium Priority',
                     high: 'High Priority',
-                    urgent: '🚨 URGENT'
+                    urgent: 'URGENT'
                 };
                 messageHTML += `
                     <br><br>
