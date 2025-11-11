@@ -2902,7 +2902,7 @@
         </div>
 
         <!-- Dashboard Layout: Two Column Structure (LEGACY - Keep for employee view) -->
-        <div class="dashboard-layout">
+        <div class="dashboard-layout" style="display: none;">
             <!-- Main Column -->
             <div class="main-column">
                 <!-- Daily Target Section -->
@@ -6432,7 +6432,7 @@
 
             if (modal) {
                 modal.style.display = 'flex';
-                modal.style.zIndex = '10001';
+                modal.style.setProperty('z-index', '10001', 'important');
                 console.log('Modal display set to flex, z-index:', modal.style.zIndex);
             }
 
@@ -8909,6 +8909,10 @@
                     // HIDE THE NEW MANAGER DASHBOARD LAYOUT
                     const managerDashboard = document.getElementById('managerDashboardLayout');
                     if (managerDashboard) managerDashboard.style.display = 'none';
+
+                    // SHOW THE EMPLOYEE DASHBOARD LAYOUT
+                    const dashboardLayout = document.querySelector('.dashboard-layout');
+                    if (dashboardLayout) dashboardLayout.style.display = 'grid';
 
                     // Hide manager-only sections
                     const leadGenerationSection = document.getElementById('leadGenerationSection');
